@@ -5,7 +5,7 @@ status: approved
 
 # Build Checklist
 
-Build mode: [learn or fast — record once chosen; carry forward on resume]
+Build mode: learn (chosen Sep 25, 2026)
 
 ## Slices
 

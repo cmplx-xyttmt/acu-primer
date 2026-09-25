@@ -11,3 +11,6 @@
 
 # Source books never go in this public repo (CLRS is copyrighted; books are uploaded at runtime)
 *.pdf
+
+# Duplicate skill copy from another installer; .agents/skills is the real one
+/agent/

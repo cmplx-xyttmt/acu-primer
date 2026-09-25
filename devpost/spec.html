@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>acu-primer spec</title>
+<style>
+  :root {
+    --bg: #faf8f4; --panel: #ffffff; --ink: #1f1d1a; --muted: #6b665e; --line: #e4dfd6;
+    --accent: #2f6f5e; --accent-soft: #e3f0eb; --warn: #a65a1f; --warn-soft: #f7ebdf;
+    --browser: #3b5ba5; --browser-soft: #e6ecf8; --cf: #c2621d; --cf-soft: #fbeee2;
+    --ext: #8a4a9c; --ext-soft: #f3e8f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171614; --panel: #201f1c; --ink: #ece8e1; --muted: #a39d93; --line: #35322d;
+      --accent: #6fbfa7; --accent-soft: #1f3530; --warn: #e0a06a; --warn-soft: #3a2b1e;
+      --browser: #8aa6e6; --browser-soft: #1f2a42; --cf: #f0a468; --cf-soft: #3a2a1c;
+      --ext: #c996d8; --ext-soft: #34233a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 40px 16px 80px; }
+  .tag { display: inline-block; font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--warn); background: var(--warn-soft); padding: 2px 10px; border-radius: 99px; }
+  h1 { font-size: 40px; margin: 12px 0 4px; letter-spacing: -.02em; }
+  h2 { font-size: 22px; margin: 44px 0 12px; }
+  h3 { font-size: 17px; margin: 0 0 6px; }
+  p.lede { font-size: 18px; color: var(--muted); margin: 0; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; }
+  .muted { color: var(--muted); }
+  code { font-size: .9em; background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { font-family: inherit; fill: var(--ink); }
+  svg .box { transition: opacity .2s; }
+  svg .dim { opacity: .25; }
+  svg .flow { stroke: var(--muted); stroke-width: 2; fill: none; transition: stroke .2s, opacity .2s; }
+  svg .flow.hot { stroke: var(--accent); stroke-width: 3; }
+  .steps { display: flex; gap: 6px; flex-wrap: wrap; margin: 16px 0 12px; }
+  .steps button { font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--panel);
+    color: var(--ink); border-radius: 99px; padding: 5px 13px; cursor: pointer; }
+  .steps button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .stepbody { min-height: 140px; }
+  .files { font-size: 13px; color: var(--muted); }
+  details { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; margin: 10px 0; }
+  summary { cursor: pointer; padding: 13px 18px; font-weight: 600; list-style: none; display: flex;
+    justify-content: space-between; align-items: center; gap: 12px; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--muted); font-weight: 400; font-size: 20px; }
+  details[open] summary::after { content: "–"; }
+  details > div { padding: 0 18px 14px; }
+  details ul { margin: 0; padding-left: 20px; }
+  .prd { font-size: 12px; font-weight: 500; padding: 2px 9px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  td, th { text-align: left; padding: 7px 9px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-weight: 600; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 700px) { .grid2 { grid-template-columns: 1fr; } h1 { font-size: 32px; } }
+  .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 6px; border: 1px solid rgba(0,0,0,.15); }
+  .mode { border-radius: 12px; padding: 16px; }
+  .mode.light { background: #fff; color: #111827; border: 1px solid #e5e7eb; }
+  .mode.dark { background: #14161a; color: #e6e3dc; border: 1px solid #2a2d33; }
+  .mode h3 { color: inherit; }
+  .mode ul { padding-left: 18px; margin: 6px 0 0; font-size: 14px; }
+  .q { border-left: 3px solid var(--warn); padding: 6px 0 6px 14px; }
+  pre { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+  footer { margin-top: 48px; font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <span class="tag">Spec · approved</span>
+  <h1>acu-primer</h1>
+  <p class="lede">One Cloudflare project in three pieces: a Svelte app in the browser, a Worker for <code>/api/</code>, and a D1 database. Claude Opus 5.5 writes the drafts, and nothing it writes reaches a student before sign-off.</p>
+
+  <h2>The pieces, and a journey through them</h2>
+  <div class="card">
+    <p class="muted" style="margin-top:0">Step through the PRD's core journey. The pieces and arrows each step uses light up.</p>
+    <svg viewBox="0 0 860 400" role="img" aria-labelledby="archT">
+      <title id="archT">Browser (player, author side, service worker, localStorage) talks to the Cloudflare Worker, which talks to D1 and to Anthropic's Files and Messages APIs.</title>
+      <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker></defs>
+      <!-- regions -->
+      <rect x="8" y="8" width="300" height="384" rx="14" fill="var(--browser-soft)"/>
+      <text x="24" y="32" font-size="12" font-weight="600" style="fill:var(--browser)">BROWSER</text>
+      <rect x="340" y="8" width="300" height="384" rx="14" fill="var(--cf-soft)"/>
+      <text x="356" y="32" font-size="12" font-weight="600" style="fill:var(--cf)">CLOUDFLARE</text>
+      <rect x="672" y="8" width="180" height="384" rx="14" fill="var(--ext-soft)"/>
+      <text x="688" y="32" font-size="12" font-weight="600" style="fill:var(--ext)">ANTHROPIC</text>
+      <!-- browser boxes -->
+      <g class="box" data-k="author"><rect x="28" y="48" width="260" height="70" rx="10" fill="var(--panel)" stroke="var(--browser)" stroke-width="2"/>
+        <text x="158" y="76" text-anchor="middle" font-size="14" font-weight="600">Author side</text>
+        <text x="158" y="97" text-anchor="middle" font-size="12" style="fill:var(--muted)">session · review · students · pdf-lib</text></g>
+      <g class="box" data-k="player"><rect x="28" y="140" width="260" height="70" rx="10" fill="var(--panel)" stroke="var(--browser)" stroke-width="2"/>
+        <text x="158" y="168" text-anchor="middle" font-size="14" font-weight="600">Player</text>
+        <text x="158" y="189" text-anchor="middle" font-size="12" style="fill:var(--muted)">overview · modules · checks · fallbacks</text></g>
+      <g class="box" data-k="logic"><rect x="28" y="232" width="260" height="56" rx="10" fill="var(--panel)" stroke="var(--browser)" stroke-width="2" stroke-dasharray="5 4"/>
+        <text x="158" y="257" text-anchor="middle" font-size="13" font-weight="600">grading.ts · flow.ts</text>
+        <text x="158" y="276" text-anchor="middle" font-size="12" style="fill:var(--muted)">runs offline, no network</text></g>
+      <g class="box" data-k="local"><rect x="28" y="308" width="124" height="70" rx="10" fill="var(--panel)" stroke="var(--browser)" stroke-width="2"/>
+        <text x="90" y="336" text-anchor="middle" font-size="13" font-weight="600">localStorage</text>
+        <text x="90" y="356" text-anchor="middle" font-size="11.5" style="fill:var(--muted)">progress · queue</text></g>
+      <g class="box" data-k="sw"><rect x="164" y="308" width="124" height="70" rx="10" fill="var(--panel)" stroke="var(--browser)" stroke-width="2"/>
+        <text x="226" y="336" text-anchor="middle" font-size="13" font-weight="600">Service worker</text>
+        <text x="226" y="356" text-anchor="middle" font-size="11.5" style="fill:var(--muted)">app + course copy</text></g>
+      <!-- cloudflare -->
+      <g class="box" data-k="worker"><rect x="360" y="90" width="260" height="120" rx="10" fill="var(--panel)" stroke="var(--cf)" stroke-width="2"/>
+        <text x="490" y="120" text-anchor="middle" font-size="14" font-weight="600">Worker  /api/*</text>
+        <text x="490" y="142" text-anchor="middle" font-size="12" style="fill:var(--muted)">routes · author gate</text>
+        <text x="490" y="160" text-anchor="middle" font-size="12" style="fill:var(--muted)">claude.ts · Zod check</text>
+        <text x="490" y="178" text-anchor="middle" font-size="12" style="fill:var(--muted)">holds ANTHROPIC_API_KEY</text></g>
+      <g class="box" data-k="d1"><rect x="360" y="262" width="260" height="96" rx="10" fill="var(--panel)" stroke="var(--cf)" stroke-width="2"/>
+        <text x="490" y="292" text-anchor="middle" font-size="14" font-weight="600">D1</text>
+        <text x="490" y="314" text-anchor="middle" font-size="12" style="fill:var(--muted)">courses · sources</text>
+        <text x="490" y="332" text-anchor="middle" font-size="12" style="fill:var(--muted)">lessons (JSON) · events</text></g>
+      <!-- anthropic -->
+      <g class="box" data-k="files"><rect x="690" y="70" width="144" height="70" rx="10" fill="var(--panel)" stroke="var(--ext)" stroke-width="2"/>
+        <text x="762" y="100" text-anchor="middle" font-size="13" font-weight="600">Files API</text>
+        <text x="762" y="119" text-anchor="middle" font-size="11.5" style="fill:var(--muted)">cut pages</text></g>
+      <g class="box" data-k="claude"><rect x="690" y="170" width="144" height="80" rx="10" fill="var(--panel)" stroke="var(--ext)" stroke-width="2"/>
+        <text x="762" y="200" text-anchor="middle" font-size="13" font-weight="600">Messages API</text>
+        <text x="762" y="220" text-anchor="middle" font-size="11.5" style="fill:var(--muted)">Opus 5.5</text>
+        <text x="762" y="236" text-anchor="middle" font-size="11.5" style="fill:var(--muted)">structured output</text></g>
+      <!-- flows -->
+      <path class="flow" data-f="aw" d="M290,83 L356,118" marker-end="url(#ar)"/>
+      <path class="flow" data-f="pw" d="M290,175 L356,175" marker-end="url(#ar)"/>
+      <path class="flow" data-f="pl" d="M158,212 L158,228" marker-end="url(#ar)"/>
+      <path class="flow" data-f="plo" d="M90,212 L90,304" marker-end="url(#ar)"/>
+      <path class="flow" data-f="psw" d="M240,212 L240,304" marker-end="url(#ar)"/>
+      <path class="flow" data-f="wd" d="M490,212 L490,258" marker-end="url(#ar)"/>
+      <path class="flow" data-f="wf" d="M622,120 L686,105" marker-end="url(#ar)"/>
+      <path class="flow" data-f="wc" d="M622,180 L686,205" marker-end="url(#ar)"/>
+    </svg>
+    <div class="steps" id="jb" role="group" aria-label="Journey steps"></div>
+    <div class="stepbody" id="jbody"></div>
+    <noscript><p>See spec.md › The Core Journey Through the System.</p></noscript>
+  </div>
+
+  <h2>In plain language</h2>
+  <div class="card">
+    <p style="margin-top:0"><strong>The app in the browser</strong> is written in Svelte and holds both the player and the author side. It's one page, so moving between modules never reloads. A <strong>service worker</strong> keeps a copy of the app and every course a student has opened, so the player works offline. Progress and unsent events sit in <code>localStorage</code>.</p>
+    <p><strong>The Worker</strong> answers everything under <code>/api/</code>: courses, events, sign-off, and calls to Claude. It holds the API key, so the key never reaches a browser.</p>
+    <p><strong>D1</strong> is the database: courses, lessons (one JSON document each), sign-offs and events.</p>
+    <p style="margin-bottom:0" class="muted">It's the smallest setup that gives a link, a database, a secret key and offline play, and Cloudflare's free tier covers all of it. The budget goes to Claude.</p>
+  </div>
+
+  <h2>Where each PRD behavior lives</h2>
+  <div id="comps"></div>
+
+  <h2>The lesson format, in one picture</h2>
+  <pre>lesson
+ ├─ title, source (book + pages)
+ └─ modules[]
+     ├─ title, reading (text + math)
+     └─ check?            type: select · number · categorize · predict_simulate
+         │                      · predict_output · trace_table
+         ├─ prompt, answer
+         ├─ alternatives[]      (author side only)
+         ├─ wrongAnswers[]
+         │    ├─ matches        (option · value range · category mistake)
+         │    ├─ misconception  (text, source: catalogue + ref | model)
+         │    └─ fallback       { reexplain?, simplerCheck? }
+         └─ generalFallback     { reexplain?, simplerCheck? }
+
+ simplerCheck has no fallbacks of its own → the schema makes a third level impossible</pre>
+
+  <h2>Where data lives</h2>
+  <div class="card" style="padding:8px 12px">
+    <table>
+      <tr><th>Data</th><th>Lives in</th><th>After leaving and coming back</th></tr>
+      <tr><td>Lessons, courses</td><td>D1, plus the service worker's copy</td><td>Fresh when online, saved copy offline</td></tr>
+      <tr><td>Student progress</td><td><code>localStorage</code> per course + name</td><td>Same name, same device: picks up where it stopped</td></tr>
+      <tr><td>Unsent events</td><td><code>localStorage</code> queue</td><td>Still waiting, and sent at the next chance</td></tr>
+      <tr><td>Saved events</td><td>D1</td><td>Permanent</td></tr>
+      <tr><td>Device id</td><td><code>localStorage</code></td><td>The same until storage is cleared</td></tr>
+      <tr><td>Book PDF</td><td>The author's laptop only</td><td>Never uploaded whole</td></tr>
+      <tr><td>Cut pages</td><td>Anthropic Files API (id in D1)</td><td>Reused for every draft and revision</td></tr>
+    </table>
+  </div>
+
+  <h2>Look and feel, as built</h2>
+  <div class="grid2">
+    <div class="mode light">
+      <h3 style="font-family:'Plus Jakarta Sans',system-ui">Light · Clean study</h3>
+      <div><span class="swatch" style="background:#fff"></span><span class="swatch" style="background:#f3f4f6"></span><span class="swatch" style="background:#111827"></span><span class="swatch" style="background:#2563eb"></span><span class="swatch" style="background:#eff4ff"></span></div>
+      <ul><li>Plus Jakarta Sans throughout</li><li>12px corners, 2px border that turns blue on hover</li><li>Fallback panel in soft blue</li></ul>
+    </div>
+    <div class="mode dark">
+      <h3 style="font-family:'IBM Plex Sans',system-ui">Dark · Night desk</h3>
+      <div><span class="swatch" style="background:#14161a"></span><span class="swatch" style="background:#1c1f24"></span><span class="swatch" style="background:#e6e3dc"></span><span class="swatch" style="background:#f2b84b"></span><span class="swatch" style="background:#221e14"></span></div>
+      <ul><li>IBM Plex Sans, with Plex Mono for numbers and code</li><li>6px corners</li><li>Fallback panel with an amber left border</li></ul>
+    </div>
+  </div>
+  <p class="muted" style="font-size:14px">Both modes: one module at a time, a fade and slide of about 180ms between modules, a rise of about 200ms for fallbacks, no motion under reduced-motion, fonts and KaTeX bundled for offline, and "Not quite," never "Wrong!"</p>
+
+  <h2>What could break, and what happens</h2>
+  <div class="card" style="padding:8px 12px">
+    <table>
+      <tr><td><strong>Claude's JSON doesn't fit, or it refuses</strong></td><td>One retry with the error, then "Try again" for the author. Nothing half-valid is saved.</td></tr>
+      <tr><td><strong>The Worker hits 10ms of CPU</strong></td><td>Pages are uploaded once and streamed through. Measured early. If needed, the $5 plan.</td></tr>
+      <tr><td><strong>A long draft and a closed tab</strong></td><td>The draft is lost, so start again. If drafts routinely take minutes, Workflows comes later.</td></tr>
+      <tr><td><strong>Offline, and the course was never opened</strong></td><td>"Open this course once with a connection."</td></tr>
+      <tr><td><strong>Events can't be sent</strong></td><td>They stay queued, and the student notices nothing.</td></tr>
+    </table>
+  </div>
+
+  <h2>A question worth understanding</h2>
+  <div class="card q">
+    <h3>Where do published lessons live?</h3>
+    <p style="margin-bottom:0">The explainer puts course JSON in static files. That works for files that exist at deploy time. But the tool creates and signs off lessons while the app runs, and static files only change with a deploy. So lessons live in <strong>D1</strong> and come from <code>GET /api/courses/:slug</code>. Offline still works, because the service worker keeps that response. The cost is one small D1 read per course load. Hand-written lessons go in through the same door, via <code>scripts/import-lesson.ts</code>.</p>
+    <h3 style="margin-top:16px">Isaac asked: is offline still possible?</h3>
+    <p style="margin-bottom:0">Yes. The browser never talks to D1. It only sees the JSON response from <code>GET /api/courses/:slug</code>, the same as a static file would be. The service worker saves that response on the first online visit and hands it back when there's no network. The response carries every visible lesson in full, so one visit caches the whole course. A lesson signed off or edited later appears at the student's next online visit.</p>
+  </div>
+
+  <h2>Decisions and open issues</h2>
+  <details open><summary>Isaac's decisions</summary><div><ul>
+    <li>Svelte 5 + Vite, no SvelteKit. It reads like templates and is small for cheap phones. Agents know React better.</li>
+    <li>Opus 5.5 for drafting, with Sonnet 5 as a manual backup (<code>DRAFT_MODEL</code>)</li>
+    <li>Send the section's pages as a PDF: formulas and figures survive, at more tokens per page</li>
+    <li>From the notes: all Cloudflare, TypeScript, deployed to a link, Access (or a passphrase) as the only login</li>
+  </ul></div></details>
+  <details><summary>Details that follow from those (open to change)</summary><div><ul>
+    <li>Lessons in D1, served by the Worker</li>
+    <li>Pages sent to the Files API once, then referenced by id</li>
+    <li>vite-plugin-pwa for the service worker; <code>localStorage</code> for progress and events</li>
+    <li>A device id on every event</li>
+    <li>Structured outputs plus a Zod check, with one retry</li>
+  </ul></div></details>
+  <details><summary>Open issues, checked early in the build</summary><div><ul>
+    <li>Can Access cover only the author paths on <code>workers.dev</code>? If not, use the passphrase.</li>
+    <li>Worker CPU time with PDF uploads</li>
+    <li>The authoring flow's steps, after the baseline lesson</li>
+    <li>What counts as a "simpler question"</li>
+    <li>How long a draft takes</li>
+    <li>OpenIntro's exact section pages</li>
+    <li>Devpost disclosure of any pre-Sep-22 work</li>
+  </ul></div></details>
+
+  <h2>Run it</h2>
+<pre>npm install
+npm run db:migrate:local
+npm run dev            # http://localhost:5173  ·  player /c/openintro-sampling  ·  author /author
+
+npm run db:migrate:remote
+npm run deploy         # https://acu-primer.&lt;account&gt;.workers.dev</pre>
+  <p class="muted" style="font-size:14px">Record the demo from the deployed link. Set a $20 spend limit in the Anthropic Console before the first call.</p>
+
+  <footer>Companion to <code>devpost/spec.md</code>, which is the canonical copy.</footer>
+</main>
+<script>
+const J = [
+  {t:"Start a lesson", on:["author","worker","d1","files"], f:["aw","wd","wf"], d:"The author picks the PDF and a page range. pdf-lib cuts the pages in the browser, and <code>POST /api/author/sources</code> sends only those pages. The Worker uploads them to the Files API and saves the file id in D1.", files:"lib/pdfPages.ts · worker/routes/author.ts · worker/claude.ts"},
+  {t:"Build together", on:["author","worker","d1","claude"], f:["aw","wd","wc"], d:"<code>draft</code> sends the file id, lesson schema, misconception catalogue and instructions to Opus 5.5 and streams progress back. The Worker checks the JSON with Zod and saves it as <code>unreviewed</code>. Each \"change this\" goes to <code>revise</code> for that one part.", files:"author/Session.svelte · worker/claude.ts · shared/lesson.ts · catalogues/"},
+  {t:"Sign off", on:["author","worker","d1"], f:["aw","wd"], d:"<code>POST …/signoff</code> sets the status to <code>reviewed</code> and records the time.", files:"author/Review.svelte · worker/routes/author.ts"},
+  {t:"Student arrives", on:["player","worker","d1","sw","local"], f:["pw","wd","psw","plo"], d:"<code>/c/openintro-sampling</code> loads the app. <code>GET /api/courses/…</code> returns the visible lessons, and the service worker keeps a copy. The name is typed, and progress comes from localStorage.", files:"player/NameEntry.svelte · player/CourseOverview.svelte · lib/progress.ts"},
+  {t:"Work through modules", on:["player","logic","local"], f:["pl","plo"], d:"One module at a time. Answers are graded in the browser, and every action adds an event to the localStorage queue, sent in batches when online.", files:"player/ModuleView.svelte · checks/* · shared/grading.ts · lib/eventQueue.ts"},
+  {t:"Get one wrong", on:["player","logic","local"], f:["pl","plo"], d:"<code>grading.ts</code> finds the known wrong answer, or returns \"unplanned.\" <code>flow.ts</code> picks that wrong answer's fallback, or the general one.", files:"shared/grading.ts · shared/flow.ts · player/Fallback.svelte"},
+  {t:"Fail the fallback", on:["player","logic","local"], f:["pl","plo"], d:"<code>flow.ts</code> sees the fallback level and returns \"go back through the material.\" The schema makes a third level impossible.", files:"shared/flow.ts · shared/lesson.ts"},
+  {t:"See the log", on:["author","worker","d1"], f:["aw","wd"], d:"The student list, then one student's events in the order the browser recorded them, laid out as the log.", files:"author/Students.svelte · author/StudentLog.svelte"},
+  {t:"Offline", on:["player","logic","local","sw"], f:["pl","plo","psw"], d:"Once opened, the course comes from the service worker's copy. Grading and flow need no network. Events wait in the queue and go out when the browser is back online.", files:"vite.config.ts (PWA) · lib/eventQueue.ts"}
+];
+const jb = document.getElementById("jb"), body = document.getElementById("jbody");
+const boxes = [...document.querySelectorAll("svg .box")], flows = [...document.querySelectorAll("svg .flow")];
+J.forEach((s, i) => { const b = document.createElement("button"); b.textContent = (i < 8 ? (i+1) + " · " : "") + s.t; b.onclick = () => show(i); jb.appendChild(b); });
+function show(i){
+  const s = J[i];
+  [...jb.children].forEach((b, k) => b.setAttribute("aria-pressed", k === i));
+  boxes.forEach(b => b.classList.toggle("dim", !s.on.includes(b.dataset.k)));
+  flows.forEach(f => { const on = s.f.includes(f.dataset.f); f.classList.toggle("hot", on); f.style.opacity = on ? 1 : .2; });
+  body.innerHTML = `<h3>${s.t}</h3><p style="margin:0 0 8px">${s.d}</p><p class="files">Files: ${s.files}</p>`;
+}
+show(0);
+
+const C = [
+  ["Course overview and progress", "player/CourseOverview.svelte · lib/progress.ts", "Signed-off modules with progress and Continue. Progress lives in localStorage per course and name. A \"not yet reviewed\" badge appears when the owner switches those on, and an empty course says so."],
+  ["Modules and checks", "player/ModuleView.svelte · checks/* · shared/lesson.ts", "One module at a time. Check components for select, number and categorize (stats PoC), predict-then-simulate with a hand-built sampling simulation that the lesson configures, and predict-output and trace-table for CLRS afterwards."],
+  ["Fallbacks after a wrong answer", "shared/grading.ts · shared/flow.ts · player/Fallback.svelte", "Pure logic, tested with Vitest: known wrong → its fallback; unplanned → the general fallback; fallback failed → go back through the material. The schema forbids a third level."],
+  ["Offline", "vite-plugin-pwa · lib/eventQueue.ts", "The service worker keeps the app, fonts, KaTeX and course responses. Events queue in localStorage with ids made in the browser, so resending doesn't duplicate them, and they're cleared only once saved."],
+  ["Authoring session", "author/Session.svelte · worker/claude.ts · catalogues/", "Pick pages, Draft (streams, effort high), then shape it: pick alternatives, switch fallbacks on and off, and \"tell the tool what to change\" per part (revise, effort medium). Misconceptions are labeled catalogue or model. The lesson is saved after every accepted change."],
+  ["Review and sign-off", "author/Review.svelte · …/signoff", "Every branch expanded, a Sign off button, marks in the lesson list, and the per-course \"Show unreviewed lessons to students\" switch."],
+  ["Per-student view", "author/Students.svelte · StudentLog.svelte", "Students by name and device, then one student's events in browser-recorded order: module, answer, result, misconception, fallback, time between events."],
+  ["Who can do what (author gate)", "worker/auth.ts", "Cloudflare Access on the author paths, verified with jose. If Access can't cover only those paths on workers.dev, an author passphrase secret instead. Off in local dev."]
+];
+const cw = document.getElementById("comps");
+C.forEach(([h, f, d]) => {
+  const x = document.createElement("details");
+  x.innerHTML = `<summary>${h} <span class="prd">prd.md</span></summary><div><p style="margin:0 0 6px">${d}</p><p class="files" style="margin:0">${f}</p></div>`;
+  cw.appendChild(x);
+});
+</script>
+</body>
+</html>

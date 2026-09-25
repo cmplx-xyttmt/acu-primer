@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>acu-primer scope</title>
+<style>
+  :root {
+    --bg: #faf8f4; --panel: #ffffff; --ink: #1f1d1a; --muted: #6b665e; --line: #e4dfd6;
+    --accent: #2f6f5e; --accent-soft: #e3f0eb; --warn: #a65a1f; --warn-soft: #f7ebdf;
+    --author: #3b5ba5; --author-soft: #e6ecf8; --student: #8a4a9c; --student-soft: #f3e8f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #171614; --panel: #201f1c; --ink: #ece8e1; --muted: #a39d93; --line: #35322d;
+      --accent: #6fbfa7; --accent-soft: #1f3530; --warn: #e0a06a; --warn-soft: #3a2b1e;
+      --author: #8aa6e6; --author-soft: #1f2a42; --student: #c996d8; --student-soft: #34233a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 40px 16px 80px; }
+  header .tag { display: inline-block; font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--warn); background: var(--warn-soft); padding: 2px 10px; border-radius: 99px; }
+  h1 { font-size: 40px; margin: 12px 0 4px; letter-spacing: -.02em; }
+  h2 { font-size: 22px; margin: 44px 0 12px; }
+  h3 { font-size: 17px; margin: 0 0 6px; }
+  p.lede { font-size: 18px; color: var(--muted); margin: 0; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } h1 { font-size: 32px; } }
+  .who-author { border-top: 4px solid var(--author); }
+  .who-student { border-top: 4px solid var(--student); }
+  .muted { color: var(--muted); }
+  svg { width: 100%; height: auto; display: block; }
+  svg text { font-family: inherit; fill: var(--ink); }
+  .steps { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 12px; }
+  .steps button { font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--panel);
+    color: var(--ink); border-radius: 99px; padding: 6px 14px; cursor: pointer; }
+  .steps button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .stepbody { min-height: 72px; }
+  details { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; margin: 10px 0; }
+  summary { cursor: pointer; padding: 14px 18px; font-weight: 600; list-style: none; display: flex;
+    justify-content: space-between; align-items: center; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; color: var(--muted); font-weight: 400; font-size: 20px; }
+  details[open] summary::after { content: "–"; }
+  details > div { padding: 0 18px 14px; }
+  details ul { margin: 0; padding-left: 20px; }
+  .pill { font-size: 12px; font-weight: 500; padding: 2px 9px; border-radius: 99px; margin-left: 8px; }
+  .now { background: var(--accent-soft); color: var(--accent); }
+  .also { background: var(--author-soft); color: var(--author); }
+  .later { background: var(--warn-soft); color: var(--warn); }
+  .cut { background: var(--line); color: var(--muted); }
+  ol.demo { padding-left: 22px; } ol.demo li { margin: 6px 0; }
+  .note { border-left: 3px solid var(--warn); padding: 4px 0 4px 14px; color: var(--muted); }
+  a { color: var(--accent); }
+  footer { margin-top: 48px; font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="tag">Scope · approved</span>
+    <h1>acu-primer</h1>
+    <p class="lede">A course-authoring tool and the lesson player that runs what it makes. Lessons adapt when a student gets something wrong, and every lesson shows whether a person has checked it.</p>
+  </header>
+
+  <h2>The kernel: one lesson goes all the way around a loop</h2>
+  <div class="card">
+    <svg viewBox="0 0 760 360" role="img" aria-labelledby="loopTitle">
+      <title id="loopTitle">The four-step loop: author and tool draft a lesson, author signs off, student plays and hits a fallback, author sees it in the per-student view, then back to drafting.</title>
+      <defs>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/>
+        </marker>
+      </defs>
+      <!-- lanes -->
+      <rect x="10" y="10" width="740" height="150" rx="12" fill="var(--author-soft)"/>
+      <rect x="10" y="200" width="740" height="150" rx="12" fill="var(--student-soft)"/>
+      <text x="26" y="34" font-size="13" font-weight="600" style="fill:var(--author)">COURSE AUTHOR</text>
+      <text x="26" y="224" font-size="13" font-weight="600" style="fill:var(--student)">STUDENT</text>
+      <!-- nodes -->
+      <g id="n1"><rect x="40" y="52" width="200" height="88" rx="10" fill="var(--panel)" stroke="var(--author)" stroke-width="2"/>
+        <text x="140" y="80" text-anchor="middle" font-size="15" font-weight="600">1 · Draft together</text>
+        <text x="140" y="102" text-anchor="middle" font-size="12.5" style="fill:var(--muted)">book section → lesson</text>
+        <text x="140" y="120" text-anchor="middle" font-size="12.5" style="fill:var(--muted)">with fallbacks</text></g>
+      <g id="n2"><rect x="520" y="52" width="200" height="88" rx="10" fill="var(--panel)" stroke="var(--author)" stroke-width="2"/>
+        <text x="620" y="80" text-anchor="middle" font-size="15" font-weight="600">2 · Review &amp; sign off</text>
+        <text x="620" y="102" text-anchor="middle" font-size="12.5" style="fill:var(--muted)">marks: checked by a person</text>
+        <text x="620" y="120" text-anchor="middle" font-size="12.5" style="fill:var(--muted)">or written by the model</text></g>
+      <g id="n3"><rect x="520" y="242" width="200" height="88" rx="10" fill="var(--panel)" stroke="var(--student)" stroke-width="2"/>
+        <text x="620" y="270" text-anchor="middle" font-size="15" font-weight="600">3 · Play &amp; stumble</text>
+        <text x="620" y="292" text-anchor="middle" font-size="12.5" style="fill:var(--muted)">wrong answer →</text>
+        <text x="620" y="310" text-anchor="middle" font-size="12.5" style="fill:var(--muted)">lesson changes course</text></g>
+      <g id="n4"><rect x="40" y="242" width="200" height="88" rx="10" fill="var(--panel)" stroke="var(--author)" stroke-width="2"/>
+        <text x="140" y="270" text-anchor="middle" font-size="15" font-weight="600">4 · See what happened</text>
+        <text x="140" y="292" text-anchor="middle" font-size="12.5" style="fill:var(--muted)">per-student view</text>
+        <text x="140" y="310" text-anchor="middle" font-size="12.5" style="fill:var(--muted)">(author, from events)</text></g>
+      <!-- arrows -->
+      <path d="M244,96 L514,96" stroke="var(--muted)" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+      <path d="M620,144 L620,236" stroke="var(--muted)" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+      <path d="M514,286 L246,286" stroke="var(--muted)" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+      <path d="M140,236 L140,146" stroke="var(--muted)" stroke-width="2" fill="none" marker-end="url(#arr)" stroke-dasharray="5 5"/>
+      <text x="380" y="88" text-anchor="middle" font-size="12" style="fill:var(--muted)">accept · change · drop</text>
+      <text x="630" y="194" font-size="12" style="fill:var(--muted)">only signed-off lessons</text>
+      <text x="380" y="278" text-anchor="middle" font-size="12" style="fill:var(--muted)">events logged</text>
+      <text x="150" y="194" font-size="12" style="fill:var(--muted)">improve the lesson (later)</text>
+    </svg>
+    <p class="muted" style="margin:12px 0 0">Asking a chatbot for a quiz gets you step 1 at best. acu-primer is the whole loop, with a person verifying the content before students see it.</p>
+  </div>
+
+  <h2>Who it's for</h2>
+  <div class="grid2">
+    <div class="card who-author">
+      <h3>The course author</h3>
+      <p style="margin:0">A university lecturer, or whoever builds the course, with a textbook and a need for interactive lessons they trust. They never see the internal format. For Oct 9 that's Isaac, dogfooding. After that come a lecturer friend and the CS department HOD.</p>
+      <p class="muted" style="margin:10px 0 0;font-size:14px">Open: what authors use today. <code>3-prd</code> can ask if it matters.</p>
+    </div>
+    <div class="card who-student">
+      <h3>The student</h3>
+      <p style="margin:0">Opens a course link and types their name. Works through small modules with activities, and gets help when stuck instead of a red X.</p>
+    </div>
+  </div>
+
+  <h2>What a wrong answer does</h2>
+  <div class="card">
+    <p class="muted" style="margin-top:0">Click through a student's path through one check.</p>
+    <div class="steps" role="group" aria-label="Student path">
+      <button aria-pressed="true" data-s="0">Check</button>
+      <button aria-pressed="false" data-s="1">Right</button>
+      <button aria-pressed="false" data-s="2">Wrong</button>
+      <button aria-pressed="false" data-s="3">Fallback passed</button>
+      <button aria-pressed="false" data-s="4">Fallback failed</button>
+    </div>
+    <div class="stepbody" id="stepbody"></div>
+    <noscript><p>Check → right: next module. Wrong: a fallback the author enabled (re-explanation, simpler quiz, or both). Fallback passed: next module. Fallback failed: no more fallbacks; the lesson recommends going back through the material carefully.</p></noscript>
+  </div>
+
+  <h2>What "working" looks like</h2>
+  <div class="card">
+    <p style="margin-top:0">The app opens at a link. In a demo under three minutes, on one <strong>OpenIntro Statistics</strong> section (Creative Commons, so it can be shown publicly):</p>
+    <ol class="demo">
+      <li>The author uploads the section and works through it with the tool. It drafts a lesson with checks and fallbacks, and the author accepts, changes or drops them.</li>
+      <li>The author signs off the lesson. The review marks are obvious.</li>
+      <li>A student opens the link, types a name, and gets a check wrong. They get the re-explanation or the simpler quiz, fail that too, and the lesson points them back to the material.</li>
+      <li>The author opens the per-student view and sees what that student did.</li>
+    </ol>
+    <p class="note">The "oh, that's cool" beat isn't picked yet. It could be the lesson changing course, a page becoming a lesson in front of you, or the author and tool working it out together. The loop demo shows all three, so the video can choose later.</p>
+  </div>
+
+  <h2>What's in, what waits, what's out</h2>
+  <details open>
+    <summary>Proof of concept <span class="pill now">now</span></summary>
+    <div><ul>
+      <li>Player: small modules, checks, up to two fallbacks per check, and the "go back through the material" stop</li>
+      <li>Event logging and a basic per-student view</li>
+      <li>Authoring session for one section, with fallbacks the author chooses</li>
+      <li>One sign-off per lesson, with review marks the player respects (unreviewed lessons hidden by default, and the owner can change that)</li>
+      <li>Student = a name typed in at the link. Author side behind a simple gate.</li>
+    </ul></div>
+  </details>
+  <details>
+    <summary>Also in the Oct 9 build <span class="pill also">if time allows, cut from the bottom</span></summary>
+    <div><ul>
+      <li>CLRS chapter 4 course: six lessons, with 4.1 and 4.3 written by hand as the baseline and the rest written by the tool. The PDF never goes in the repo.</li>
+      <li>Lecturer-facing recommendations and automatic adaptation, demoed on simulated students</li>
+    </ul></div>
+  </details>
+  <details>
+    <summary>Later <span class="pill later">later</span></summary>
+    <div><ul>
+      <li>Review per node, where the reviewer sees every branch a student can take</li>
+      <li>Smarter adaptation, informed by research on adaptive learning</li>
+      <li>OpenIntro hypothesis-testing module (5.3)</li>
+      <li>Free offline lessons for sports academy schools</li>
+      <li>A story layer, so a mission with a story becomes a level</li>
+      <li>Student feedback carrying part of the review load</li>
+    </ul></div>
+  </details>
+  <details>
+    <summary>Explicitly cut <span class="pill cut">cut</span></summary>
+    <div><ul>
+      <li><strong>Real accounts</strong>: one course owner. A typed name is enough for students.</li>
+      <li><strong>Fallbacks on fallbacks</strong>: two levels at most, then back to the material, so a stuck student doesn't go around in circles.</li>
+    </ul></div>
+  </details>
+
+  <h2>Inspiration</h2>
+  <div class="card">
+    <ul style="margin:0;padding-left:20px">
+      <li>Udacity's modules: short units with activities mixed in</li>
+      <li><a href="https://repovive.com/roadmaps/math-fundamentals">repovive's math roadmap</a>: concept, rules with examples, scattered quizzes, problems with hints, then takeaways, and progress shown per module ("0/41")</li>
+      <li>The Primer in <em>The Diamond Age</em>, the book that teaches its reader</li>
+    </ul>
+    <p class="muted" style="margin:10px 0 0">Why it matters to Isaac: "building software quickly, while understanding it."</p>
+  </div>
+
+  <footer>Companion to <code>devpost/scope.md</code>, which is the canonical copy.</footer>
+</main>
+<script>
+  const steps = [
+    ["A check inside a small module", "The student answers a quiz or activity question."],
+    ["Right answer", "On to the next module. The event is logged."],
+    ["Wrong answer", "The student gets a fallback the author enabled for this check: a <strong>re-explanation</strong> told a different way, a <strong>simpler practice quiz</strong>, or both."],
+    ["Fallback passed", "Back on track, and on to the next module."],
+    ["Fallback failed", "No more fallbacks. The lesson recommends going back through the material more carefully, and the author will see this in the per-student view."]
+  ];
+  const body = document.getElementById("stepbody");
+  const btns = document.querySelectorAll(".steps button");
+  function show(i) {
+    btns.forEach(b => b.setAttribute("aria-pressed", b.dataset.s == i));
+    body.innerHTML = "<h3>" + steps[i][0] + "</h3><p style='margin:0'>" + steps[i][1] + "</p>";
+  }
+  btns.forEach(b => b.addEventListener("click", () => show(+b.dataset.s)));
+  show(0);
+</script>
+</body>
+</html>

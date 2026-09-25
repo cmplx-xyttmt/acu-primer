@@ -1,0 +1,43 @@
+{
+  "name": "acu-primer",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "npm run build && vite preview",
+    "deploy": "npm run build && wrangler deploy",
+    "test": "vitest run",
+    "check": "tsc -p tsconfig.worker.json && tsc -p tsconfig.node.json && svelte-check --tsconfig ./tsconfig.json",
+    "types": "wrangler types src/worker/worker-configuration.d.ts",
+    "db:migrate:local": "wrangler d1 migrations apply acu-primer --local",
+    "db:migrate:remote": "wrangler d1 migrations apply acu-primer --remote",
+    "import:local": "tsx scripts/import-lesson.ts --local",
+    "import:remote": "tsx scripts/import-lesson.ts --remote"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.60.1",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@types/node": "^24.13.6",
+    "svelte": "^5.57.1",
+    "svelte-check": "^4.7.6",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.2",
+    "wrangler": "^4.140.0"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "@fontsource/plus-jakarta-sans": "^5.3.0",
+    "katex": "^0.18.9",
+    "zod": "^4.6.5"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "esbuild@0.28.1": true,
+    "workerd@1.20260923.1": true
+  }
+}

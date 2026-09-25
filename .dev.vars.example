@@ -1,0 +1,5 @@
+# Copy to .dev.vars for local development. Never commit .dev.vars.
+# Needed from slice 3 (drafting lessons with Claude):
+ANTHROPIC_API_KEY=
+# Only if the passphrase gate is used instead of Cloudflare Access:
+AUTHOR_PASSPHRASE=

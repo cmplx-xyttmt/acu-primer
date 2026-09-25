@@ -112,3 +112,9 @@ Reflection: [offered/answered/declined/already covered — personal answer belon
 Activity mode: [live app and editor, explicit static fallback, focused alternative, prior practice, or recap]
 
 ## Revisions
+- The router is `src/app/router.svelte.ts`, not `router.ts` — Svelte 5 runes (reactive `$state`) only work in `.svelte` and `.svelte.ts` files.
+- Added `src/app/player/Player.svelte` (loads the course, switches between name entry, overview and modules) and `src/worker/http.ts` (the `json()` helper) — neither was in the file structure; both keep the listed files small.
+- Three TypeScript configs (`tsconfig.json` for the app, `tsconfig.worker.json`, `tsconfig.node.json` for scripts and tests) instead of one — browser and Worker types clash in a single config.
+- TypeScript pinned to 6 — svelte-check 4.7 doesn't accept TypeScript 7 yet.
+- The lesson schema has only the `select` and `number` check types for now — `categorize` and `predict_simulate` join the union in slice 8, so the schema never describes a type the player can't show.
+- Slice 1 status at the end of the Sep 25 session: everything built and verified locally (tests, type checks, build, `curl`, full playthrough in Chrome); the deploy is still to do because Wrangler needs `npx wrangler login`. Saved as a checkpoint commit; the box gets ticked after the deployed checks pass.

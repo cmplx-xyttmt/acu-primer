@@ -1,0 +1,12 @@
+{
+  "slug": "openintro-sampling",
+  "title": "Sampling distributions (OpenIntro Statistics)",
+  "lessons": [
+    {
+      "file": "5.1-point-estimates.json",
+      "position": 1,
+      "status": "reviewed",
+      "note": "Hand-written fixture for building the player. Isaac reviews it at the slice 1 learner check."
+    }
+  ]
+}

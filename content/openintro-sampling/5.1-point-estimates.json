@@ -1,0 +1,140 @@
+{
+  "id": "openintro-5-1-fixture",
+  "title": "Point estimates and sampling variability",
+  "source": { "book": "OpenIntro Statistics, 4th ed.", "pages": "Section 5.1" },
+  "modules": [
+    {
+      "id": "m1",
+      "title": "What are we estimating?",
+      "reading": "We usually want to know something about a whole population, like the share of adults in a country who support building more solar farms. That share is a **parameter**, and we write it $p$.\n\nWe almost never get to ask everyone. So we ask a random sample and compute the share in the sample. That number is a **point estimate**, written $\\hat{p}$ (\"p-hat\"). It's our best single guess for $p$.",
+      "check": {
+        "id": "c1",
+        "type": "select",
+        "prompt": "A poll asks 1,000 randomly chosen adults, and 887 say they support more solar farms. What is 0.887?",
+        "options": [
+          { "id": "a", "text": "The parameter $p$" },
+          { "id": "b", "text": "A point estimate $\\hat{p}$" },
+          { "id": "c", "text": "The exact share of all adults who support solar farms" }
+        ],
+        "answer": "b",
+        "wrongAnswers": [
+          {
+            "match": { "optionId": "a" },
+            "misconception": { "text": "Treats a number computed from a sample as the population parameter.", "source": { "kind": "model" } },
+            "fallback": {
+              "reExplanation": { "enabled": true, "text": "The parameter $p$ describes everyone in the population, and we don't know it. 0.887 came from 1,000 people we asked, so it's computed from a sample. Numbers computed from a sample are estimates, written with a hat: $\\hat{p}$." }
+            }
+          },
+          {
+            "match": { "optionId": "c" },
+            "misconception": { "text": "Believes a sample statistic equals the population value exactly.", "source": { "kind": "model" } },
+            "fallback": {
+              "reExplanation": { "enabled": true, "text": "A different random 1,000 people would give a slightly different share, maybe 0.879 or 0.893. So 0.887 is close to the population share, but it isn't the exact value. It's an estimate." }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": { "enabled": true, "text": "Ask yourself where the number came from: everyone, or the people we sampled? Sample numbers are estimates." }
+        },
+        "alternatives": []
+      }
+    },
+    {
+      "id": "m2",
+      "title": "Computing a point estimate",
+      "reading": "The sample proportion is the number of \"successes\" divided by the sample size $n$:\n\n$$\\hat{p} = \\frac{\\text{number of successes}}{n}$$\n\nA \"success\" is just whatever we're counting. It doesn't have to be a good thing.",
+      "check": {
+        "id": "c2",
+        "type": "number",
+        "prompt": "In a random sample of 50 students, 43 say they own a smartphone. What is $\\hat{p}$? Give two decimal places.",
+        "answer": 0.86,
+        "tolerance": 0.005,
+        "wrongAnswers": [
+          {
+            "match": { "min": 42.5, "max": 43.5 },
+            "misconception": { "text": "Reports the count of successes instead of the proportion.", "source": { "kind": "model" } },
+            "fallback": {
+              "reExplanation": { "enabled": true, "text": "43 is how many students said yes. The proportion is that count divided by how many we asked: $43 / 50$." }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": { "enabled": true, "text": "Divide the number of successes by the sample size." }
+        },
+        "alternatives": []
+      }
+    },
+    {
+      "id": "m3",
+      "title": "Samples vary",
+      "reading": "Take a random sample, compute $\\hat{p}$. Take another random sample, compute $\\hat{p}$ again. You'll get a slightly different number almost every time. This is **sampling variability**.\n\nImagine doing it thousands of times and drawing a histogram of all the $\\hat{p}$ values. That histogram is the **sampling distribution** of $\\hat{p}$. When samples are random, it centers on the true $p$, and its spread tells you how far a typical estimate lands from $p$."
+    },
+    {
+      "id": "m4",
+      "title": "Standard error",
+      "reading": "The spread of the sampling distribution has its own name: the **standard error** (SE). For a sample proportion:\n\n$$SE = \\sqrt{\\frac{p(1-p)}{n}}$$\n\nWe don't know $p$, so in practice we plug in $\\hat{p}$. The SE is roughly how far a typical $\\hat{p}$ is from the true $p$.",
+      "check": {
+        "id": "c4",
+        "type": "number",
+        "prompt": "Suppose $p = 0.88$ and $n = 1000$. What is the standard error? Give three decimal places.",
+        "answer": 0.0103,
+        "tolerance": 0.0006,
+        "wrongAnswers": [
+          {
+            "match": { "min": 0.000105, "max": 0.000106 },
+            "misconception": { "text": "Forgets the square root in the standard error formula.", "source": { "kind": "model" } },
+            "fallback": {
+              "reExplanation": { "enabled": true, "text": "You found $p(1-p)/n$, which is the variance. The standard error is its square root." }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": { "enabled": true, "text": "Work it in steps: $1 - p$, then $p(1-p)$, then divide by $n$, then take the square root." }
+        },
+        "alternatives": []
+      }
+    },
+    {
+      "id": "m5",
+      "title": "Bigger samples, smaller error",
+      "reading": "Look at where $n$ sits in the formula: under a square root, in the denominator. A bigger sample gives a smaller SE, but not in proportion. Because of the square root, you need four times the sample to cut the SE in half.",
+      "check": {
+        "id": "c5",
+        "type": "select",
+        "prompt": "A poll grows from 1,000 people to 4,000 people. What happens to the standard error?",
+        "options": [
+          { "id": "a", "text": "It drops to a quarter" },
+          { "id": "b", "text": "It drops to half" },
+          { "id": "c", "text": "It stays the same" },
+          { "id": "d", "text": "It doubles" }
+        ],
+        "answer": "b",
+        "wrongAnswers": [
+          {
+            "match": { "optionId": "a" },
+            "misconception": { "text": "Believes the standard error shrinks in proportion to $1/n$ rather than $1/\\sqrt{n}$.", "source": { "kind": "model" } },
+            "fallback": {
+              "reExplanation": { "enabled": true, "text": "$n$ is inside a square root. Multiplying $n$ by 4 multiplies $\\sqrt{n}$ by $\\sqrt{4} = 2$, so the SE is divided by 2, not 4." }
+            }
+          },
+          {
+            "match": { "optionId": "c" },
+            "misconception": { "text": "Believes sample size doesn't affect how much estimates vary.", "source": { "kind": "model" } },
+            "fallback": {
+              "reExplanation": { "enabled": true, "text": "Larger samples average over more people, so their $\\hat{p}$ values bunch more tightly around $p$. That's why $n$ is in the denominator of the SE." }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": { "enabled": true, "text": "Find where $n$ sits in $SE = \\sqrt{p(1-p)/n}$ and try $n = 1000$ and $n = 4000$." }
+        },
+        "alternatives": []
+      }
+    },
+    {
+      "id": "m6",
+      "title": "Takeaways",
+      "reading": "A **point estimate** like $\\hat{p}$ is computed from a sample and estimates a **parameter** like $p$.\n\nEstimates vary from sample to sample. The **standard error** measures that spread, and it shrinks as $\\sqrt{n}$ grows."
+    }
+  ]
+}

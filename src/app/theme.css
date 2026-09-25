@@ -1,0 +1,137 @@
+/* Colors, fonts and motion for both modes (spec.md > Look and Feel).
+   Every component uses these names. The mode follows the device setting. */
+
+:root {
+  /* Light: "Clean study" */
+  --bg: #ffffff;
+  --surface: #f3f4f6;
+  --border: #e5e7eb;
+  --text: #111827;
+  --text-2: #6b7280;
+  --accent: #2563eb;
+  --accent-text: #ffffff;
+  --hover-border: #93b4f5;
+  --fallback-bg: #eff4ff;
+  --fallback-edge: transparent;
+  --right: #15803d;
+  --radius: 12px;
+  --font: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-num: "Plus Jakarta Sans", system-ui, sans-serif;
+  --move: 180ms;
+  --rise: 200ms;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark: "Night desk" */
+    --bg: #14161a;
+    --surface: #1c1f24;
+    --border: #33373e;
+    --text: #e6e3dc;
+    --text-2: #9b978f;
+    --accent: #f2b84b;
+    --accent-text: #14161a;
+    --hover-border: #f2b84b;
+    --fallback-bg: #221e14;
+    --fallback-edge: #f2b84b;
+    --right: #7fc28e;
+    --radius: 6px;
+    --font: "IBM Plex Sans", system-ui, sans-serif;
+    --font-num: "IBM Plex Mono", ui-monospace, monospace;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --move: 0ms;
+    --rise: 0ms;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.num {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.btn {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--accent-text);
+  border: 0;
+  border-radius: var(--radius);
+  padding: 0.7rem 1.4rem;
+  font-weight: 600;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.btn-quiet {
+  background: none;
+  border: 0;
+  color: var(--text-2);
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+input[type="text"] {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.65rem 0.9rem;
+  width: 100%;
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.page {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 2rem 16px 4rem;
+}
+
+.muted {
+  color: var(--text-2);
+}
+
+.katex {
+  font-size: 1.05em;
+}

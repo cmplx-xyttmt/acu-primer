@@ -16,6 +16,7 @@
     index,
     done,
     onNext,
+    onSkip,
     onBack,
     onExit,
   }: {
@@ -23,6 +24,7 @@
     index: number;
     done: string[]; // ids of modules already finished
     onNext: () => void;
+    onSkip: () => void; // "Skip for now" after the last hint: move on without passing
     onBack: () => void;
     onExit: () => void;
   } = $props();
@@ -35,6 +37,7 @@
     fallback: FallbackStep | null;
     simpler: "none" | "right" | "wrong";
     retrying: boolean;
+    afterLastHint: boolean; // retrying after the material suggestion: no hints left
     end: "none" | "right" | "material";
   }
   const fresh = (): CheckState => ({
@@ -43,6 +46,7 @@
     fallback: null,
     simpler: "none",
     retrying: false,
+    afterLastHint: false,
     end: "none",
   });
   let checks = $state<Record<string, CheckState>>({});
@@ -55,7 +59,7 @@
   const showSaved = $derived(reread && !(mod.id in checks));
   const end = $derived(showSaved ? "saved" : cs.end);
   const mainLocked = $derived(end !== "none" || (cs.fallback !== null && !cs.retrying));
-  const canMoveOn = $derived(!mod.check || end !== "none");
+  const canMoveOn = $derived(!mod.check || end === "right" || end === "saved");
 
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const move = { y: 12, duration: reduceMotion ? 0 : 180 };
@@ -84,6 +88,12 @@
 
   function retry() {
     set({ retrying: true, attempt: cs.attempt + 1 });
+  }
+
+  // After the last hint: another go at the original question, as many times as the student
+  // likes. The level stays "fallback", so a wrong answer brings the same message back.
+  function retryAfterLastHint() {
+    set({ retrying: true, afterLastHint: true, attempt: cs.attempt + 1, end: "none" });
   }
 </script>
 
@@ -115,18 +125,25 @@
           <!-- The verdict sits right under the question it belongs to; the hint comes after. -->
           {#if end === "none" && cs.retrying}
             <p class="feedback">
-              {cs.simpler === "right" ? "Right. Now try the original question again." : "Now try the original question again."}
+              {cs.afterLastHint
+                ? "Have another go. There are no more hints for this one."
+                : cs.simpler === "right"
+                  ? "Right. Now try the original question again."
+                  : "Now try the original question again."}
             </p>
           {:else if end === "right"}
             <p class="feedback right">Right.</p>
           {:else if end === "saved"}
             <p class="feedback muted">You've already done this one.</p>
           {:else if end === "material"}
-            <p class="material">
-              Still not quite, and that was the last hint for this question. It's worth going back through
-              the material more carefully (Back takes you to earlier modules). You can carry on when you're
-              ready.
-            </p>
+            <div class="material">
+              <p>
+                Still not quite, and that was the last hint for this question. It's worth going back through
+                the material more carefully (Back takes you to earlier modules). Then try again, or skip it
+                for now and come back to it later.
+              </p>
+              <button class="btn" onclick={retryAfterLastHint}>Try again</button>
+            </div>
           {/if}
 
           {#if cs.fallback}
@@ -144,6 +161,8 @@
         <button class="btn-quiet" onclick={onBack}>Back</button>
         {#if canMoveOn}
           <button class="btn" onclick={onNext}>{index + 1 >= total ? "Finish lesson" : "Continue"}</button>
+        {:else if end === "material"}
+          <button class="btn-quiet" onclick={onSkip}>Skip for now</button>
         {/if}
       </div>
     </article>
@@ -189,6 +208,9 @@
   }
   .right {
     color: var(--right);
+  }
+  .material p {
+    margin: 0 0 0.9rem;
   }
   .material {
     margin: 1.25rem 0 0;

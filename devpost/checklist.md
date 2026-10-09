@@ -19,7 +19,7 @@ Build mode: learn (chosen Sep 25, 2026)
   Learner check: Open the local link (and then the deployed one), type your name, press **Continue**, and answer every check correctly. Reload the page, type the same name, and see that **Continue** takes you to where you stopped. Say whether the look (light and dark) and the module-to-module movement feel the way you pictured.
   Commit: `Play a hand-written stats lesson at a link`
 
-- [ ] **2. A wrong answer changes the lesson's course**
+- [x] **2. A wrong answer changes the lesson's course**
   Becomes usable: In the same lesson, picking a specific wrong option shows the fallback written for that misconception (re-explanation, simpler question, or both). Typing an unanticipated number shows the general fallback with the PRD's wording. Failing the simpler question shows "go back through the material," and the student carries on. No third level appears.
   Why now: This is the student half of the kernel. It's the demo's most likely "oh, that's cool" beat, and the pure logic is easy to test before any model writes lessons for it.
   PRD ref: `prd.md > The Core Journey` (steps 6-7), `prd.md > Fallbacks after a wrong answer`
@@ -91,7 +91,7 @@ Build mode: learn (chosen Sep 25, 2026)
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 2: the student side with fallbacks, so its feel shapes everything the tool will generate
+- [x] Early usable behavior explored — after slice 2: the student side with fallbacks, so its feel shapes everything the tool will generate (Oct 9: Isaac tried every wrong-answer path; his feedback added the light/dark switch, Back, folding hints and Skip for now, and the fixture content fixes)
 - [ ] Whole loop tried end to end — after slice 5: draft, sign off, play as a student, read the log
 - [ ] Final kick-the-tires exploration and feedback completed
 
@@ -122,3 +122,5 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Slice 2's fixture rewrite also fixes the content: symbols defined at each formula (what $p$, $\hat{p}$ and $n$ are, and why the SE formula uses $p$), module 4's check uses $\hat{p}$, and at least one check asks for reasoning; slice 3's draft prompt gains the same two rules — Isaac found the slice 1 fixture easy to pass but thin, and was confused by $p$ versus $\hat{p}$ in the SE formula. Later pipeline ideas recorded in `authoring-pipeline.md`.
 - After a fallback, the student tries the original question once more (after reading a re-explanation, or after getting the simpler question right); a wrong simpler question or a wrong retry ends in the material suggestion — the PRD said what happens when the fallback fails but not whether the student returns to the original question. Recorded in `prd.md > Fallbacks after a wrong answer`.
 - The fixture now has 7 modules (a new "Sample size, not population size" check) and every check has a fallback per known wrong answer; `tests/fixture.ts` loads it for the grading and flow tests.
+- After the last hint, the student gets **Try again** (unlimited, no more hints) and **Skip for now** instead of Continue; a skipped module isn't passed, the overview shows it, and Continue returns to it once the student reaches the end — Isaac found that failing the fallback let the student move on as if they had passed. PRD, spec (`module.skipped` event for slice 5) updated.
+- The hint panel folds to one line ("Show the hint again") once the student goes back to the original question, and the verdict sits directly under the question — Isaac found answering above the hint with the verdict at the bottom confusing.

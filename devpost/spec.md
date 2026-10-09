@@ -117,7 +117,7 @@ Svelte components under `src/app/player/`. Implements `prd.md > Course overview 
 
 ### Progress and event queue
 `src/app/lib/progress.ts` and `src/app/lib/eventQueue.ts`. Implements `prd.md > Offline`, `prd.md > Course overview and progress`.
-- Progress is kept in `localStorage` per course and student name: modules done, where they stopped.
+- Progress is kept in `localStorage` per course and student name: modules passed, modules skipped, and how far they got. The rules (pass, skip, complete, where Continue opens) are pure functions in `progress.ts`, tested in `tests/progress.test.ts`.
 - Every action adds an event to a queue in `localStorage`. The queue is sent to `POST /api/events` in batches when the app starts, when the browser reports it's back online, and every 30 seconds while online. Events are removed from the queue only after the Worker confirms it saved them. Each event carries an id made in the browser, so sending one twice doesn't save it twice.
 - A random device id, made once and kept in `localStorage`, goes with each event. The per-student view can then tell apart two students with the same name on different devices.
 
@@ -194,7 +194,7 @@ D1 tables, created by `migrations/0001_init.sql`:
 - **lessons**: `id`, `course_id`, `source_id` (empty for imported lessons), `position`, `title`, `status` (`unreviewed` or `reviewed`), `content` (the lesson JSON), `updated_at`, `signed_off_at`.
 - **events**: `id` (made in the browser), `course_id`, `lesson_id`, `student_name`, `device_id`, `type`, `payload` (JSON), `client_time`, `received_at`. There's an index on `(course_id, student_name, device_id, client_time)`.
 
-Event types: `lesson.started`, `module.entered`, `check.answered` (answer, result, which wrong answer, main or fallback level), `fallback.shown` (re-explanation or simpler question), `material.suggested`, `sim.run` (sample size), `lesson.completed`.
+Event types: `lesson.started`, `module.entered`, `check.answered` (answer, result, which wrong answer, main or fallback level), `fallback.shown` (re-explanation or simpler question), `material.suggested`, `module.skipped`, `sim.run` (sample size), `lesson.completed`.
 
 Where each piece of data lives:
 

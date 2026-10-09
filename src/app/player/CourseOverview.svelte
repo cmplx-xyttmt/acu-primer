@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { CourseResponse } from "../../shared/lesson.ts";
-  import { lessonProgress, type CourseProgress } from "../lib/progress.ts";
+  import { isComplete, lessonProgress, type CourseProgress } from "../lib/progress.ts";
   import ThemeSwitch from "./ThemeSwitch.svelte";
 
   let {
@@ -20,14 +20,21 @@
   const rows = $derived(
     data.lessons.map((l) => {
       const p = lessonProgress(progress, l.id);
-      const total = l.content.modules.length;
-      return { ...l, total, done: p.completed ? total : p.done.length, completed: p.completed };
+      const ids = l.content.modules.map((m) => m.id);
+      return {
+        ...l,
+        total: ids.length,
+        done: ids.filter((id) => p.done.includes(id)).length,
+        skipped: ids.filter((id) => p.skipped.includes(id) && !p.done.includes(id)).length,
+        completed: isComplete(p, ids),
+      };
     }),
   );
 
-  // Continue goes to the first lesson not finished yet, at the module where the student stopped.
+  // Continue goes to the first lesson not complete yet: where the student stopped, or back to a
+  // skipped module once they have reached the end.
   const next = $derived(rows.find((r) => !r.completed) ?? null);
-  const started = $derived(rows.some((r) => r.done > 0));
+  const started = $derived(rows.some((r) => r.done > 0 || r.skipped > 0));
 </script>
 
 <main class="page">
@@ -51,7 +58,9 @@
               {row.content.title}
               {#if row.status === "unreviewed"}<span class="badge">Not yet reviewed</span>{/if}
             </span>
-            <span class="num count">{row.done} / {row.total}</span>
+            <span class="num count">
+              {row.done} / {row.total}{#if row.skipped > 0}<span class="skipped">· {row.skipped} skipped</span>{/if}
+            </span>
             <span class="bar"><span style="width: {(100 * row.done) / row.total}%"></span></span>
           </button>
         </li>
@@ -100,6 +109,10 @@
   }
   .title {
     font-weight: 600;
+  }
+  .skipped {
+    color: var(--accent);
+    margin-left: 0.4em;
   }
   .count {
     color: var(--text-2);

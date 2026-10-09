@@ -11,8 +11,12 @@
     loadProgress,
     saveProgress,
     lessonProgress,
+    passModule,
+    skipModule,
+    resumeIndex,
     rememberName,
     type CourseProgress,
+    type LessonProgress,
   } from "../lib/progress.ts";
   import NameEntry from "./NameEntry.svelte";
   import CourseOverview from "./CourseOverview.svelte";
@@ -70,31 +74,28 @@
   // Opening a lesson part-way through adds an entry for each earlier module, so Back from
   // the module you continued at goes to the module before it, then on to the overview.
   function open(lessonId: string) {
-    const at = lessonProgress(progress, lessonId).current;
+    const lesson = data?.lessons.find((l) => l.id === lessonId);
+    if (!lesson) return;
+    const at = resumeIndex(lessonProgress(progress, lessonId), lesson.content.modules.map((m) => m.id));
     for (let index = 0; index <= at; index++) show({ kind: "module", lessonId, index });
   }
 
-  function update(lessonId: string, change: (p: ReturnType<typeof lessonProgress>) => void) {
-    const next = structuredClone($state.snapshot(lessonProgress(progress, lessonId)));
-    change(next);
-    progress = { ...progress, [lessonId]: next };
-    saveProgress(slug, name, progress);
+  function update(lessonId: string, change: (p: LessonProgress) => LessonProgress) {
+    progress = { ...progress, [lessonId]: change(lessonProgress(progress, lessonId)) };
+    saveProgress(slug, name, $state.snapshot(progress));
   }
 
-  function moduleDone(lessonId: string, moduleId: string, index: number) {
-    update(lessonId, (p) => {
-      if (!p.done.includes(moduleId)) p.done.push(moduleId);
-      // Re-reading an earlier module never moves "where you stopped" backwards.
-      p.current = Math.max(p.current, index + 1);
-    });
-  }
-
-  function lessonDone(lessonId: string) {
-    update(lessonId, (p) => {
-      p.completed = true;
-      p.current = 0;
-    });
-    show({ kind: "overview" });
+  // After passing or skipping a module: normally the next module, and the overview after the
+  // last one. A student who already reached the end is here to clear skipped modules, so they
+  // go to the next skipped one, or to the overview when none are left.
+  function advance(lessonId: string, index: number, moduleIds: string[]) {
+    const p = lessonProgress(progress, lessonId);
+    const reachedEnd = p.current >= moduleIds.length;
+    if (index + 1 >= moduleIds.length) return show({ kind: "overview" });
+    if (!reachedEnd) return show({ kind: "module", lessonId, index: index + 1 });
+    const skipped = moduleIds.findIndex((id, i) => i > index && p.skipped.includes(id) && !p.done.includes(id));
+    if (skipped >= 0) show({ kind: "module", lessonId, index: skipped });
+    else show({ kind: "overview" });
   }
 </script>
 
@@ -116,9 +117,12 @@
     {index}
     done={lessonProgress(progress, lessonId).done}
     onNext={() => {
-      moduleDone(lessonId, openLesson.content.modules[index].id, index);
-      if (index + 1 >= total) lessonDone(lessonId);
-      else show({ kind: "module", lessonId, index: index + 1 });
+      update(lessonId, (p) => passModule(p, openLesson.content.modules[index].id, index));
+      advance(lessonId, index, openLesson.content.modules.map((m) => m.id));
+    }}
+    onSkip={() => {
+      update(lessonId, (p) => skipModule(p, openLesson.content.modules[index].id, index));
+      advance(lessonId, index, openLesson.content.modules.map((m) => m.id));
     }}
     onBack={() => history.back()}
     onExit={() => show({ kind: "overview" })}

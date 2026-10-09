@@ -79,7 +79,7 @@ Source: `scope.md > The Core Loop`, `scope.md > Explicitly Cut`.
   - if a simpler question is available, they're asked to try that first before going on;
   - otherwise they're told to re-read the material or think it through and try again, and pointed to the simpler explanation if one exists.
 - **After the fallback, one more try at the original.** A re-explanation ends with "Try the question again". A simpler question answered right leads back to the original question too (decided at slice 2).
-- **The fallback fails too** (the simpler question is wrong, or the original is wrong again on that try). No further fallback. The lesson suggests going back through the material more carefully, and the student can carry on.
+- **The fallback fails too** (the simpler question is wrong, or the original is wrong again on that try). No further fallback. The lesson suggests going back through the material more carefully. The student can **Try again** (as often as they like, with no more hints) or **Skip for now**. A skipped module doesn't count as passed: the overview shows it as skipped, the lesson isn't complete, and once the student reaches the end, **Continue** takes them back to it (decided at slice 2).
 - As a student, I want help that fits the mistake I made, so I don't just see a red X.
   - [ ] Picking a specific wrong option shows the fallback written for that option's misconception, not a generic one.
   - [ ] Typing an unanticipated wrong answer shows the general fallback with the wording above.
@@ -149,7 +149,8 @@ Source: `scope.md > The POC Boundary`.
 - **The authoring flow stays thin until the baseline** — the hand-written lessons exist to shape it.
 
 - **A name identifies a student on one device** (confirmed at review). Two students typing the same name on the same device would share progress, and progress doesn't move between devices. Both are acceptable for Oct 9 because there are no real accounts.
-- **Unreviewed lessons are hidden completely by default, not shown locked** (confirmed at review). The author can switch on showing them.
+- **Unreviewed lessons are hidden completely by default, not shown locked** (confirmed at review).
+- **"Skip for now" instead of carrying on as if passed** (slice 2 review) — a student who fails the fallback can still move forward, so nobody is stuck, but the module stays not passed until they come back and get it. No extra fallback levels are added, so `scope.md > Explicitly Cut` still holds. The author can switch on showing them.
 
 ## What We're Building
 - Name entry, course overview with progress, and **Continue**.

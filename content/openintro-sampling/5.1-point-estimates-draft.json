@@ -1,0 +1,1202 @@
+{
+  "id": "openintro-sampling-5-1-draft",
+  "title": "5.1 Point estimates and sampling variability",
+  "source": {
+    "book": "OpenIntro Statistics, 4th ed. (CC BY-SA)",
+    "pages": "Section 5.1, pp. 170-180"
+  },
+  "outcomes": [
+    "Tell a parameter ($p$) from a point estimate ($\\hat{p}$), and sampling error from bias.",
+    "Explain what a sampling distribution is, and why a bigger sample makes it narrower.",
+    "Compute the standard error of $\\hat{p}$, plugging in $\\hat{p}$ when $p$ is unknown.",
+    "Check the conditions for modelling $\\hat{p}$ with a normal distribution."
+  ],
+  "modules": [
+    {
+      "id": "m1",
+      "title": "Parameter and point estimate",
+      "reading": "Pollsters want to know about a whole **population**, for example the share of all American adults who support more solar energy. That share is the **parameter**, written $p$. Nobody knows $p$ exactly, because nobody asks everyone.\n\nInstead, a poll asks a **sample** of $n$ people, where $n$ is the **sample size**. The share of the sample who say yes is the **sample proportion**, written $\\hat{p}$ (\"p-hat\"). We use $\\hat{p}$ as a **point estimate** of $p$: our single best guess.",
+      "check": {
+        "id": "c1",
+        "type": "select",
+        "prompt": "A poll of $n = 1000$ adults finds that 45% approve of the president. Which statement is right?",
+        "options": [
+          {
+            "id": "a",
+            "text": "$p = 0.45$, because that's what the poll found"
+          },
+          {
+            "id": "b",
+            "text": "$\\hat{p} = 0.45$, an estimate of the unknown $p$"
+          },
+          {
+            "id": "c",
+            "text": "$\\hat{p} = 0.45$, and so $p$ must be very close to 0.45"
+          }
+        ],
+        "answer": "b",
+        "wrongAnswers": [
+          {
+            "match": {
+              "optionId": "a"
+            },
+            "misconception": {
+              "text": "Treats the number computed from the sample as the population parameter itself.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "$p$ belongs to the whole population, so only asking everyone would give it. 0.45 came from 1,000 people, so it's the sample proportion $\\hat{p}$. The hat marks a number computed from a sample."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "Who gave the answers behind 0.45?",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "Every adult in the country"
+                    },
+                    {
+                      "id": "b",
+                      "text": "The 1,000 adults in the poll"
+                    }
+                  ],
+                  "answer": "b"
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "optionId": "c"
+            },
+            "misconception": {
+              "text": "Expects a sample statistic to land very close to the parameter, underestimating sampling variability.",
+              "source": {
+                "kind": "catalogue",
+                "reference": "Tversky, A., & Kahneman, D. (1971). Belief in the law of small numbers. Psychological Bulletin, 76(2), 105-110."
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "$\\hat{p} = 0.45$ is right, but the second half goes too far. Another random 1,000 people would give a slightly different share. How far $\\hat{p}$ tends to land from $p$ is what the rest of this lesson measures, so we can't assume \"very close\" yet."
+              }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": {
+            "enabled": true,
+            "text": "Ask two questions: is the number from everyone or from a sample? And is it known exactly, or a guess?"
+          }
+        },
+        "alternatives": [
+          {
+            "id": "c1a",
+            "type": "select",
+            "prompt": "In the notation of this section, what does $n$ stand for?",
+            "options": [
+              {
+                "id": "a",
+                "text": "The number of people in the sample"
+              },
+              {
+                "id": "b",
+                "text": "The number of people in the population"
+              },
+              {
+                "id": "c",
+                "text": "The number of people who said yes"
+              }
+            ],
+            "answer": "a",
+            "wrongAnswers": [
+              {
+                "match": {
+                  "optionId": "b"
+                },
+                "misconception": {
+                  "text": "Mixes up the sample size with the population size.",
+                  "source": {
+                    "kind": "catalogue",
+                    "reference": "delMas, R., Garfield, J., Ooms, A., & Chance, B. (2007). Assessing students' conceptual understanding after a first course in statistics. Statistics Education Research Journal, 6(2), 28-58."
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "$n$ counts the people actually asked. In a poll of 1,000 adults, $n = 1000$ whether the country has 1 million or 250 million adults."
+                  }
+                }
+              },
+              {
+                "match": {
+                  "optionId": "c"
+                },
+                "misconception": {
+                  "text": "Confuses the sample size with the count of successes.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "The count of people who said yes is usually called $x$. The sample size $n$ counts everyone who was asked, so $\\hat{p} = x / n$."
+                  }
+                }
+              }
+            ],
+            "generalFallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "$n$ is the sample size: how many people the poll asked."
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "m2",
+      "title": "Two kinds of error",
+      "reading": "The **error** in an estimate is the gap between $\\hat{p}$ and $p$. It has two parts.\n\n**Sampling error** is the luck of the draw: one random sample comes out a bit high, another a bit low. It shrinks as the sample size $n$ grows.\n\n**Bias** is a tendency to miss in the same direction every time, for example because of how a question is worded or who gets asked. A bigger sample doesn't fix bias. Careful data collection does.",
+      "check": {
+        "id": "c2",
+        "type": "select",
+        "prompt": "A student poll asks: \"Do you support your school by supporting funding for the new stadium?\" What kind of error is the wording most likely to cause?",
+        "options": [
+          {
+            "id": "a",
+            "text": "Sampling error, which asking more students would fix"
+          },
+          {
+            "id": "b",
+            "text": "Bias, pushing the estimate up however many students are asked"
+          },
+          {
+            "id": "c",
+            "text": "No error, as long as the students are picked at random"
+          }
+        ],
+        "answer": "b",
+        "wrongAnswers": [
+          {
+            "match": {
+              "optionId": "a"
+            },
+            "misconception": {
+              "text": "Treats a systematic error from question wording as sampling error that a bigger sample would remove.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "The wording nudges every respondent toward \"yes\", so the poll overestimates support in every sample. Asking 10,000 students instead of 100 would just give a very precise wrong answer. That's bias."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "If every sample tends to come out too high, will a bigger sample fix it?",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "Yes"
+                    },
+                    {
+                      "id": "b",
+                      "text": "No"
+                    }
+                  ],
+                  "answer": "b"
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "optionId": "c"
+            },
+            "misconception": {
+              "text": "Believes random selection alone guarantees an unbiased estimate, ignoring measurement problems such as leading questions.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Random selection protects against one source of bias: who gets asked. It does nothing about **what** they're asked. A leading question biases the answers even from a perfectly random sample."
+              }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": {
+            "enabled": true,
+            "text": "Ask: does the problem push the answer the same way every time (bias), or does it vary by luck from sample to sample (sampling error)?"
+          }
+        },
+        "alternatives": [
+          {
+            "id": "c2a",
+            "type": "select",
+            "prompt": "Which change reduces sampling error but leaves bias unchanged?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Asking more people in the same way"
+              },
+              {
+                "id": "b",
+                "text": "Rewording a leading question"
+              },
+              {
+                "id": "c",
+                "text": "Asking only people who volunteer"
+              }
+            ],
+            "answer": "a",
+            "wrongAnswers": [
+              {
+                "match": {
+                  "optionId": "b"
+                },
+                "misconception": {
+                  "text": "Mixes up the fixes for bias and for sampling error.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "Rewording fixes bias, the push in one direction. Sampling error shrinks with sample size."
+                  }
+                }
+              }
+            ],
+            "generalFallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Sampling error depends on how many are asked. Bias depends on how they're asked and who."
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "m3",
+      "title": "The sampling distribution",
+      "reading": "Suppose we knew $p = 0.88$ and simulated polls of $n = 1000$ on a computer. One poll gives $\\hat{p} = 0.894$, the next $0.885$, the next $0.878$. Repeat 10,000 times and draw a histogram of all the $\\hat{p}$ values. That histogram is the **sampling distribution** of $\\hat{p}$: how $\\hat{p}$ varies from sample to sample.\n\nIts **center** is at $p$ (0.88), its **spread** is small, and its **shape** is symmetric and bell-like.\n\nIn real life we only ever see one sample, never this histogram. But it's what tells us how far to trust that one $\\hat{p}$.",
+      "check": {
+        "id": "c3",
+        "type": "select",
+        "prompt": "A poll asks 1,000 adults a yes/no question. What is the sampling distribution of $\\hat{p}$?",
+        "options": [
+          {
+            "id": "a",
+            "text": "The 1,000 yes and no answers from that poll"
+          },
+          {
+            "id": "b",
+            "text": "The $\\hat{p}$ values you'd get from many different random samples of 1,000"
+          },
+          {
+            "id": "c",
+            "text": "The answers every adult in the population would give"
+          }
+        ],
+        "answer": "b",
+        "wrongAnswers": [
+          {
+            "match": {
+              "optionId": "a"
+            },
+            "misconception": {
+              "text": "Thinks the distribution of the data in one sample is the sampling distribution.",
+              "source": {
+                "kind": "catalogue",
+                "reference": "Castro Sotos, A. E., Vanhoof, S., Van den Noortgate, W., & Onghena, P. (2007). Students' misconceptions of statistical inference: A review of the empirical evidence from research on statistics education. Educational Research Review, 2(2), 98-113."
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "The 1,000 answers are the data from **one** sample, and they give **one** $\\hat{p}$. The sampling distribution is one level up: imagine many polls, each giving its own $\\hat{p}$, and look at how those $\\hat{p}$ values spread out."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "Each point in the sampling distribution of $\\hat{p}$ is...",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "one person's answer"
+                    },
+                    {
+                      "id": "b",
+                      "text": "one whole sample's $\\hat{p}$"
+                    }
+                  ],
+                  "answer": "b"
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "optionId": "c"
+            },
+            "misconception": {
+              "text": "Thinks the sampling distribution is (or looks like) the population distribution.",
+              "source": {
+                "kind": "catalogue",
+                "reference": "Castro Sotos, A. E., Vanhoof, S., Van den Noortgate, W., & Onghena, P. (2007). Students' misconceptions of statistical inference: A review of the empirical evidence from research on statistics education. Educational Research Review, 2(2), 98-113."
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Everyone's answers make up the population, which is just yes and no in some share. The sampling distribution is about a statistic: many $\\hat{p}$ values, one per imagined sample. It's centered at $p$ but much narrower than the yes/no spread of the population."
+              }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": {
+            "enabled": true,
+            "text": "Think of the simulation in the reading: run many polls, keep each poll's $\\hat{p}$, and make a histogram of those numbers."
+          }
+        },
+        "alternatives": [
+          {
+            "id": "c3a",
+            "type": "select",
+            "prompt": "If we simulate many polls with $p = 0.88$ and $n = 1000$, where is the center of the histogram of $\\hat{p}$ values?",
+            "options": [
+              {
+                "id": "a",
+                "text": "At 0.88"
+              },
+              {
+                "id": "b",
+                "text": "At 0.5"
+              },
+              {
+                "id": "c",
+                "text": "Wherever the first poll landed"
+              }
+            ],
+            "answer": "a",
+            "wrongAnswers": [
+              {
+                "match": {
+                  "optionId": "c"
+                },
+                "misconception": {
+                  "text": "Anchors on a single sample's result as if it were the center of the sampling distribution.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "One poll can land a little high or low. Across thousands of random polls, those misses balance out, and the $\\hat{p}$ values center on the true $p$."
+                  }
+                }
+              }
+            ],
+            "generalFallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Random samples don't lean either way, so their $\\hat{p}$ values gather around the true $p$."
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "m4",
+      "title": "Standard error",
+      "reading": "The spread of the sampling distribution has a name: the **standard error** of $\\hat{p}$, written $SE_{\\hat{p}}$. It's roughly how far a typical $\\hat{p}$ lands from $p$.\n\n$$SE_{\\hat{p}} = \\sqrt{\\frac{p(1-p)}{n}}$$\n\nHere $p$ is the population proportion (as a proportion like 0.88, never a percent like 88), $1 - p$ is the share who say no, and $n$ is the sample size. For $p = 0.88$ and $n = 1000$ the formula gives 0.010, which matches the simulation's spread.",
+      "check": {
+        "id": "c4",
+        "type": "number",
+        "prompt": "Use $SE_{\\hat{p}} = \\sqrt{p(1-p)/n}$ with $p = 0.88$ and $n = 1000$. Give three decimal places.",
+        "answer": 0.0103,
+        "tolerance": 0.0006,
+        "wrongAnswers": [
+          {
+            "match": {
+              "min": 0,
+              "max": 0.0002
+            },
+            "misconception": {
+              "text": "Forgets the square root in the standard error formula.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "$0.88 \\times 0.12 / 1000 = 0.0001056$ is the part **under** the square root. Take its square root to get the standard error."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "number",
+                  "prompt": "What is $\\sqrt{0.0004}$?",
+                  "answer": 0.02,
+                  "tolerance": 0.0005
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "min": 0.029,
+              "max": 0.0305
+            },
+            "misconception": {
+              "text": "Leaves out the $(1-p)$ factor.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "The top of the fraction is $p(1-p)$: the yes share times the no share, here $0.88 \\times 0.12$."
+              }
+            }
+          },
+          {
+            "match": {
+              "min": 1.0,
+              "max": 1.05
+            },
+            "misconception": {
+              "text": "Uses percentages (88 and 12) in a formula written for proportions.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "The formula needs proportions: $p = 0.88$, not 88. With percentages the answer comes out about 100 times too big."
+              }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": {
+            "enabled": true,
+            "text": "Work in steps: $1 - p = 0.12$, then $p(1-p)$, then divide by $n$, then take the square root."
+          }
+        },
+        "alternatives": [
+          {
+            "id": "c4a",
+            "type": "number",
+            "prompt": "With $p = 0.5$ and $n = 100$, what is $SE_{\\hat{p}}$? Give two decimal places.",
+            "answer": 0.05,
+            "tolerance": 0.005,
+            "wrongAnswers": [
+              {
+                "match": {
+                  "min": 0,
+                  "max": 0.003
+                },
+                "misconception": {
+                  "text": "Forgets the square root in the standard error formula.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "$0.5 \\times 0.5 / 100 = 0.0025$ is under the square root. $\\sqrt{0.0025} = 0.05$."
+                  }
+                }
+              }
+            ],
+            "generalFallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "$p(1-p) = 0.25$; divide by 100; take the square root."
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "m5",
+      "title": "Bigger samples, smaller error",
+      "reading": "Look at where the sample size $n$ sits in $SE_{\\hat{p}} = \\sqrt{p(1-p)/n}$: in the bottom of the fraction. A bigger $n$ makes the standard error smaller, so $\\hat{p}$ values bunch more tightly around $p$.\n\nThis matches intuition: more data tends to give a more precise estimate. Because of the square root, though, the gain is slow. Four times the sample only halves the standard error.",
+      "check": {
+        "id": "c5",
+        "type": "select",
+        "prompt": "Two pollsters estimate the same $p$. One asks $n = 50$ people, the other $n = 1000$. Whose $\\hat{p}$ is more likely to be far from $p$?",
+        "options": [
+          {
+            "id": "a",
+            "text": "The one with $n = 50$"
+          },
+          {
+            "id": "b",
+            "text": "The one with $n = 1000$"
+          },
+          {
+            "id": "c",
+            "text": "Neither: both are random samples, so they're equally likely to be off"
+          }
+        ],
+        "answer": "a",
+        "wrongAnswers": [
+          {
+            "match": {
+              "optionId": "b"
+            },
+            "misconception": {
+              "text": "Thinks a larger sample gives a more spread-out sampling distribution.",
+              "source": {
+                "kind": "catalogue",
+                "reference": "delMas, R. C., Garfield, J., & Chance, B. L. (1999). A model of classroom research in action: Developing simulation activities to improve students' statistical reasoning. Journal of Statistics Education, 7(3)."
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "A bigger sample captures more of the population's variety, but $\\hat{p}$ is an **average** over the sample. Averaging over more people smooths out the luck, so the sampling distribution gets **narrower** as $n$ grows: $n$ is in the denominator of the SE."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "If $n$ goes up, does $\\sqrt{p(1-p)/n}$ go up or down?",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "Up"
+                    },
+                    {
+                      "id": "b",
+                      "text": "Down"
+                    }
+                  ],
+                  "answer": "b"
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "optionId": "c"
+            },
+            "misconception": {
+              "text": "Thinks small and large samples are equally likely to give a statistic far from the parameter.",
+              "source": {
+                "kind": "catalogue",
+                "reference": "Kahneman, D., & Tversky, A. (1972). Subjective probability: A judgment of representativeness. Cognitive Psychology, 3(3), 430-454."
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Both are random, so neither is biased. But a sample of 50 is much more at the mercy of luck: a handful of unusual people moves $\\hat{p}$ a lot. With 1,000 people, the same handful barely matters. The SE formula says it too: $\\sqrt{p(1-p)/50}$ is larger than $\\sqrt{p(1-p)/1000}$."
+              }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": {
+            "enabled": true,
+            "text": "Compare the formula for both sample sizes, keeping $p$ the same."
+          }
+        },
+        "alternatives": [
+          {
+            "id": "c5a",
+            "type": "select",
+            "prompt": "A poll grows from $n = 1000$ to $n = 4000$. What happens to the standard error?",
+            "options": [
+              {
+                "id": "a",
+                "text": "It halves"
+              },
+              {
+                "id": "b",
+                "text": "It drops to a quarter"
+              },
+              {
+                "id": "c",
+                "text": "It stays the same"
+              }
+            ],
+            "answer": "a",
+            "wrongAnswers": [
+              {
+                "match": {
+                  "optionId": "b"
+                },
+                "misconception": {
+                  "text": "Believes the standard error shrinks in proportion to $1/n$ rather than $1/\\sqrt{n}$.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "$n$ is inside a square root. Multiplying $n$ by 4 multiplies $\\sqrt{n}$ by 2, so the SE is divided by 2."
+                  }
+                }
+              }
+            ],
+            "generalFallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Try the formula with $n = 1000$, then $n = 4000$."
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "m6",
+      "title": "The Central Limit Theorem",
+      "reading": "The bell shape in the simulation isn't luck. The **Central Limit Theorem** says: when the observations are **independent** and the sample is large enough, $\\hat{p}$ follows a normal distribution with mean $p$ and standard error $\\sqrt{p(1-p)/n}$.\n\n\"Large enough\" has a rule of thumb, the **success-failure condition**: $np \\ge 10$ and $n(1-p) \\ge 10$. Here $np$ is the expected number of yeses in the sample and $n(1-p)$ the expected number of nos. Both need to be at least 10.",
+      "check": {
+        "id": "c6",
+        "type": "select",
+        "prompt": "A sample has $n = 10$ and $p = 0.25$. Can we model $\\hat{p}$ with a normal distribution?",
+        "options": [
+          {
+            "id": "a",
+            "text": "No: $np = 2.5$, which is below 10"
+          },
+          {
+            "id": "b",
+            "text": "Yes: the sample is random, so the Central Limit Theorem applies"
+          },
+          {
+            "id": "c",
+            "text": "Yes: $n(1-p) = 7.5$ is close enough to 10"
+          }
+        ],
+        "answer": "a",
+        "wrongAnswers": [
+          {
+            "match": {
+              "optionId": "b"
+            },
+            "misconception": {
+              "text": "Believes independence alone is enough for the Central Limit Theorem, forgetting the sample-size condition.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "The theorem has **two** conditions: independence **and** a large enough sample. A random sample of 10 meets the first but not the second: with $np = 2.5$ we expect only 2 or 3 yeses, and the distribution of $\\hat{p}$ comes out lumpy and skewed."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "number",
+                  "prompt": "For $n = 10$ and $p = 0.25$, what is $np$?",
+                  "answer": 2.5,
+                  "tolerance": 0.05
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "optionId": "c"
+            },
+            "misconception": {
+              "text": "Treats the success-failure threshold as approximate and checks only one of the two products.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Both products must reach 10, and here neither does: $np = 2.5$ and $n(1-p) = 7.5$. With so few expected yeses, $\\hat{p}$ can only take values like 0, 0.1, 0.2, and the histogram is skewed, not bell-shaped."
+              }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": {
+            "enabled": true,
+            "text": "Compute both $np$ and $n(1-p)$ and compare each with 10."
+          }
+        },
+        "alternatives": [
+          {
+            "id": "c6a",
+            "type": "number",
+            "prompt": "For $n = 1000$ and $p = 0.88$, what is $n(1-p)$, the expected number of nos?",
+            "answer": 120,
+            "tolerance": 0.5,
+            "wrongAnswers": [
+              {
+                "match": {
+                  "min": 879.5,
+                  "max": 880.5
+                },
+                "misconception": {
+                  "text": "Computes $np$ when asked for $n(1-p)$.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "$np = 880$ is the expected number of yeses. The nos are $n(1-p) = 1000 \\times 0.12$."
+                  }
+                }
+              }
+            ],
+            "generalFallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "$1 - p = 0.12$, then multiply by $n = 1000$."
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "m7",
+      "title": "Checking independence",
+      "reading": "The other condition is **independence**: one person's answer shouldn't affect another's. The usual way to get it is a **simple random sample** of the population, or random assignment in an experiment. For other sampling, like items pulled now and then from a production line, you have to use judgement.\n\nSome books add that the sample should be no more than 10% of the population. That's rarely a problem, and when it is, these methods are a little cautious, so it's an optional check.",
+      "check": {
+        "id": "c7",
+        "type": "select",
+        "prompt": "A random sample of 400 students is taken from a campus of 5,000 students. Is the sample too small a share of the campus to estimate $p$?",
+        "options": [
+          {
+            "id": "a",
+            "text": "No. Randomness and the sample size are what matter, and 400 is under 10% of 5,000"
+          },
+          {
+            "id": "b",
+            "text": "Yes. 400 is only 8% of the campus, so it can't represent it"
+          },
+          {
+            "id": "c",
+            "text": "Yes. A sample should include at least half the population"
+          }
+        ],
+        "answer": "a",
+        "wrongAnswers": [
+          {
+            "match": {
+              "optionId": "b"
+            },
+            "misconception": {
+              "text": "Thinks a sample is only trustworthy if it is a large fraction of the population.",
+              "source": {
+                "kind": "catalogue",
+                "reference": "delMas, R., Garfield, J., Ooms, A., & Chance, B. (2007). Assessing students' conceptual understanding after a first course in statistics. Statistics Education Research Journal, 6(2), 28-58."
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "How precise $\\hat{p}$ is depends on $n$, the number asked, not on what share of the population they are. The SE formula has no population size in it. The only share rule runs the other way: the sample should be **at most** 10% of the population."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "Does the population's size appear in $SE_{\\hat{p}} = \\sqrt{p(1-p)/n}$?",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "Yes"
+                    },
+                    {
+                      "id": "b",
+                      "text": "No"
+                    }
+                  ],
+                  "answer": "b"
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "optionId": "c"
+            },
+            "misconception": {
+              "text": "Thinks a sample is only trustworthy if it is a large fraction of the population.",
+              "source": {
+                "kind": "catalogue",
+                "reference": "delMas, R., Garfield, J., Ooms, A., & Chance, B. (2007). Assessing students' conceptual understanding after a first course in statistics. Statistics Education Research Journal, 6(2), 28-58."
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "National polls ask about 1,000 people out of hundreds of millions, far less than half, and still estimate well. A random sample's precision comes from $n$, not from covering the population."
+              }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": {
+            "enabled": true,
+            "text": "Look at what's in the standard error formula, and at which way the 10% rule points."
+          }
+        },
+        "alternatives": [
+          {
+            "id": "c7a",
+            "type": "select",
+            "prompt": "Which sample is most likely to give independent observations?",
+            "options": [
+              {
+                "id": "a",
+                "text": "A simple random sample of the town's voters"
+              },
+              {
+                "id": "b",
+                "text": "People who chose to answer an online poll"
+              },
+              {
+                "id": "c",
+                "text": "Five friends of the interviewer"
+              }
+            ],
+            "answer": "a",
+            "wrongAnswers": [
+              {
+                "match": {
+                  "optionId": "b"
+                },
+                "misconception": {
+                  "text": "Treats a volunteer sample as if it were random.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "People who choose to answer are self-selected, and often share strong opinions. A simple random sample gives everyone the same chance of being asked."
+                  }
+                }
+              }
+            ],
+            "generalFallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Independence usually comes from random selection."
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "m8",
+      "title": "The plug-in principle",
+      "reading": "In real polls we don't know $p$, which is the reason for polling. So we can't put $p$ into the formulas. Instead we **plug in** $\\hat{p}$, the proportion from our sample.\n\nFor the success-failure condition we check $n\\hat{p} \\ge 10$ and $n(1-\\hat{p}) \\ge 10$, and for the standard error we use $$SE_{\\hat{p}} \\approx \\sqrt{\\frac{\\hat{p}(1-\\hat{p})}{n}}$$\n\nThis is called the **substitution approximation** or **plug-in principle**. The answer barely changes for a nearby $p$, so it works well.",
+      "check": {
+        "id": "c8",
+        "type": "number",
+        "prompt": "A random sample of $n = 400$ adults finds that 120 say yes. Estimate the standard error of $\\hat{p}$ by plugging in $\\hat{p}$. Give three decimal places.",
+        "answer": 0.0229,
+        "tolerance": 0.0006,
+        "wrongAnswers": [
+          {
+            "match": {
+              "min": 0,
+              "max": 0.0011
+            },
+            "misconception": {
+              "text": "Forgets the square root in the standard error formula.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "$\\hat{p} = 120/400 = 0.30$, and $0.30 \\times 0.70 / 400 = 0.000525$. That's under the square root. Take the square root."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "number",
+                  "prompt": "What is $\\sqrt{0.0009}$?",
+                  "answer": 0.03,
+                  "tolerance": 0.0005
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "min": 2.2,
+              "max": 2.4
+            },
+            "misconception": {
+              "text": "Uses percentages (30 and 70) in a formula written for proportions.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Use proportions: $\\hat{p} = 0.30$ and $1 - \\hat{p} = 0.70$, not 30 and 70."
+              }
+            }
+          },
+          {
+            "match": {
+              "min": 9.1,
+              "max": 9.3
+            },
+            "misconception": {
+              "text": "Multiplies by the sample size instead of dividing by it.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "$n$ goes in the bottom: $\\sqrt{0.30 \\times 0.70 / 400}$. Dividing is what makes the SE shrink for bigger samples."
+              }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": {
+            "enabled": true,
+            "text": "First $\\hat{p} = 120/400$. Then $\\hat{p}(1-\\hat{p})$, divide by 400, and take the square root."
+          }
+        },
+        "alternatives": [
+          {
+            "id": "c8a",
+            "type": "select",
+            "prompt": "Why do we plug $\\hat{p}$ into the standard error formula instead of $p$?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Because $p$ is unknown"
+              },
+              {
+                "id": "b",
+                "text": "Because $\\hat{p}$ is always exactly equal to $p$"
+              },
+              {
+                "id": "c",
+                "text": "Because it makes the standard error smaller"
+              }
+            ],
+            "answer": "a",
+            "wrongAnswers": [
+              {
+                "match": {
+                  "optionId": "b"
+                },
+                "misconception": {
+                  "text": "Expects a sample statistic to land very close to the parameter, underestimating sampling variability.",
+                  "source": {
+                    "kind": "catalogue",
+                    "reference": "Tversky, A., & Kahneman, D. (1971). Belief in the law of small numbers. Psychological Bulletin, 76(2), 105-110."
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "$\\hat{p}$ is usually a little off from $p$. We use it because it's the best number we have, and the standard error barely changes for a nearby value."
+                  }
+                }
+              }
+            ],
+            "generalFallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Ask: which of $p$ and $\\hat{p}$ do we actually know after a poll?"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "m9",
+      "title": "How p and n shape the distribution",
+      "reading": "Simulating many combinations of $p$ and $n$ shows three patterns.\n\nThe sampling distribution is always **centered at $p$**, so $\\hat{p}$ is **unbiased** when the data are independent.\n\nFor a fixed $p$, its **spread shrinks as $n$ grows**. When $np$ or $n(1-p)$ is small, it's also lumpy and skewed; when both are large, it looks normal.\n\nFor a fixed $n$, the spread is **largest when $p = 0.5$**, because $p(1-p)$ is largest there.",
+      "check": {
+        "id": "c9",
+        "type": "select",
+        "prompt": "With $n = 100$ in every case, which population proportion gives the largest standard error for $\\hat{p}$?",
+        "options": [
+          {
+            "id": "a",
+            "text": "$p = 0.1$"
+          },
+          {
+            "id": "b",
+            "text": "$p = 0.5$"
+          },
+          {
+            "id": "c",
+            "text": "$p = 0.9$"
+          },
+          {
+            "id": "d",
+            "text": "They're all the same, since $n$ is the same"
+          }
+        ],
+        "answer": "b",
+        "wrongAnswers": [
+          {
+            "match": {
+              "optionId": "c"
+            },
+            "misconception": {
+              "text": "Thinks a larger $p$ means more variability in $\\hat{p}$.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "The spread depends on $p(1-p)$, not $p$ alone. For $p = 0.9$, $p(1-p) = 0.09$; for $p = 0.5$ it's 0.25, the largest it can be."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "Which is larger: $0.5 \\times 0.5$ or $0.9 \\times 0.1$?",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "$0.5 \\times 0.5$"
+                    },
+                    {
+                      "id": "b",
+                      "text": "$0.9 \\times 0.1$"
+                    }
+                  ],
+                  "answer": "a"
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "optionId": "d"
+            },
+            "misconception": {
+              "text": "Thinks the standard error depends only on the sample size, ignoring $p$.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "$n$ matters, but so does $p$: it appears as $p(1-p)$ on top of the fraction. Close to 0 or 1, almost everyone answers the same way, so samples agree more."
+              }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": {
+            "enabled": true,
+            "text": "Compute $p(1-p)$ for each option and see which is largest."
+          }
+        },
+        "alternatives": [
+          {
+            "id": "c9a",
+            "type": "select",
+            "prompt": "When the data are independent, where is the sampling distribution of $\\hat{p}$ centered?",
+            "options": [
+              {
+                "id": "a",
+                "text": "At $p$, whatever the sample size"
+              },
+              {
+                "id": "b",
+                "text": "At $p$ only for large samples"
+              },
+              {
+                "id": "c",
+                "text": "At 0.5"
+              }
+            ],
+            "answer": "a",
+            "wrongAnswers": [
+              {
+                "match": {
+                  "optionId": "b"
+                },
+                "misconception": {
+                  "text": "Confuses the center of the sampling distribution with its shape, thinking small samples are biased.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "Sample size changes the spread and the shape, not the center. Even for small $n$, the $\\hat{p}$ values average out to $p$: that's what unbiased means."
+                  }
+                }
+              }
+            ],
+            "generalFallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Center, spread and shape behave differently: only the spread and shape depend on $n$."
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "m10",
+      "title": "Takeaways",
+      "reading": "A **point estimate** like $\\hat{p} = x/n$ comes from a sample and estimates a **parameter** like $p$. Its error has two parts: sampling error, which a bigger sample shrinks, and bias, which it doesn't.\n\nAcross many samples, $\\hat{p}$ forms a **sampling distribution** centered at $p$ with standard error $\\sqrt{p(1-p)/n}$. With independent observations and at least 10 expected yeses and nos, it's approximately normal. In practice we plug in $\\hat{p}$ for $p$.\n\nThe same idea works for other statistics, such as a sample mean $\\bar{x}$ estimating a population mean $\\mu$."
+    }
+  ]
+}

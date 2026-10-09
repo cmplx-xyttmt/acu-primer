@@ -11,10 +11,14 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { execFileSync } from "node:child_process";
 import { Lesson } from "../src/shared/lesson.ts";
+import { lessonProblems } from "../src/shared/lessonChecks.ts";
 
 interface CourseFile {
   slug: string;
   title: string;
+  // Show lessons nobody has signed off yet, with a "Not yet reviewed" mark. Until the
+  // review screen exists (slice 4), this is how a drafted lesson gets into the player.
+  showUnreviewed?: boolean;
   lessons: { file: string; position: number; status: "reviewed" | "unreviewed" }[];
 }
 
@@ -34,8 +38,9 @@ const courseId = course.slug;
 const now = new Date().toISOString();
 
 const statements = [
-  `INSERT INTO courses (id, slug, title) VALUES (${sql(courseId)}, ${sql(course.slug)}, ${sql(course.title)})
-   ON CONFLICT (id) DO UPDATE SET title = excluded.title;`,
+  `INSERT INTO courses (id, slug, title, show_unreviewed)
+   VALUES (${sql(courseId)}, ${sql(course.slug)}, ${sql(course.title)}, ${course.showUnreviewed ? 1 : 0})
+   ON CONFLICT (id) DO UPDATE SET title = excluded.title, show_unreviewed = excluded.show_unreviewed;`,
 ];
 
 let failed = false;
@@ -47,6 +52,12 @@ for (const entry of course.lessons) {
     continue;
   }
   const lesson = parsed.data;
+  const problems = lessonProblems(lesson);
+  if (problems.length > 0) {
+    console.error(`✘ ${entry.file} has problems:\n${problems.map((p) => `  ${p}`).join("\n")}`);
+    failed = true;
+    continue;
+  }
   console.log(`✓ ${entry.file}: "${lesson.title}", ${lesson.modules.length} modules, ${entry.status}`);
   statements.push(
     `INSERT INTO lessons (id, course_id, source_id, position, title, status, content, updated_at, signed_off_at)

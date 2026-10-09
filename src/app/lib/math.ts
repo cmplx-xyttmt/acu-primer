@@ -14,17 +14,25 @@ const emphasis = (s: string) =>
 const math = (tex: string, displayMode: boolean) =>
   katex.renderToString(tex, { displayMode, throwOnError: false });
 
+// "\$" is a literal dollar sign, not math. It's swapped for a placeholder before splitting
+// on $ and swapped back when the text is escaped.
+const DOLLAR = "\u0000";
+const hideDollars = (s: string) => s.replace(/\\\$/g, DOLLAR);
+const showDollars = (s: string) => s.replaceAll(DOLLAR, "$");
+
 /** One line of text with inline math, for prompts and answer options. */
 export function renderInline(text: string): string {
-  return text
+  return hideDollars(text)
     .split(/(\$[^$]+?\$)/g)
-    .map((part) => (part.startsWith("$") && part.length > 1 ? math(part.slice(1, -1), false) : emphasis(part)))
+    .map((part) =>
+      part.startsWith("$") && part.length > 1 ? math(part.slice(1, -1), false) : showDollars(emphasis(part)),
+    )
     .join("");
 }
 
 /** A module's reading: paragraphs and display math blocks. */
 export function renderReading(text: string): string {
-  return text
+  return hideDollars(text)
     .split(/\n\s*\n/)
     .map((para) =>
       para

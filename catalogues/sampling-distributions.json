@@ -1,0 +1,70 @@
+{
+  "topic": "Sampling distributions and standard error (OpenIntro Statistics 5.1)",
+  "checked_by_person": false,
+  "misconceptions": [
+    {
+      "id": "sampling-distribution-looks-like-population",
+      "text": "The student thinks the sampling distribution of a statistic should have the same shape, centre and spread as the population it came from.",
+      "looks_like": "Shown a right-skewed population, the student picks a right-skewed histogram with the population's spread as the sampling distribution of the mean for n = 25.",
+      "reference": "Castro Sotos, A. E., Vanhoof, S., Van den Noortgate, W., & Onghena, P. (2007). Students' misconceptions of statistical inference: A review of the empirical evidence from research on statistics education. Educational Research Review, 2(2), 98-113.",
+      "url": "https://doi.org/10.1016/j.edurev.2007.04.001",
+      "note": "Section 3.1.2 and Table 4 ('Confuse the population and the sampling distributions'). The review reports this from Chance, delMas & Garfield (2004), 'Reasoning about sampling distributions', in Ben-Zvi & Garfield (Eds.), The Challenge of Developing Statistical Literacy, Reasoning and Thinking, pp. 295-323, https://doi.org/10.1007/1-4020-2278-6_13. Quoted student-selected statement: the sampling distribution of means 'looks more like the population, has the same mean as the population, and has a standard deviation that is similar to the population'. I could not open the 2004 chapter itself (paywalled)."
+    },
+    {
+      "id": "larger-n-looks-more-like-population",
+      "text": "The student thinks that as the sample size grows, the sampling distribution gets more like the population, so it keeps the population's shape and gets wider rather than narrower.",
+      "looks_like": "Asked which histogram is the sampling distribution for n = 25 versus n = 4, the student picks the one with more spread for n = 25 because 'bigger samples look more like the population'.",
+      "reference": "delMas, R. C., Garfield, J., & Chance, B. L. (1999). A model of classroom research in action: Developing simulation activities to improve students' statistical reasoning. Journal of Statistics Education, 7(3).",
+      "url": "https://jse.amstat.org/v7n3/delmas.cfm",
+      "note": "The authors call this 'smaller to larger reasoning': students chose a histogram with larger variability for the larger sample size, and some said they 'expected the sampling distribution to look more like the population as the sample size increased'. DOI 10.1080/10691898.1999.12131279. Their Table 2 also lists the related reasons 'shaped like the POPULATION' and 'SAME VARIABILITY as the POPULATION' as answer options in the diagnostic test."
+    },
+    {
+      "id": "sample-distribution-vs-sampling-distribution",
+      "text": "The student thinks the distribution of the data in one sample is the sampling distribution.",
+      "looks_like": "Asked to describe the sampling distribution of the sample mean, the student draws or describes a histogram of the 40 values in the one sample they collected.",
+      "reference": "Castro Sotos, A. E., Vanhoof, S., Van den Noortgate, W., & Onghena, P. (2007). Students' misconceptions of statistical inference: A review of the empirical evidence from research on statistics education. Educational Research Review, 2(2), 98-113.",
+      "url": "https://doi.org/10.1016/j.edurev.2007.04.001",
+      "note": "Section 3.1.2 and Table 4 ('Confuse the sample and the sampling distributions'). Empirical evidence cited from Lipson (2002, ICOTS-6 proceedings): 5 of 23 students incorrectly designated the distribution of the sample as the sampling distribution, while 10 of 23 correctly described it as the distribution of a sample statistic."
+    },
+    {
+      "id": "sample-size-neglect",
+      "text": "The student thinks a statistic from a small sample is no more likely to land far from the population value than the same statistic from a large sample.",
+      "looks_like": "Asked whether a hospital with 15 births a day or one with 45 births a day records more days with over 60% boys, the student answers 'about the same'.",
+      "reference": "Kahneman, D., & Tversky, A. (1972). Subjective probability: A judgment of representativeness. Cognitive Psychology, 3(3), 430-454.",
+      "url": "https://doi.org/10.1016/0010-0285(72)90016-3",
+      "note": "The hospital problem (larger hospital about 45 births a day, smaller about 15). In the paper's response table 'about the same' was the most common answer (28 of about 50 respondents for the 'more than 60%' version). The same pattern shows up in intro statistics students after a course: CAOS item 16 in delMas, Garfield, Ooms & Chance (2007), SERJ 6(2), 28-58, where 'a slight majority of students on the posttest indicated that both sample sizes had the same likelihood of producing an extreme value for the statistic'. Castro Sotos et al. (2007) list it as 'Neglect the effect of sample size on the variance of the sample mean'."
+    },
+    {
+      "id": "law-of-small-numbers",
+      "text": "The student thinks even a small random sample will closely mirror the population, so its statistic should be very close to the parameter.",
+      "looks_like": "After a random sample of 20 gives 70% support, the student says the population proportion must be about 70% and a repeat sample will give about the same number.",
+      "reference": "Tversky, A., & Kahneman, D. (1971). Belief in the law of small numbers. Psychological Bulletin, 76(2), 105-110.",
+      "url": "https://doi.org/10.1037/h0031322",
+      "note": "The paper argues that people regard a randomly drawn sample as highly representative of the population, and documents it with a questionnaire answered by 84 professional psychologists (not students). Castro Sotos et al. (2007, section 3.1.1) summarise the consequence: the believer 'underestimates the size of confidence intervals' and is over-confident about replications."
+    },
+    {
+      "id": "no-sense-of-expected-sampling-variability",
+      "text": "The student has no feel for how much a statistic should vary from sample to sample, so results with no variation or with wild variation look as plausible as realistic ones.",
+      "looks_like": "Shown three lists of five sample proportions (all identical, realistically scattered, wildly scattered), the student says all three are equally likely.",
+      "reference": "delMas, R., Garfield, J., Ooms, A., & Chance, B. (2007). Assessing students' conceptual understanding after a first course in statistics. Statistics Education Research Journal, 6(2), 28-58.",
+      "url": "https://iase-pub.org/ojs/SERJ/article/view/483",
+      "note": "CAOS item 17 ('Understanding of expected patterns in sampling variability'). About a third of students (36% pretest, 33% posttest) said all three sequences were equally plausible, even though one showed an extreme amount of variability and one showed none. DOI 10.52041/serj.v6i2.483."
+    },
+    {
+      "id": "sd-instead-of-standard-error",
+      "text": "The student judges how far a sample mean is likely to be from the population mean using the sample standard deviation, without dividing by the square root of n.",
+      "looks_like": "The student says a sample mean of 52 from n = 100 is 'well within one standard deviation (10) of 50, so nothing unusual', ignoring that the standard error is 1.",
+      "reference": "delMas, R., Garfield, J., Ooms, A., & Chance, B. (2007). Assessing students' conceptual understanding after a first course in statistics. Statistics Education Research Journal, 6(2), 28-58.",
+      "url": "https://iase-pub.org/ojs/SERJ/article/view/483",
+      "note": "CAOS item 32. Under 20% answered correctly; 54% (pretest) and 59% (posttest) chose the option that 'based the inference solely on the sample standard deviation, not taking sample size and sampling variability into account'. The paper does not use the phrase 'confusing SD and SE'; that framing is mine."
+    },
+    {
+      "id": "sample-must-be-large-share-of-population",
+      "text": "The student thinks a sample is only trustworthy if it is a large fraction of the population, so the population size, not the sample size, drives accuracy.",
+      "looks_like": "The student says a random sample of 500 students can't tell us about a campus of 5000 because it's only 10% of the students.",
+      "reference": "delMas, R., Garfield, J., Ooms, A., & Chance, B. (2007). Assessing students' conceptual understanding after a first course in statistics. Statistics Education Research Journal, 6(2), 28-58.",
+      "url": "https://iase-pub.org/ojs/SERJ/article/view/483",
+      "note": "CAOS item 38. On the posttest over 62% said a random sample of 500 was a problem for generalising, 'supposedly because it was too small a sample to represent the 5000 students living on campus'. The item is about generalising, not the standard error formula, so linking it to 'SE does not depend on population size' is my inference."
+    }
+  ]
+}

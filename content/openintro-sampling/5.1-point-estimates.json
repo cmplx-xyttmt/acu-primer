@@ -6,7 +6,7 @@
     {
       "id": "m1",
       "title": "What are we estimating?",
-      "reading": "We usually want to know something about a whole population, like the share of adults in a country who support building more solar farms. That share is a **parameter**, and we write it $p$.\n\nWe almost never get to ask everyone. So we ask a random sample and compute the share in the sample. That number is a **point estimate**, written $\\hat{p}$ (\"p-hat\"). It's our best single guess for $p$.",
+      "reading": "We usually want to know something about a whole **population**, like the share of all adults in a country who support building more solar farms. That share is a **parameter**. We write it $p$, and we don't know it.\n\nWe can't ask everyone, so we ask a random **sample** and work out the share in the sample. That number is a **point estimate**, written $\\hat{p}$ (\"p-hat\"). The hat means \"estimated from a sample\".",
       "check": {
         "id": "c1",
         "type": "select",
@@ -22,19 +22,31 @@
             "match": { "optionId": "a" },
             "misconception": { "text": "Treats a number computed from a sample as the population parameter.", "source": { "kind": "model" } },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "The parameter $p$ describes everyone in the population, and we don't know it. 0.887 came from 1,000 people we asked, so it's computed from a sample. Numbers computed from a sample are estimates, written with a hat: $\\hat{p}$." }
+              "reExplanation": { "enabled": true, "text": "$p$ describes **everyone** in the population, and nobody knows it. 0.887 came from the 1,000 people who were asked, so it was computed from a sample. Numbers computed from a sample get a hat: $\\hat{p}$." },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "Where did the number 0.887 come from?",
+                  "options": [
+                    { "id": "a", "text": "Every adult in the country" },
+                    { "id": "b", "text": "The 1,000 adults who were asked" }
+                  ],
+                  "answer": "b"
+                }
+              }
             }
           },
           {
             "match": { "optionId": "c" },
             "misconception": { "text": "Believes a sample statistic equals the population value exactly.", "source": { "kind": "model" } },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "A different random 1,000 people would give a slightly different share, maybe 0.879 or 0.893. So 0.887 is close to the population share, but it isn't the exact value. It's an estimate." }
+              "reExplanation": { "enabled": true, "text": "A different random 1,000 people would give a slightly different share, maybe 0.879 or 0.893. So 0.887 is close to the share among all adults, but it isn't that exact value. It's an estimate of it." }
             }
           }
         ],
         "generalFallback": {
-          "reExplanation": { "enabled": true, "text": "Ask yourself where the number came from: everyone, or the people we sampled? Sample numbers are estimates." }
+          "reExplanation": { "enabled": true, "text": "Ask where the number came from: everyone, or the people who were asked? Numbers from the people asked are estimates." }
         },
         "alternatives": []
       }
@@ -42,7 +54,7 @@
     {
       "id": "m2",
       "title": "Computing a point estimate",
-      "reading": "The sample proportion is the number of \"successes\" divided by the sample size $n$:\n\n$$\\hat{p} = \\frac{\\text{number of successes}}{n}$$\n\nA \"success\" is just whatever we're counting. It doesn't have to be a good thing.",
+      "reading": "The sample proportion is the number of \"successes\" divided by the sample size:\n\n$$\\hat{p} = \\frac{x}{n}$$\n\nHere $x$ is how many people in the sample gave the answer we're counting (a \"success\", which doesn't have to be a good thing), and $n$ is how many people we asked. $n$ is the size of the **sample**, never the size of the population.",
       "check": {
         "id": "c2",
         "type": "number",
@@ -54,12 +66,28 @@
             "match": { "min": 42.5, "max": 43.5 },
             "misconception": { "text": "Reports the count of successes instead of the proportion.", "source": { "kind": "model" } },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "43 is how many students said yes. The proportion is that count divided by how many we asked: $43 / 50$." }
+              "reExplanation": { "enabled": true, "text": "43 is how many students said yes. That's $x$, a count. The proportion divides it by how many were asked: $\\hat{p} = x / n$." },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "number",
+                  "prompt": "10 people are asked, and 7 say yes. What share said yes? Give a decimal.",
+                  "answer": 0.7,
+                  "tolerance": 0.005
+                }
+              }
+            }
+          },
+          {
+            "match": { "min": 0.425, "max": 0.435 },
+            "misconception": { "text": "Divides the count by 100 as if it were a percentage, ignoring the sample size.", "source": { "kind": "model" } },
+            "fallback": {
+              "reExplanation": { "enabled": true, "text": "Dividing by 100 only works when exactly 100 people were asked. Here $n = 50$, so divide 43 by 50." }
             }
           }
         ],
         "generalFallback": {
-          "reExplanation": { "enabled": true, "text": "Divide the number of successes by the sample size." }
+          "reExplanation": { "enabled": true, "text": "Find $x$ (how many said yes) and $n$ (how many were asked), then divide $x$ by $n$." }
         },
         "alternatives": []
       }
@@ -67,29 +95,95 @@
     {
       "id": "m3",
       "title": "Samples vary",
-      "reading": "Take a random sample, compute $\\hat{p}$. Take another random sample, compute $\\hat{p}$ again. You'll get a slightly different number almost every time. This is **sampling variability**.\n\nImagine doing it thousands of times and drawing a histogram of all the $\\hat{p}$ values. That histogram is the **sampling distribution** of $\\hat{p}$. When samples are random, it centers on the true $p$, and its spread tells you how far a typical estimate lands from $p$."
-    },
-    {
-      "id": "m4",
-      "title": "Standard error",
-      "reading": "The spread of the sampling distribution has its own name: the **standard error** (SE). For a sample proportion:\n\n$$SE = \\sqrt{\\frac{p(1-p)}{n}}$$\n\nWe don't know $p$, so in practice we plug in $\\hat{p}$. The SE is roughly how far a typical $\\hat{p}$ is from the true $p$.",
+      "reading": "Take a random sample and compute $\\hat{p}$. Take another random sample and compute $\\hat{p}$ again. You'll almost always get a slightly different number. This is **sampling variability**.\n\nImagine doing it thousands of times and drawing a histogram of all the $\\hat{p}$ values. That histogram is the **sampling distribution** of $\\hat{p}$. When the samples are random, it's centred on the true $p$, and its spread shows how far a typical estimate lands from $p$.",
       "check": {
-        "id": "c4",
-        "type": "number",
-        "prompt": "Suppose $p = 0.88$ and $n = 1000$. What is the standard error? Give three decimal places.",
-        "answer": 0.0103,
-        "tolerance": 0.0006,
+        "id": "c3",
+        "type": "select",
+        "prompt": "Two polls each ask 1,000 random adults the same question on the same day. One finds $\\hat{p} = 0.887$, the other $\\hat{p} = 0.874$. What's the best explanation?",
+        "options": [
+          { "id": "a", "text": "One of the polls made a mistake" },
+          { "id": "b", "text": "Opinions changed between the two polls" },
+          { "id": "c", "text": "Different random samples give different estimates" }
+        ],
+        "answer": "c",
         "wrongAnswers": [
           {
-            "match": { "min": 0.000105, "max": 0.000106 },
-            "misconception": { "text": "Forgets the square root in the standard error formula.", "source": { "kind": "model" } },
+            "match": { "optionId": "a" },
+            "misconception": { "text": "Expects two correct random samples to give the same estimate, so any difference must be an error.", "source": { "kind": "model" } },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "You found $p(1-p)/n$, which is the variance. The standard error is its square root." }
+              "reExplanation": { "enabled": true, "text": "Both polls can be done perfectly and still disagree. Each one asked a different random 1,000 people, and different people give a slightly different share. That difference is sampling variability, not a mistake." },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "You flip a fair coin 10 times, twice. Would you expect exactly the same number of heads both times?",
+                  "options": [
+                    { "id": "a", "text": "Yes, the coin is fair" },
+                    { "id": "b", "text": "Not necessarily, it varies from run to run" }
+                  ],
+                  "answer": "b"
+                }
+              }
+            }
+          },
+          {
+            "match": { "optionId": "b" },
+            "misconception": { "text": "Explains sample-to-sample differences as a change in the population.", "source": { "kind": "model" } },
+            "fallback": {
+              "reExplanation": { "enabled": true, "text": "The polls were on the same day, so $p$ (the share among all adults) didn't move. What changed is **who** was asked. Each random sample gives its own $\\hat{p}$." }
             }
           }
         ],
         "generalFallback": {
-          "reExplanation": { "enabled": true, "text": "Work it in steps: $1 - p$, then $p(1-p)$, then divide by $n$, then take the square root." }
+          "reExplanation": { "enabled": true, "text": "Think about what's different between the two polls: the day, the question, or the people who were asked?" }
+        },
+        "alternatives": []
+      }
+    },
+    {
+      "id": "m4",
+      "title": "Standard error",
+      "reading": "The spread of the sampling distribution has its own name, the **standard error** (SE). For a sample proportion:\n\n$$SE = \\sqrt{\\frac{p(1-p)}{n}}$$\n\nWhat each letter means here:\n\n$p$ is the share in the whole population. The formula uses $p$ because the SE describes how much $\\hat{p}$ varies around the true value.\n\n$n$ is the sample size, how many people were asked. The population's size isn't in the formula.\n\nIn practice we don't know $p$, so we **plug in** $\\hat{p}$ from our sample: $SE \\approx \\sqrt{\\hat{p}(1-\\hat{p})/n}$.",
+      "check": {
+        "id": "c4",
+        "type": "number",
+        "prompt": "A poll of $n = 1000$ adults finds $\\hat{p} = 0.88$. Estimate the standard error. Give three decimal places.",
+        "answer": 0.0103,
+        "tolerance": 0.0006,
+        "wrongAnswers": [
+          {
+            "match": { "min": 0, "max": 0.0002 },
+            "misconception": { "text": "Forgets the square root in the standard error formula.", "source": { "kind": "model" } },
+            "fallback": {
+              "reExplanation": { "enabled": true, "text": "$0.88 \\times 0.12 / 1000 = 0.0001056$. That's the step **inside** the square root. The SE is its square root, which is a much bigger number." },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "number",
+                  "prompt": "What is $\\sqrt{0.0001}$?",
+                  "answer": 0.01,
+                  "tolerance": 0.0005
+                }
+              }
+            }
+          },
+          {
+            "match": { "min": 0.029, "max": 0.0305 },
+            "misconception": { "text": "Leaves out the $(1-p)$ factor.", "source": { "kind": "model" } },
+            "fallback": {
+              "reExplanation": { "enabled": true, "text": "The top of the fraction is $\\hat{p}(1-\\hat{p})$: the share who said yes **times** the share who didn't. Here that's $0.88 \\times 0.12$." }
+            }
+          },
+          {
+            "match": { "min": 10, "max": 10.5 },
+            "misconception": { "text": "Multiplies by the sample size instead of dividing by it.", "source": { "kind": "model" } },
+            "fallback": {
+              "reExplanation": { "enabled": true, "text": "$n$ goes in the **bottom** of the fraction. A bigger sample should give a smaller SE, so dividing by $n$ is what makes the SE shrink." }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": { "enabled": true, "text": "Work it in steps: $1 - \\hat{p} = 0.12$, then $\\hat{p}(1-\\hat{p})$, then divide by $n$, then take the square root." }
         },
         "alternatives": []
       }
@@ -97,7 +191,7 @@
     {
       "id": "m5",
       "title": "Bigger samples, smaller error",
-      "reading": "Look at where $n$ sits in the formula: under a square root, in the denominator. A bigger sample gives a smaller SE, but not in proportion. Because of the square root, you need four times the sample to cut the SE in half.",
+      "reading": "Look at where $n$ sits in the formula: under a square root, in the bottom of the fraction. A bigger sample gives a smaller SE, but not in proportion. Because of the square root, you need **four times** the sample to cut the SE in half.",
       "check": {
         "id": "c5",
         "type": "select",
@@ -114,27 +208,100 @@
             "match": { "optionId": "a" },
             "misconception": { "text": "Believes the standard error shrinks in proportion to $1/n$ rather than $1/\\sqrt{n}$.", "source": { "kind": "model" } },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "$n$ is inside a square root. Multiplying $n$ by 4 multiplies $\\sqrt{n}$ by $\\sqrt{4} = 2$, so the SE is divided by 2, not 4." }
+              "reExplanation": { "enabled": true, "text": "$n$ is inside a square root. Multiplying $n$ by 4 multiplies $\\sqrt{n}$ by $\\sqrt{4} = 2$, so the SE is divided by 2, not 4." },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "If $n$ is multiplied by 9, what is $\\sqrt{n}$ multiplied by?",
+                  "options": [
+                    { "id": "a", "text": "3" },
+                    { "id": "b", "text": "9" },
+                    { "id": "c", "text": "81" }
+                  ],
+                  "answer": "a"
+                }
+              }
             }
           },
           {
             "match": { "optionId": "c" },
             "misconception": { "text": "Believes sample size doesn't affect how much estimates vary.", "source": { "kind": "model" } },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "Larger samples average over more people, so their $\\hat{p}$ values bunch more tightly around $p$. That's why $n$ is in the denominator of the SE." }
+              "reExplanation": { "enabled": true, "text": "Larger samples average over more people, so their $\\hat{p}$ values bunch more tightly around $p$. That's why $n$ is in the bottom of the SE formula." }
             }
           }
         ],
         "generalFallback": {
-          "reExplanation": { "enabled": true, "text": "Find where $n$ sits in $SE = \\sqrt{p(1-p)/n}$ and try $n = 1000$ and $n = 4000$." }
+          "reExplanation": { "enabled": true, "text": "Try the formula with $n = 1000$ and then $n = 4000$, keeping $\\hat{p}$ the same." },
+          "simplerQuestion": {
+            "enabled": true,
+            "check": {
+              "type": "select",
+              "prompt": "Does a bigger sample make $\\hat{p}$ land closer to $p$, or farther away, on average?",
+              "options": [
+                { "id": "a", "text": "Closer" },
+                { "id": "b", "text": "Farther away" }
+              ],
+              "answer": "a"
+            }
+          }
         },
         "alternatives": []
       }
     },
     {
       "id": "m6",
+      "title": "Sample size, not population size",
+      "reading": "It's natural to expect that a bigger population needs a bigger sample. But the SE formula only has $n$, the number of people asked. As long as the sample is a small part of the population, the population's size barely changes the SE.\n\nThis is why a national poll of 1,000 people can be about as precise as a city poll of 1,000 people.",
+      "check": {
+        "id": "c6",
+        "type": "select",
+        "prompt": "Two polls each ask 1,000 random adults, and both find $\\hat{p}$ close to 0.5. One is in a city of 2 million adults, the other in a country of 200 million. Which estimate has the smaller standard error?",
+        "options": [
+          { "id": "a", "text": "The city poll" },
+          { "id": "b", "text": "The country poll" },
+          { "id": "c", "text": "About the same" }
+        ],
+        "answer": "c",
+        "wrongAnswers": [
+          {
+            "match": { "optionId": "a" },
+            "misconception": { "text": "Believes a sample covering a larger fraction of the population is much more precise, even when that fraction is tiny.", "source": { "kind": "model" } },
+            "fallback": {
+              "reExplanation": { "enabled": true, "text": "1,000 out of 2 million is still a tiny fraction (0.05%). The SE formula uses $n = 1000$ for both polls and the same $\\hat{p}$, so it gives the same answer." }
+            }
+          },
+          {
+            "match": { "optionId": "b" },
+            "misconception": { "text": "Believes the population size appears in the standard error.", "source": { "kind": "model" } },
+            "fallback": {
+              "reExplanation": { "enabled": true, "text": "Look for the population's size in $\\sqrt{\\hat{p}(1-\\hat{p})/n}$. It isn't there. Only $\\hat{p}$ and $n$ are, and both polls have the same values." },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "In the formula $SE = \\sqrt{\\hat{p}(1-\\hat{p})/n}$, what does $n$ stand for?",
+                  "options": [
+                    { "id": "a", "text": "The number of people asked" },
+                    { "id": "b", "text": "The number of people in the population" }
+                  ],
+                  "answer": "a"
+                }
+              }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": { "enabled": true, "text": "Put each poll's numbers into $\\sqrt{\\hat{p}(1-\\hat{p})/n}$ and compare." }
+        },
+        "alternatives": []
+      }
+    },
+    {
+      "id": "m7",
       "title": "Takeaways",
-      "reading": "A **point estimate** like $\\hat{p}$ is computed from a sample and estimates a **parameter** like $p$.\n\nEstimates vary from sample to sample. The **standard error** measures that spread, and it shrinks as $\\sqrt{n}$ grows."
+      "reading": "A **point estimate** like $\\hat{p} = x/n$ is computed from a sample. It estimates a **parameter** like $p$, which describes the whole population and is unknown.\n\nEstimates vary from sample to sample. The **standard error**, $\\sqrt{p(1-p)/n}$, measures that spread, and we estimate it by plugging in $\\hat{p}$.\n\nThe SE shrinks as the sample size $n$ grows, but only with $\\sqrt{n}$. The population's size barely matters."
     }
   ]
 }

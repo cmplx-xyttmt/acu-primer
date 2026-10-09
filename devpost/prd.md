@@ -78,7 +78,8 @@ Source: `scope.md > The Core Loop`, `scope.md > Explicitly Cut`.
 - **Unplanned wrong answer** (a typed value or an order nobody anticipated). The check has a general fallback that isn't tied to one misconception. The student is told the answer isn't quite right. Then:
   - if a simpler question is available, they're asked to try that first before going on;
   - otherwise they're told to re-read the material or think it through and try again, and pointed to the simpler explanation if one exists.
-- **The fallback fails too.** No further fallback. The lesson suggests going back through the material more carefully, and the student can carry on.
+- **After the fallback, one more try at the original.** A re-explanation ends with "Try the question again". A simpler question answered right leads back to the original question too (decided at slice 2).
+- **The fallback fails too** (the simpler question is wrong, or the original is wrong again on that try). No further fallback. The lesson suggests going back through the material more carefully, and the student can carry on.
 - As a student, I want help that fits the mistake I made, so I don't just see a red X.
   - [ ] Picking a specific wrong option shows the fallback written for that option's misconception, not a generic one.
   - [ ] Typing an unanticipated wrong answer shows the general fallback with the wording above.

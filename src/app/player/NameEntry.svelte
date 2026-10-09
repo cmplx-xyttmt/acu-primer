@@ -1,11 +1,13 @@
 <script lang="ts">
   import { lastName } from "../lib/progress.ts";
+  import ThemeSwitch from "./ThemeSwitch.svelte";
 
   let { title, onStart }: { title: string; onStart: (name: string) => void } = $props();
 
   let name = $state(lastName());
 </script>
 
+<div class="corner"><ThemeSwitch /></div>
 <main class="page entry">
   <h1>{title}</h1>
   <form
@@ -22,8 +24,15 @@
 </main>
 
 <style>
+  .corner {
+    display: flex;
+    justify-content: flex-end;
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: 0.9rem 16px 0;
+  }
   .entry {
-    padding-top: 18vh;
+    padding-top: 14vh;
   }
   form {
     display: grid;

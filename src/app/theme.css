@@ -21,9 +21,11 @@
   --rise: 200ms;
 }
 
+/* Dark: "Night desk". Applies when the device is dark and the student hasn't picked light,
+   or when the student picked dark (data-theme is set by src/app/lib/theme.ts). The two blocks
+   hold the same values; CSS can't share one block between a media query and a selector. */
 @media (prefers-color-scheme: dark) {
-  :root {
-    /* Dark: "Night desk" */
+  :root:not([data-theme="light"]) {
     --bg: #14161a;
     --surface: #1c1f24;
     --border: #33373e;
@@ -38,7 +40,30 @@
     --radius: 6px;
     --font: "IBM Plex Sans", system-ui, sans-serif;
     --font-num: "IBM Plex Mono", ui-monospace, monospace;
+    color-scheme: dark;
   }
+}
+
+:root[data-theme="dark"] {
+  --bg: #14161a;
+  --surface: #1c1f24;
+  --border: #33373e;
+  --text: #e6e3dc;
+  --text-2: #9b978f;
+  --accent: #f2b84b;
+  --accent-text: #14161a;
+  --hover-border: #f2b84b;
+  --fallback-bg: #221e14;
+  --fallback-edge: #f2b84b;
+  --right: #7fc28e;
+  --radius: 6px;
+  --font: "IBM Plex Sans", system-ui, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
 }
 
 @media (prefers-reduced-motion: reduce) {

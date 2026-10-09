@@ -27,7 +27,7 @@ Success is all eight steps working on one stats section, in a demo under three m
 **Student side (the player)**
 - **Name entry.** The course title and one field for a name.
 - **Course overview.** The list of modules, each with its progress, and one **Continue** button that goes to where the student stopped. Lessons that aren't signed off don't appear (see `States and Boundaries > Unreviewed lessons`).
-- **Module.** One module at a time: short reading, then a check. It moves forward one module at a time, with no long scrolling page.
+- **Module.** One module at a time: short reading, then a check. It moves forward one module at a time, with no long scrolling page. A **Back** button goes to the previous module to re-read it, with the answer already given shown and locked. The browser's Back button (or a swipe back on a phone) does the same.
 
 **Author side (behind the gate)**
 - **Authoring session.** Where a book section becomes a lesson. The step-by-step design is left thin on purpose (see `Features and Behavior > Authoring session`).
@@ -43,7 +43,7 @@ Established by Isaac:
 Chosen from the three directions shown in `prd.html` (Isaac isn't a designer and asked to see options):
 - **Light mode: "Clean study."** White background, one friendly sans-serif throughout (Plus Jakarta Sans in the preview), rounded answer buttons, a blue accent. Closest to Udacity.
 - **Dark mode: "Night desk."** Near-black background, a plain sans-serif with a monospace for numbers and code (IBM Plex Sans and IBM Plex Mono in the preview), an amber accent.
-- The mode follows the device's light or dark setting.
+- The mode follows the device's light or dark setting by default. A small switch on every player screen cycles Auto, Light and Dark, and the choice is remembered on that device (added at the slice 1 review).
 - Fonts have to ship with the app, so the offline player doesn't fall back to system fonts.
 
 `4-spec` turns this into specific colors and type.
@@ -140,6 +140,8 @@ Source: `scope.md > The POC Boundary`.
 - **Offline looks the same as online** — the only difference is that events wait in the browser.
 - **The per-student view is a log of the student's path** — what a teacher needs beyond that needs research, since Isaac isn't a teacher.
 - **Simple, uncluttered, smooth, with "Clean study" for light mode and "Night desk" for dark** — picked from three options at review.
+- **A light/dark switch, defaulting to the device setting** — Isaac found no way to switch while testing slice 1; students may want it too.
+- **Back goes to the previous module for re-reading, not re-answering** — the student's earlier answer stays locked, and the browser's Back button does the same thing (slice 1 review).
 - **First check types: pick an answer, type a number, sort into categories, predict then simulate, predict the output, fill in a trace table** — enough for the stats demo and the CLRS course. The rest wait until a course needs them.
 - **Misconceptions from published catalogues first, with the model as a supplement** — from the Sep 25 research: models don't anticipate real student errors well.
 - **Every fallback is written ahead of time and approved** — from the same research: model-written stats hints still had errors after filtering.

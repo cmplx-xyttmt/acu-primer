@@ -4,10 +4,16 @@
   import { renderInline } from "../../lib/math.ts";
 
   type NumberCheck = Extract<Check | SimpleCheck, { type: "number" }>;
-  let { check, locked, onAnswer }: { check: NumberCheck; locked: boolean; onAnswer: (a: Answer) => void } =
-    $props();
+  let {
+    check,
+    locked,
+    shown,
+    onAnswer,
+  }: { check: NumberCheck; locked: boolean; shown: boolean; onAnswer: (a: Answer) => void } = $props();
 
-  let raw = $state("");
+  // shown: the student finished this module before and came back to re-read it.
+  // svelte-ignore state_referenced_locally (ModuleView re-creates this per module)
+  let raw = $state(shown ? String(check.answer) : "");
   const value = $derived(Number(raw.trim().replace(",", ".")));
   const valid = $derived(raw.trim() !== "" && Number.isFinite(value));
 </script>

@@ -9,5 +9,9 @@ import "@fontsource/ibm-plex-mono/latin-400.css";
 import "katex/dist/katex.min.css";
 import "./theme.css";
 import App from "./App.svelte";
+import { applyTheme, loadTheme } from "./lib/theme.ts";
+
+// Apply the saved light/dark choice before the first render, so the page doesn't flash.
+applyTheme(loadTheme());
 
 mount(App, { target: document.getElementById("app")! });

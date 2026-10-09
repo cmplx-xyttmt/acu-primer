@@ -4,10 +4,16 @@
   import { renderInline } from "../../lib/math.ts";
 
   type SelectCheck = Extract<Check | SimpleCheck, { type: "select" }>;
-  let { check, locked, onAnswer }: { check: SelectCheck; locked: boolean; onAnswer: (a: Answer) => void } =
-    $props();
+  let {
+    check,
+    locked,
+    shown,
+    onAnswer,
+  }: { check: SelectCheck; locked: boolean; shown: boolean; onAnswer: (a: Answer) => void } = $props();
 
-  let picked = $state<string | null>(null);
+  // shown: the student finished this module before and came back to re-read it.
+  // svelte-ignore state_referenced_locally (ModuleView re-creates this per module)
+  let picked = $state<string | null>(shown ? check.answer : null);
 </script>
 
 <p class="prompt">{@html renderInline(check.prompt)}</p>

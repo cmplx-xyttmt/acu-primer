@@ -1,32 +1,38 @@
 <script lang="ts">
-  // One module at a time: reading, then the check. Moving forward never reloads the page.
+  // One module at a time: reading, then the check. Player decides which module shows, so
+  // the in-app Back button and the browser's Back button follow the same history.
   import { fly } from "svelte/transition";
   import type { Lesson } from "../../shared/lesson.ts";
   import { isRight, type Answer } from "../../shared/grading.ts";
   import { renderReading } from "../lib/math.ts";
   import Select from "./checks/Select.svelte";
   import NumberInput from "./checks/NumberInput.svelte";
+  import ThemeSwitch from "./ThemeSwitch.svelte";
 
   let {
     lesson,
-    startIndex,
-    onModuleDone,
-    onLessonDone,
+    index,
+    done,
+    onNext,
+    onBack,
     onExit,
   }: {
     lesson: Lesson;
-    startIndex: number;
-    onModuleDone: (moduleId: string, nextIndex: number) => void;
-    onLessonDone: () => void;
+    index: number;
+    done: string[]; // ids of modules already finished
+    onNext: () => void;
+    onBack: () => void;
     onExit: () => void;
   } = $props();
 
-  // svelte-ignore state_referenced_locally
-  let index = $state(Math.min(startIndex, lesson.modules.length - 1));
-  let result = $state<"none" | "right" | "wrong">("none");
+  // Answers given during this visit, by module id. A module finished before (going back to
+  // re-read it) counts as answered right, with the right answer shown and locked.
+  let answered = $state<Record<string, "right" | "wrong">>({});
 
   const mod = $derived(lesson.modules[index]);
   const total = $derived(lesson.modules.length);
+  const reread = $derived(done.includes(mod.id));
+  const result = $derived(answered[mod.id] ?? (reread ? "right" : "none"));
   const canMoveOn = $derived(!mod.check || result === "right");
 
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -35,24 +41,16 @@
   function answer(a: Answer) {
     if (!mod.check) return;
     // Slice 2 replaces "try again" with the fallback for this wrong answer.
-    result = isRight(mod.check, a) ? "right" : "wrong";
-  }
-
-  function next() {
-    onModuleDone(mod.id, index + 1);
-    if (index + 1 >= total) {
-      onLessonDone();
-      return;
-    }
-    index += 1;
-    result = "none";
-    scrollTo({ top: 0 });
+    answered[mod.id] = isRight(mod.check, a) ? "right" : "wrong";
   }
 </script>
 
 <div class="top">
   <button class="btn-quiet" onclick={onExit}>Overview</button>
-  <span class="num count">{index + 1} / {total}</span>
+  <span class="right-side">
+    <span class="num count">{index + 1} / {total}</span>
+    <ThemeSwitch />
+  </span>
 </div>
 <div class="bar"><span style="width: {(100 * (index + 1)) / total}%"></span></div>
 
@@ -65,9 +63,9 @@
       {#if mod.check}
         <section class="check">
           {#if mod.check.type === "select"}
-            <Select check={mod.check} locked={result === "right"} onAnswer={answer} />
+            <Select check={mod.check} locked={result === "right"} shown={reread} onAnswer={answer} />
           {:else if mod.check.type === "number"}
-            <NumberInput check={mod.check} locked={result === "right"} onAnswer={answer} />
+            <NumberInput check={mod.check} locked={result === "right"} shown={reread} onAnswer={answer} />
           {/if}
 
           {#if result === "right"}
@@ -78,9 +76,12 @@
         </section>
       {/if}
 
-      {#if canMoveOn}
-        <button class="btn next" onclick={next}>{index + 1 >= total ? "Finish lesson" : "Continue"}</button>
-      {/if}
+      <div class="moves">
+        <button class="btn-quiet" onclick={onBack}>Back</button>
+        {#if canMoveOn}
+          <button class="btn" onclick={onNext}>{index + 1 >= total ? "Finish lesson" : "Continue"}</button>
+        {/if}
+      </div>
     </article>
   {/key}
 </main>
@@ -125,7 +126,15 @@
   .right {
     color: var(--right);
   }
-  .next {
+  .moves {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-top: 1.75rem;
+  }
+  .right-side {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
   }
 </style>

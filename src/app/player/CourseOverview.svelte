@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { CourseResponse } from "../../shared/lesson.ts";
   import { lessonProgress, type CourseProgress } from "../lib/progress.ts";
+  import ThemeSwitch from "./ThemeSwitch.svelte";
 
   let {
     data,
@@ -30,10 +31,13 @@
 </script>
 
 <main class="page">
-  <p class="muted hello">
-    Hi, {name}.
-    <button class="btn-quiet" onclick={onChangeName}>Not you?</button>
-  </p>
+  <div class="hello">
+    <p class="muted">
+      Hi, {name}.
+      <button class="btn-quiet" onclick={onChangeName}>Not you?</button>
+    </p>
+    <ThemeSwitch />
+  </div>
   <h1>{data.course.title}</h1>
 
   {#if rows.length === 0}
@@ -64,6 +68,12 @@
 
 <style>
   .hello {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+  .hello p {
     margin: 0;
   }
   ul {

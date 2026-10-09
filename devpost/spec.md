@@ -64,7 +64,7 @@ To check early in the build (not verified in planning):
 - **Budget guard:** set a $20 monthly spend limit in the Anthropic Console before the first call.
 
 ## Look and Feel
-From `prd.md > Look and Feel`. The mode follows the device setting (`prefers-color-scheme`).
+From `prd.md > Look and Feel`. The mode follows the device setting (`prefers-color-scheme`) unless the student picks Light or Dark with the switch (`ThemeSwitch.svelte`, `src/app/lib/theme.ts`). The choice is saved in `localStorage` as `acu:theme` and sets `data-theme` on `<html>` before the first render.
 
 **Light mode, "Clean study"**
 - Colors: background `#FFFFFF`, surfaces and answer buttons `#F3F4F6`, text `#111827`, secondary text `#6B7280`, accent `#2563EB`, hover border `#93B4F5`, fallback panel `#EFF4FF`.
@@ -109,7 +109,7 @@ PRD ref: `prd.md > Fallbacks after a wrong answer`.
 Svelte components under `src/app/player/`. Implements `prd.md > Course overview and progress`, `prd.md > Modules and checks`, `prd.md > Fallbacks after a wrong answer`.
 - **Name entry** (`NameEntry.svelte`): course title and a name field.
 - **Course overview** (`CourseOverview.svelte`): modules with progress and the **Continue** button. It shows a "not yet reviewed" badge on a lesson when the owner has switched those on. With no visible lessons, it shows "Nothing is ready in this course yet."
-- **Module view** (`ModuleView.svelte`): the reading, then the check, then any fallback (`Fallback.svelte`), moving forward one module at a time.
+- **Module view** (`ModuleView.svelte`): the reading, then the check, then any fallback (`Fallback.svelte`), moving forward one module at a time. **Back** returns to the previous module, where a finished check shows its right answer, locked. `Player.svelte` adds a browser history entry for each module (same address, different `history.state`), so the browser's Back button steps through the same modules.
 - **Check components** under `checks/`, one per type:
   - `Select.svelte`, `NumberInput.svelte` and `Categorize.svelte` are the stats PoC.
   - `PredictSimulate.svelte` wraps the sampling simulation (`SamplingSim.svelte`). The student commits to a prediction, then the simulation unlocks. The simulation draws many samples of size n from a population with proportion p and plots the p̂ values. The lesson sets p, the sample sizes and the prediction question. The model configures the simulation and never writes code for it.
@@ -243,15 +243,18 @@ acu-primer/
 │   └── app/
 │       ├── main.ts          # starts the Svelte app, registers the service worker
 │       ├── App.svelte       # picks the screen from the address
-│       ├── router.ts        # a small address-to-screen router
+│       ├── router.svelte.ts # a small address-to-screen router
 │       ├── theme.css        # colors, fonts, motion for both modes
 │       ├── lib/
 │       │   ├── api.ts       # fetch helpers for /api/*
 │       │   ├── progress.ts  # localStorage progress
 │       │   ├── eventQueue.ts# queued events, sending, retries
 │       │   ├── pdfPages.ts  # cut a page range out of a PDF (pdf-lib)
+│       │   ├── theme.ts     # the saved light/dark choice
 │       │   └── math.ts      # KaTeX rendering
 │       ├── player/
+│       │   ├── Player.svelte       # one course for one student; screens and history
+│       │   ├── ThemeSwitch.svelte  # Auto / Light / Dark
 │       │   ├── NameEntry.svelte
 │       │   ├── CourseOverview.svelte
 │       │   ├── ModuleView.svelte

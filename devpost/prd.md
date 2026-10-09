@@ -173,6 +173,7 @@ Source: `scope.md > The POC Boundary`.
 - **Progress across devices.** It would need accounts.
 
 ## Possible Later Enhancements
+- **A fuller authoring pipeline:** an outline step, checks done by code, simulated students at different levels, a teaching reviewer, and a review report for the author. Ideas and cost estimates in `authoring-pipeline.md`.
 - **Recap button.** A recap of what the student has learned so far, with an optional quick quiz to check they remember.
 - Review per node, where the reviewer walks every branch (`scope.md > Later`).
 - Smarter adaptation, informed by research on adaptive learning.

@@ -144,7 +144,7 @@ Svelte components under `src/app/player/`. Implements `prd.md > Course overview 
 
 ### Claude calls
 `src/worker/claude.ts`. Implements `prd.md > Authoring session`.
-- **Draft:** a system prompt with the lesson rules (short modules, frequent checks, split prose instead of trivial checks, only the supported check types, a fallback for each wrong answer, a general fallback per check). Then the lesson JSON Schema as the structured output format, the misconception catalogue, and the cut pages by file id. It streams, with effort `high`.
+- **Draft:** a system prompt with the lesson rules (short modules, frequent checks, split prose instead of trivial checks, only the supported check types, a fallback for each wrong answer, a general fallback per check, every symbol defined where it's used and restated at each formula, and checks that ask why as well as what). Then the lesson JSON Schema as the structured output format, the misconception catalogue, and the cut pages by file id. It streams, with effort `high`.
 - **Revise:** the current part of the lesson, the author's instruction, and the JSON Schema for just that part. Effort `medium`.
 - The system prompt and schema come first and are marked for prompt caching, so repeated calls on the same section cost less.
 - The Worker checks every response against the Zod schema before saving. On a failed check it retries once, sending the error back to Claude. After that it shows the error to the author.

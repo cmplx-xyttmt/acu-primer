@@ -11,8 +11,8 @@
     "test": "vitest run",
     "check": "tsc -p tsconfig.worker.json && tsc -p tsconfig.node.json && svelte-check --tsconfig ./tsconfig.json",
     "types": "wrangler types src/worker/worker-configuration.d.ts",
-    "db:migrate:local": "wrangler d1 migrations apply acu-primer --local",
-    "db:migrate:remote": "wrangler d1 migrations apply acu-primer --remote",
+    "db:migrate:local": "wrangler d1 migrations apply acu-primer --local -c wrangler.jsonc",
+    "db:migrate:remote": "wrangler d1 migrations apply acu-primer --remote -c wrangler.jsonc",
     "import:local": "tsx scripts/import-lesson.ts --local",
     "import:remote": "tsx scripts/import-lesson.ts --remote"
   },

@@ -1,24 +1,28 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "acu-primer",
-  "main": "src/worker/index.ts",
-  "compatibility_date": "2026-09-20",
-  "observability": { "enabled": true },
-  // The Svelte app is served as static files. Unknown paths like /c/openintro-sampling
-  // get index.html (single-page app), and only /api/* runs the Worker.
-  "assets": {
-    "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
-  },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "acu-primer",
-      "database_id": "00000000-0000-0000-0000-000000000000",
-      "migrations_dir": "migrations"
-    }
-  ],
-  "vars": {
-    "DRAFT_MODEL": "claude-opus-5-5"
-  }
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "acu-primer",
+	"main": "src/worker/index.ts",
+	"compatibility_date": "2026-09-20",
+	"observability": {
+		"enabled": true
+	},
+	// The Svelte app is served as static files. Unknown paths like /c/openintro-sampling
+	// get index.html (single-page app), and only /api/* runs the Worker.
+	"assets": {
+		"not_found_handling": "single-page-application",
+		"run_worker_first": [
+			"/api/*"
+		]
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "acu-primer",
+			"database_id": "d4be1d1b-7771-49a5-a344-e698d52affbf",
+			"migrations_dir": "migrations"
+		}
+	],
+	"vars": {
+		"DRAFT_MODEL": "claude-opus-5-5"
+	}
 }

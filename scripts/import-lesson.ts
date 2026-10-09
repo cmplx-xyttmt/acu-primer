@@ -60,7 +60,10 @@ if (failed) process.exit(1);
 
 const file = join(mkdtempSync(join(tmpdir(), "acu-import-")), "import.sql");
 writeFileSync(file, statements.join("\n"));
-execFileSync("npx", ["wrangler", "d1", "execute", "acu-primer", target, "--file", file], { stdio: "inherit" });
+// -c skips the redirect to the last build's config in .wrangler/deploy/config.json.
+execFileSync("npx", ["wrangler", "d1", "execute", "acu-primer", target, "-c", "wrangler.jsonc", "--file", file], {
+  stdio: "inherit",
+});
 
 function z_pretty(error: import("zod").ZodError) {
   return error.issues.map((i) => `  ${i.path.join(".")}: ${i.message}`).join("\n");

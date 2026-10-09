@@ -8,12 +8,14 @@
     name,
     progress,
     onOpen,
+    onIntro,
     onChangeName,
   }: {
     data: CourseResponse;
     name: string;
     progress: CourseProgress;
-    onOpen: (lessonId: string) => void;
+    onOpen: (lessonId: string) => void; // straight to where the student stopped
+    onIntro: (lessonId: string) => void; // the lesson's outcomes and module list
     onChangeName: () => void;
   } = $props();
 
@@ -53,7 +55,7 @@
     <ul>
       {#each rows as row (row.id)}
         <li>
-          <button class="row" onclick={() => onOpen(row.id)}>
+          <button class="row" onclick={() => onIntro(row.id)}>
             <span class="title">
               {row.content.title}
               {#if row.status === "unreviewed"}<span class="badge">Not yet reviewed</span>{/if}

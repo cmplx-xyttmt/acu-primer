@@ -88,7 +88,7 @@ From `prd.md > Look and Feel`. The mode follows the device setting (`prefers-col
 
 ### Lesson format
 The shared schema in `src/shared/lesson.ts`, written in Zod. Everything else depends on it. It's a new format, with ideas from the content graph (checks carry their wrong answers, and each wrong answer names a misconception) but none of its code.
-- A **lesson** has an id, a title, a source (book and pages) and a list of **modules**.
+- A **lesson** has an id, a title, a source (book and pages), its **outcomes** (one line each: what a student can do by the end; at least one) and a list of **modules**.
 - A **module** has a title, short reading (text with inline math), and at most one **check**.
 - A **check** has a type from the first supported list (`select`, `number`, `categorize`, `predict_simulate`, `predict_output`, `trace_table`), a prompt, the fields its type needs, and the right answer. It also has:
   - `wrongAnswers`: each one says what it matches (an option, a value range, a category mistake), names a misconception (text, plus a source: `catalogue` with a reference, or `model`), and gives a **fallback**;
@@ -108,6 +108,7 @@ PRD ref: `prd.md > Fallbacks after a wrong answer`.
 ### Player
 Svelte components under `src/app/player/`. Implements `prd.md > Course overview and progress`, `prd.md > Modules and checks`, `prd.md > Fallbacks after a wrong answer`.
 - **Name entry** (`NameEntry.svelte`): course title and a name field.
+- **Lesson intro** (`LessonIntro.svelte`): the outcomes, then `LessonOutline.svelte` (every module with passed / skipped / here / locked), then Start or Continue. `ModuleView`'s **Contents** button shows the same outline in a `<dialog>`. Which modules can be opened is `isReached()` in `progress.ts`.
 - **Course overview** (`CourseOverview.svelte`): modules with progress and the **Continue** button. It shows a "not yet reviewed" badge on a lesson when the owner has switched those on. With no visible lessons, it shows "Nothing is ready in this course yet."
 - **Module view** (`ModuleView.svelte`): the reading, then the check, then any fallback (`Fallback.svelte`), moving forward one module at a time. **Back** returns to the previous module, where a finished check shows its right answer, locked. `Player.svelte` adds a browser history entry for each module (same address, different `history.state`), so the browser's Back button steps through the same modules.
 - **Check components** under `checks/`, one per type:
@@ -255,6 +256,8 @@ acu-primer/
 │       ├── player/
 │       │   ├── Player.svelte       # one course for one student; screens and history
 │       │   ├── ThemeSwitch.svelte  # Auto / Light / Dark
+│       │   ├── LessonIntro.svelte  # outcomes and the module list
+│       │   ├── LessonOutline.svelte # module list, shared with Contents
 │       │   ├── NameEntry.svelte
 │       │   ├── CourseOverview.svelte
 │       │   ├── ModuleView.svelte

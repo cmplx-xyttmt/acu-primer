@@ -90,6 +90,9 @@ export const Lesson = z.strictObject({
   id,
   title: text,
   source: z.strictObject({ book: text, pages: text }),
+  // What a student can do by the end, one line each, shown on the lesson intro. Written
+  // first, so the modules can be checked against them.
+  outcomes: z.array(text).min(1),
   modules: z.array(Module).min(1),
 });
 

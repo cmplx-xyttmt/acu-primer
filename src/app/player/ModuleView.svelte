@@ -10,24 +10,30 @@
   import NumberInput from "./checks/NumberInput.svelte";
   import ThemeSwitch from "./ThemeSwitch.svelte";
   import Fallback from "./Fallback.svelte";
+  import LessonOutline from "./LessonOutline.svelte";
+  import type { LessonProgress } from "../lib/progress.ts";
 
   let {
     lesson,
     index,
-    done,
+    progress,
     onNext,
     onSkip,
     onBack,
     onExit,
+    onJump,
   }: {
     lesson: Lesson;
     index: number;
-    done: string[]; // ids of modules already finished
+    progress: LessonProgress;
     onNext: () => void;
     onSkip: () => void; // "Skip for now" after the last hint: move on without passing
     onBack: () => void;
     onExit: () => void;
+    onJump: (index: number) => void; // open a module the student has reached, from Contents
   } = $props();
+
+  let contents = $state<HTMLDialogElement>();
 
   // Where each check stands during this visit, by module id. A module finished before
   // (going back to re-read it) counts as right, with the right answer shown and locked.
@@ -53,7 +59,7 @@
 
   const mod = $derived(lesson.modules[index]);
   const total = $derived(lesson.modules.length);
-  const reread = $derived(done.includes(mod.id));
+  const reread = $derived(progress.done.includes(mod.id));
   const cs = $derived(checks[mod.id] ?? fresh());
   // Finished on an earlier visit and nothing answered since: show the right answer, locked.
   const showSaved = $derived(reread && !(mod.id in checks));
@@ -98,13 +104,37 @@
 </script>
 
 <div class="top">
-  <button class="btn-quiet" onclick={onExit}>Overview</button>
+  <span class="left-side">
+    <button class="btn-quiet" onclick={onExit}>Overview</button>
+    <button class="btn-quiet" onclick={() => contents?.showModal()}>Contents</button>
+  </span>
   <span class="right-side">
     <span class="num count">{index + 1} / {total}</span>
     <ThemeSwitch />
   </span>
 </div>
 <div class="bar"><span style="width: {(100 * (index + 1)) / total}%"></span></div>
+
+<dialog
+  bind:this={contents}
+  class="contents"
+  aria-label="Contents"
+  onclick={(e) => e.target === contents && contents?.close()}
+>
+  <div class="contents-head">
+    <strong>{lesson.title}</strong>
+    <button class="btn-quiet" onclick={() => contents?.close()}>Close</button>
+  </div>
+  <LessonOutline
+    {lesson}
+    {progress}
+    here={index}
+    onPick={(i) => {
+      contents?.close();
+      if (i !== index) onJump(i);
+    }}
+  />
+</dialog>
 
 <main class="page">
   {#key index}
@@ -224,6 +254,29 @@
     justify-content: space-between;
     align-items: center;
     margin-top: 1.75rem;
+  }
+  .left-side {
+    display: flex;
+    gap: 1rem;
+  }
+  .contents {
+    width: min(34rem, calc(100vw - 32px));
+    max-height: calc(100vh - 64px);
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+  }
+  .contents::backdrop {
+    background: rgb(0 0 0 / 0.45);
+  }
+  .contents-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
   }
   .right-side {
     display: flex;

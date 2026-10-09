@@ -21,10 +21,14 @@
   import NameEntry from "./NameEntry.svelte";
   import CourseOverview from "./CourseOverview.svelte";
   import ModuleView from "./ModuleView.svelte";
+  import LessonIntro from "./LessonIntro.svelte";
 
   let { slug }: { slug: string } = $props();
 
-  type View = { kind: "overview" } | { kind: "module"; lessonId: string; index: number };
+  type View =
+    | { kind: "overview" }
+    | { kind: "intro"; lessonId: string }
+    | { kind: "module"; lessonId: string; index: number };
 
   let data = $state<CourseResponse | null>(null);
   let loadError = $state("");
@@ -40,7 +44,7 @@
 
   const openLesson = $derived.by(() => {
     const v = view;
-    return v.kind === "module" ? (data?.lessons.find((l) => l.id === v.lessonId) ?? null) : null;
+    return v.kind !== "overview" ? (data?.lessons.find((l) => l.id === v.lessonId) ?? null) : null;
   });
 
   function show(next: View, mode: "push" | "replace" = "push") {
@@ -115,7 +119,7 @@
   <ModuleView
     lesson={openLesson.content}
     {index}
-    done={lessonProgress(progress, lessonId).done}
+    progress={lessonProgress(progress, lessonId)}
     onNext={() => {
       update(lessonId, (p) => passModule(p, openLesson.content.modules[index].id, index));
       advance(lessonId, index, openLesson.content.modules.map((m) => m.id));
@@ -126,6 +130,16 @@
     }}
     onBack={() => history.back()}
     onExit={() => show({ kind: "overview" })}
+    onJump={(i) => show({ kind: "module", lessonId, index: i })}
+  />
+{:else if view.kind === "intro" && openLesson}
+  {@const lessonId = openLesson.id}
+  <LessonIntro
+    lesson={openLesson.content}
+    progress={lessonProgress(progress, lessonId)}
+    onStart={() => open(lessonId)}
+    onPick={(i) => show({ kind: "module", lessonId, index: i })}
+    onExit={() => show({ kind: "overview" })}
   />
 {:else}
   <CourseOverview
@@ -133,6 +147,7 @@
     {name}
     {progress}
     onOpen={open}
+    onIntro={(id) => show({ kind: "intro", lessonId: id })}
     onChangeName={() => (name = "")}
   />
 {/if}

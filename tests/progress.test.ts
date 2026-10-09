@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { isComplete, passModule, resumeIndex, skipModule, type LessonProgress } from "../src/app/lib/progress.ts";
+import {
+  isComplete,
+  isReached,
+  passModule,
+  resumeIndex,
+  skipModule,
+  type LessonProgress,
+} from "../src/app/lib/progress.ts";
 
 const ids = ["m1", "m2", "m3"];
 const start: LessonProgress = { done: [], skipped: [], current: 0 };
@@ -44,5 +51,21 @@ describe("moving through a lesson", () => {
     const p = skipModule(passModule(start, "m1", 0), "m1", 0);
     expect(p.skipped).toEqual([]);
     expect(p.done).toEqual(["m1"]);
+  });
+});
+
+describe("isReached", () => {
+  it("opens modules up to where the student stopped, and locks the rest", () => {
+    const p = passModule(start, "m1", 0);
+    expect([0, 1, 2].map((i) => isReached(p, ids, i))).toEqual([true, true, false]);
+  });
+
+  it("keeps the last module reachable once the lesson's end is reached", () => {
+    const p = passModule(passModule(passModule(start, "m1", 0), "m2", 1), "m3", 2);
+    expect([0, 1, 2].map((i) => isReached(p, ids, i))).toEqual([true, true, true]);
+  });
+
+  it("on a first visit, only module 1 is open", () => {
+    expect([0, 1, 2].map((i) => isReached(start, ids, i))).toEqual([true, false, false]);
   });
 });

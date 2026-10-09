@@ -27,7 +27,8 @@ Success is all eight steps working on one stats section, in a demo under three m
 **Student side (the player)**
 - **Name entry.** The course title and one field for a name.
 - **Course overview.** The list of modules, each with its progress, and one **Continue** button that goes to where the student stopped. Lessons that aren't signed off don't appear (see `States and Boundaries > Unreviewed lessons`).
-- **Module.** One module at a time: short reading, then a check. It moves forward one module at a time, with no long scrolling page. A **Back** button goes to the previous module to re-read it, with the answer already given shown and locked. The browser's Back button (or a swipe back on a phone) does the same.
+- **Lesson intro.** Opened by clicking a lesson on the overview: what the student will be able to do by the end (the lesson's outcomes), every module title with ticks for passed and a mark for skipped, and **Start** or **Continue**. The overview's own **Continue** still goes straight to the module, so getting back in stays one click (added at slice 2b).
+- **Module.** One module at a time: short reading, then a check. It moves forward one module at a time, with no long scrolling page. A **Back** button goes to the previous module to re-read it, with the answer already given shown and locked. The browser's Back button (or a swipe back on a phone) does the same. A **Contents** button opens the module list over the page; modules already reached can be opened from it, and later ones are locked so the checks can't be jumped over.
 
 **Author side (behind the gate)**
 - **Authoring session.** Where a book section becomes a lesson. The step-by-step design is left thin on purpose (see `Features and Behavior > Authoring session`).

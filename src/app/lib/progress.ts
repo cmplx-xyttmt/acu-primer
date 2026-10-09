@@ -71,6 +71,13 @@ export function isComplete(p: LessonProgress, moduleIds: string[]): boolean {
   return moduleIds.every((id) => p.done.includes(id));
 }
 
+/** Whether a student may open this module from the contents list: one they've passed or
+ *  skipped, or any up to where they stopped. Later modules stay locked. */
+export function isReached(p: LessonProgress, moduleIds: string[], index: number): boolean {
+  const id = moduleIds[index];
+  return index <= Math.min(p.current, moduleIds.length - 1) || p.done.includes(id) || p.skipped.includes(id);
+}
+
 /** Where Continue opens: where the student stopped, then the first skipped module once
  *  they've reached the end, and the start again for a complete lesson. */
 export function resumeIndex(p: LessonProgress, moduleIds: string[]): number {

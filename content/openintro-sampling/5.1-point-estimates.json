@@ -1,7 +1,16 @@
 {
   "id": "openintro-5-1-fixture",
   "title": "Point estimates and sampling variability",
-  "source": { "book": "OpenIntro Statistics, 4th ed.", "pages": "Section 5.1" },
+  "source": {
+    "book": "OpenIntro Statistics, 4th ed.",
+    "pages": "Section 5.1"
+  },
+  "outcomes": [
+    "Tell a parameter ($p$) from a point estimate ($\\hat{p}$), and compute $\\hat{p} = x/n$ from a sample.",
+    "Explain why two careful random samples give different estimates.",
+    "Estimate a standard error from $\\hat{p}$ and $n$, and say what it measures.",
+    "Predict how the standard error changes with the sample size, and explain why the population's size barely matters."
+  ],
   "modules": [
     {
       "id": "m1",
@@ -12,25 +21,50 @@
         "type": "select",
         "prompt": "A poll asks 1,000 randomly chosen adults, and 887 say they support more solar farms. What is 0.887?",
         "options": [
-          { "id": "a", "text": "The parameter $p$" },
-          { "id": "b", "text": "A point estimate $\\hat{p}$" },
-          { "id": "c", "text": "The exact share of all adults who support solar farms" }
+          {
+            "id": "a",
+            "text": "The parameter $p$"
+          },
+          {
+            "id": "b",
+            "text": "A point estimate $\\hat{p}$"
+          },
+          {
+            "id": "c",
+            "text": "The exact share of all adults who support solar farms"
+          }
         ],
         "answer": "b",
         "wrongAnswers": [
           {
-            "match": { "optionId": "a" },
-            "misconception": { "text": "Treats a number computed from a sample as the population parameter.", "source": { "kind": "model" } },
+            "match": {
+              "optionId": "a"
+            },
+            "misconception": {
+              "text": "Treats a number computed from a sample as the population parameter.",
+              "source": {
+                "kind": "model"
+              }
+            },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "$p$ describes **everyone** in the population, and nobody knows it. 0.887 came from the 1,000 people who were asked, so it was computed from a sample. Numbers computed from a sample get a hat: $\\hat{p}$." },
+              "reExplanation": {
+                "enabled": true,
+                "text": "$p$ describes **everyone** in the population, and nobody knows it. 0.887 came from the 1,000 people who were asked, so it was computed from a sample. Numbers computed from a sample get a hat: $\\hat{p}$."
+              },
               "simplerQuestion": {
                 "enabled": true,
                 "check": {
                   "type": "select",
                   "prompt": "Where did the number 0.887 come from?",
                   "options": [
-                    { "id": "a", "text": "Every adult in the country" },
-                    { "id": "b", "text": "The 1,000 adults who were asked" }
+                    {
+                      "id": "a",
+                      "text": "Every adult in the country"
+                    },
+                    {
+                      "id": "b",
+                      "text": "The 1,000 adults who were asked"
+                    }
                   ],
                   "answer": "b"
                 }
@@ -38,15 +72,28 @@
             }
           },
           {
-            "match": { "optionId": "c" },
-            "misconception": { "text": "Believes a sample statistic equals the population value exactly.", "source": { "kind": "model" } },
+            "match": {
+              "optionId": "c"
+            },
+            "misconception": {
+              "text": "Believes a sample statistic equals the population value exactly.",
+              "source": {
+                "kind": "model"
+              }
+            },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "A different random 1,000 people would give a slightly different share, maybe 0.879 or 0.893. So 0.887 is close to the share among all adults, but it isn't that exact value. It's an estimate of it." }
+              "reExplanation": {
+                "enabled": true,
+                "text": "A different random 1,000 people would give a slightly different share, maybe 0.879 or 0.893. So 0.887 is close to the share among all adults, but it isn't that exact value. It's an estimate of it."
+              }
             }
           }
         ],
         "generalFallback": {
-          "reExplanation": { "enabled": true, "text": "Ask where the number came from: everyone, or the people who were asked? Numbers from the people asked are estimates." }
+          "reExplanation": {
+            "enabled": true,
+            "text": "Ask where the number came from: everyone, or the people who were asked? Numbers from the people asked are estimates."
+          }
         },
         "alternatives": []
       }
@@ -63,10 +110,21 @@
         "tolerance": 0.005,
         "wrongAnswers": [
           {
-            "match": { "min": 42.5, "max": 43.5 },
-            "misconception": { "text": "Reports the count of successes instead of the proportion.", "source": { "kind": "model" } },
+            "match": {
+              "min": 42.5,
+              "max": 43.5
+            },
+            "misconception": {
+              "text": "Reports the count of successes instead of the proportion.",
+              "source": {
+                "kind": "model"
+              }
+            },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "43 is how many students said yes. That's $x$, a count. The proportion divides it by how many were asked: $\\hat{p} = x / n$." },
+              "reExplanation": {
+                "enabled": true,
+                "text": "43 is how many students said yes. That's $x$, a count. The proportion divides it by how many were asked: $\\hat{p} = x / n$."
+              },
               "simplerQuestion": {
                 "enabled": true,
                 "check": {
@@ -79,15 +137,29 @@
             }
           },
           {
-            "match": { "min": 0.425, "max": 0.435 },
-            "misconception": { "text": "Divides the count by 100 as if it were a percentage, ignoring the sample size.", "source": { "kind": "model" } },
+            "match": {
+              "min": 0.425,
+              "max": 0.435
+            },
+            "misconception": {
+              "text": "Divides the count by 100 as if it were a percentage, ignoring the sample size.",
+              "source": {
+                "kind": "model"
+              }
+            },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "Dividing by 100 only works when exactly 100 people were asked. Here $n = 50$, so divide 43 by 50." }
+              "reExplanation": {
+                "enabled": true,
+                "text": "Dividing by 100 only works when exactly 100 people were asked. Here $n = 50$, so divide 43 by 50."
+              }
             }
           }
         ],
         "generalFallback": {
-          "reExplanation": { "enabled": true, "text": "Find $x$ (how many said yes) and $n$ (how many were asked), then divide $x$ by $n$." }
+          "reExplanation": {
+            "enabled": true,
+            "text": "Find $x$ (how many said yes) and $n$ (how many were asked), then divide $x$ by $n$."
+          }
         },
         "alternatives": []
       }
@@ -101,25 +173,50 @@
         "type": "select",
         "prompt": "Two polls each ask 1,000 random adults the same question on the same day. One finds $\\hat{p} = 0.887$, the other $\\hat{p} = 0.874$. What's the best explanation?",
         "options": [
-          { "id": "a", "text": "One of the polls made a mistake" },
-          { "id": "b", "text": "Opinions changed between the two polls" },
-          { "id": "c", "text": "Different random samples give different estimates" }
+          {
+            "id": "a",
+            "text": "One of the polls made a mistake"
+          },
+          {
+            "id": "b",
+            "text": "Opinions changed between the two polls"
+          },
+          {
+            "id": "c",
+            "text": "Different random samples give different estimates"
+          }
         ],
         "answer": "c",
         "wrongAnswers": [
           {
-            "match": { "optionId": "a" },
-            "misconception": { "text": "Expects two correct random samples to give the same estimate, so any difference must be an error.", "source": { "kind": "model" } },
+            "match": {
+              "optionId": "a"
+            },
+            "misconception": {
+              "text": "Expects two correct random samples to give the same estimate, so any difference must be an error.",
+              "source": {
+                "kind": "model"
+              }
+            },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "Both polls can be done perfectly and still disagree. Each one asked a different random 1,000 people, and different people give a slightly different share. That difference is sampling variability, not a mistake." },
+              "reExplanation": {
+                "enabled": true,
+                "text": "Both polls can be done perfectly and still disagree. Each one asked a different random 1,000 people, and different people give a slightly different share. That difference is sampling variability, not a mistake."
+              },
               "simplerQuestion": {
                 "enabled": true,
                 "check": {
                   "type": "select",
                   "prompt": "You flip a fair coin 10 times, twice. Would you expect exactly the same number of heads both times?",
                   "options": [
-                    { "id": "a", "text": "Yes, the coin is fair" },
-                    { "id": "b", "text": "Not necessarily, it varies from run to run" }
+                    {
+                      "id": "a",
+                      "text": "Yes, the coin is fair"
+                    },
+                    {
+                      "id": "b",
+                      "text": "Not necessarily, it varies from run to run"
+                    }
                   ],
                   "answer": "b"
                 }
@@ -127,15 +224,28 @@
             }
           },
           {
-            "match": { "optionId": "b" },
-            "misconception": { "text": "Explains sample-to-sample differences as a change in the population.", "source": { "kind": "model" } },
+            "match": {
+              "optionId": "b"
+            },
+            "misconception": {
+              "text": "Explains sample-to-sample differences as a change in the population.",
+              "source": {
+                "kind": "model"
+              }
+            },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "The polls were on the same day, so $p$ (the share among all adults) didn't move. What changed is **who** was asked. Each random sample gives its own $\\hat{p}$." }
+              "reExplanation": {
+                "enabled": true,
+                "text": "The polls were on the same day, so $p$ (the share among all adults) didn't move. What changed is **who** was asked. Each random sample gives its own $\\hat{p}$."
+              }
             }
           }
         ],
         "generalFallback": {
-          "reExplanation": { "enabled": true, "text": "Think about what's different between the two polls: the day, the question, or the people who were asked?" }
+          "reExplanation": {
+            "enabled": true,
+            "text": "Think about what's different between the two polls: the day, the question, or the people who were asked?"
+          }
         },
         "alternatives": []
       }
@@ -152,10 +262,21 @@
         "tolerance": 0.0006,
         "wrongAnswers": [
           {
-            "match": { "min": 0, "max": 0.0002 },
-            "misconception": { "text": "Forgets the square root in the standard error formula.", "source": { "kind": "model" } },
+            "match": {
+              "min": 0,
+              "max": 0.0002
+            },
+            "misconception": {
+              "text": "Forgets the square root in the standard error formula.",
+              "source": {
+                "kind": "model"
+              }
+            },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "$0.88 \\times 0.12 / 1000 = 0.0001056$. That's the step **inside** the square root. The SE is its square root, which is a much bigger number." },
+              "reExplanation": {
+                "enabled": true,
+                "text": "$0.88 \\times 0.12 / 1000 = 0.0001056$. That's the step **inside** the square root. The SE is its square root, which is a much bigger number."
+              },
               "simplerQuestion": {
                 "enabled": true,
                 "check": {
@@ -168,22 +289,47 @@
             }
           },
           {
-            "match": { "min": 0.029, "max": 0.0305 },
-            "misconception": { "text": "Leaves out the $(1-p)$ factor.", "source": { "kind": "model" } },
+            "match": {
+              "min": 0.029,
+              "max": 0.0305
+            },
+            "misconception": {
+              "text": "Leaves out the $(1-p)$ factor.",
+              "source": {
+                "kind": "model"
+              }
+            },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "The top of the fraction is $\\hat{p}(1-\\hat{p})$: the share who said yes **times** the share who didn't. Here that's $0.88 \\times 0.12$." }
+              "reExplanation": {
+                "enabled": true,
+                "text": "The top of the fraction is $\\hat{p}(1-\\hat{p})$: the share who said yes **times** the share who didn't. Here that's $0.88 \\times 0.12$."
+              }
             }
           },
           {
-            "match": { "min": 10, "max": 10.5 },
-            "misconception": { "text": "Multiplies by the sample size instead of dividing by it.", "source": { "kind": "model" } },
+            "match": {
+              "min": 10,
+              "max": 10.5
+            },
+            "misconception": {
+              "text": "Multiplies by the sample size instead of dividing by it.",
+              "source": {
+                "kind": "model"
+              }
+            },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "$n$ goes in the **bottom** of the fraction. A bigger sample should give a smaller SE, so dividing by $n$ is what makes the SE shrink." }
+              "reExplanation": {
+                "enabled": true,
+                "text": "$n$ goes in the **bottom** of the fraction. A bigger sample should give a smaller SE, so dividing by $n$ is what makes the SE shrink."
+              }
             }
           }
         ],
         "generalFallback": {
-          "reExplanation": { "enabled": true, "text": "Work it in steps: $1 - \\hat{p} = 0.12$, then $\\hat{p}(1-\\hat{p})$, then divide by $n$, then take the square root." }
+          "reExplanation": {
+            "enabled": true,
+            "text": "Work it in steps: $1 - \\hat{p} = 0.12$, then $\\hat{p}(1-\\hat{p})$, then divide by $n$, then take the square root."
+          }
         },
         "alternatives": []
       }
@@ -197,27 +343,58 @@
         "type": "select",
         "prompt": "A poll grows from 1,000 people to 4,000 people. What happens to the standard error?",
         "options": [
-          { "id": "a", "text": "It drops to a quarter" },
-          { "id": "b", "text": "It drops to half" },
-          { "id": "c", "text": "It stays the same" },
-          { "id": "d", "text": "It doubles" }
+          {
+            "id": "a",
+            "text": "It drops to a quarter"
+          },
+          {
+            "id": "b",
+            "text": "It drops to half"
+          },
+          {
+            "id": "c",
+            "text": "It stays the same"
+          },
+          {
+            "id": "d",
+            "text": "It doubles"
+          }
         ],
         "answer": "b",
         "wrongAnswers": [
           {
-            "match": { "optionId": "a" },
-            "misconception": { "text": "Believes the standard error shrinks in proportion to $1/n$ rather than $1/\\sqrt{n}$.", "source": { "kind": "model" } },
+            "match": {
+              "optionId": "a"
+            },
+            "misconception": {
+              "text": "Believes the standard error shrinks in proportion to $1/n$ rather than $1/\\sqrt{n}$.",
+              "source": {
+                "kind": "model"
+              }
+            },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "$n$ is inside a square root. Multiplying $n$ by 4 multiplies $\\sqrt{n}$ by $\\sqrt{4} = 2$, so the SE is divided by 2, not 4." },
+              "reExplanation": {
+                "enabled": true,
+                "text": "$n$ is inside a square root. Multiplying $n$ by 4 multiplies $\\sqrt{n}$ by $\\sqrt{4} = 2$, so the SE is divided by 2, not 4."
+              },
               "simplerQuestion": {
                 "enabled": true,
                 "check": {
                   "type": "select",
                   "prompt": "If $n$ is multiplied by 9, what is $\\sqrt{n}$ multiplied by?",
                   "options": [
-                    { "id": "a", "text": "3" },
-                    { "id": "b", "text": "9" },
-                    { "id": "c", "text": "81" }
+                    {
+                      "id": "a",
+                      "text": "3"
+                    },
+                    {
+                      "id": "b",
+                      "text": "9"
+                    },
+                    {
+                      "id": "c",
+                      "text": "81"
+                    }
                   ],
                   "answer": "a"
                 }
@@ -225,23 +402,42 @@
             }
           },
           {
-            "match": { "optionId": "c" },
-            "misconception": { "text": "Believes sample size doesn't affect how much estimates vary.", "source": { "kind": "model" } },
+            "match": {
+              "optionId": "c"
+            },
+            "misconception": {
+              "text": "Believes sample size doesn't affect how much estimates vary.",
+              "source": {
+                "kind": "model"
+              }
+            },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "Larger samples average over more people, so their $\\hat{p}$ values bunch more tightly around $p$. That's why $n$ is in the bottom of the SE formula." }
+              "reExplanation": {
+                "enabled": true,
+                "text": "Larger samples average over more people, so their $\\hat{p}$ values bunch more tightly around $p$. That's why $n$ is in the bottom of the SE formula."
+              }
             }
           }
         ],
         "generalFallback": {
-          "reExplanation": { "enabled": true, "text": "Try the formula with $n = 1000$ and then $n = 4000$, keeping $\\hat{p}$ the same." },
+          "reExplanation": {
+            "enabled": true,
+            "text": "Try the formula with $n = 1000$ and then $n = 4000$, keeping $\\hat{p}$ the same."
+          },
           "simplerQuestion": {
             "enabled": true,
             "check": {
               "type": "select",
               "prompt": "Does a bigger sample make $\\hat{p}$ land closer to $p$, or farther away, on average?",
               "options": [
-                { "id": "a", "text": "Closer" },
-                { "id": "b", "text": "Farther away" }
+                {
+                  "id": "a",
+                  "text": "Closer"
+                },
+                {
+                  "id": "b",
+                  "text": "Farther away"
+                }
               ],
               "answer": "a"
             }
@@ -259,32 +455,67 @@
         "type": "select",
         "prompt": "Two polls each ask 1,000 random adults, and both find $\\hat{p}$ close to 0.5. One is in a city of 2 million adults, the other in a country of 200 million. Which estimate has the smaller standard error?",
         "options": [
-          { "id": "a", "text": "The city poll" },
-          { "id": "b", "text": "The country poll" },
-          { "id": "c", "text": "About the same" }
+          {
+            "id": "a",
+            "text": "The city poll"
+          },
+          {
+            "id": "b",
+            "text": "The country poll"
+          },
+          {
+            "id": "c",
+            "text": "About the same"
+          }
         ],
         "answer": "c",
         "wrongAnswers": [
           {
-            "match": { "optionId": "a" },
-            "misconception": { "text": "Believes a sample covering a larger fraction of the population is much more precise, even when that fraction is tiny.", "source": { "kind": "model" } },
+            "match": {
+              "optionId": "a"
+            },
+            "misconception": {
+              "text": "Believes a sample covering a larger fraction of the population is much more precise, even when that fraction is tiny.",
+              "source": {
+                "kind": "model"
+              }
+            },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "1,000 out of 2 million is still a tiny fraction (0.05%). The SE formula uses $n = 1000$ for both polls and the same $\\hat{p}$, so it gives the same answer." }
+              "reExplanation": {
+                "enabled": true,
+                "text": "1,000 out of 2 million is still a tiny fraction (0.05%). The SE formula uses $n = 1000$ for both polls and the same $\\hat{p}$, so it gives the same answer."
+              }
             }
           },
           {
-            "match": { "optionId": "b" },
-            "misconception": { "text": "Believes the population size appears in the standard error.", "source": { "kind": "model" } },
+            "match": {
+              "optionId": "b"
+            },
+            "misconception": {
+              "text": "Believes the population size appears in the standard error.",
+              "source": {
+                "kind": "model"
+              }
+            },
             "fallback": {
-              "reExplanation": { "enabled": true, "text": "Look for the population's size in $\\sqrt{\\hat{p}(1-\\hat{p})/n}$. It isn't there. Only $\\hat{p}$ and $n$ are, and both polls have the same values." },
+              "reExplanation": {
+                "enabled": true,
+                "text": "Look for the population's size in $\\sqrt{\\hat{p}(1-\\hat{p})/n}$. It isn't there. Only $\\hat{p}$ and $n$ are, and both polls have the same values."
+              },
               "simplerQuestion": {
                 "enabled": true,
                 "check": {
                   "type": "select",
                   "prompt": "In the formula $SE = \\sqrt{\\hat{p}(1-\\hat{p})/n}$, what does $n$ stand for?",
                   "options": [
-                    { "id": "a", "text": "The number of people asked" },
-                    { "id": "b", "text": "The number of people in the population" }
+                    {
+                      "id": "a",
+                      "text": "The number of people asked"
+                    },
+                    {
+                      "id": "b",
+                      "text": "The number of people in the population"
+                    }
                   ],
                   "answer": "a"
                 }
@@ -293,7 +524,10 @@
           }
         ],
         "generalFallback": {
-          "reExplanation": { "enabled": true, "text": "Put each poll's numbers into $\\sqrt{\\hat{p}(1-\\hat{p})/n}$ and compare." }
+          "reExplanation": {
+            "enabled": true,
+            "text": "Put each poll's numbers into $\\sqrt{\\hat{p}(1-\\hat{p})/n}$ and compare."
+          }
         },
         "alternatives": []
       }

@@ -48,6 +48,14 @@ describe("lesson schema", () => {
     expect(Lesson.safeParse(lesson).success).toBe(true);
   });
 
+  it("rejects a lesson without outcomes", () => {
+    const lesson = structuredClone(fixture);
+    lesson.outcomes = [];
+    expect(Lesson.safeParse(lesson).success).toBe(false);
+    delete lesson.outcomes;
+    expect(Lesson.safeParse(lesson).success).toBe(false);
+  });
+
   it("rejects a select check whose answer type is wrong", () => {
     const lesson = structuredClone(fixture);
     lesson.modules[0].check.answer = 2;

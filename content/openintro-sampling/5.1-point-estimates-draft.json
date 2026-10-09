@@ -807,7 +807,7 @@
     {
       "id": "m7",
       "title": "Checking independence",
-      "reading": "The other condition is **independence**: one person's answer shouldn't affect another's. The usual way to get it is a **simple random sample** of the population, or random assignment in an experiment. For other sampling, like items pulled now and then from a production line, you have to use judgement.\n\nSome books add that the sample should be no more than 10% of the population. That's rarely a problem, and when it is, these methods are a little cautious, so it's an optional check.",
+      "reading": "The other condition is **independence**: one person's answer shouldn't affect another's. The usual way to get it is a **simple random sample** of the population, or random assignment in an experiment. For other sampling, like items pulled now and then from a production line, you have to use judgement.\n\nSome books add that the sample should be at most 10% of the population. This isn't a warning against big samples. Past 10%, the sample covers so much of the population that $\\hat{p}$ can't stray far from $p$, and the formula $\\sqrt{p(1-p)/n}$ overstates the error. Your estimate is then better than the formula says, so this check is optional.",
       "check": {
         "id": "c7",
         "type": "select",

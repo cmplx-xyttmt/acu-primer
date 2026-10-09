@@ -134,7 +134,7 @@ Svelte components under `src/app/player/`. Implements `prd.md > Course overview 
 `src/worker/auth.ts`. Implements `prd.md > States and Boundaries > Who can do what`.
 - First choice: **Cloudflare Access** on `/author/*` and `/api/author/*`, with the Worker also checking the `cf-access-jwt-assertion` token using jose (the audience and issuer from Cloudflare's docs). No login code to write.
 - Fallback if Access can't cover only those paths on a `workers.dev` address: an **author passphrase**, kept as the Worker secret `AUTHOR_PASSPHRASE`. The author types it once, and the browser keeps it in `localStorage` and sends it as a header. It's enough for one owner, but weaker than Access.
-- Locally, in `vite dev`, the gate is off.
+- If `AUTHOR_PASSPHRASE` isn't set, the author side is open on localhost only and closed (503) everywhere else, so a deploy that forgot the secret fails closed. Once it's set, it's required locally too. (Built in slice 4 as the passphrase version; Access is still the later option.)
 
 ### Authoring session
 `src/app/author/Session.svelte` with the Worker routes `sources`, `draft` and `revise`. Implements `prd.md > Authoring session`. It's deliberately simple until the baseline lessons shape it.
@@ -180,6 +180,8 @@ Svelte components under `src/app/player/`. Implements `prd.md > Course overview 
 | `POST /api/author/lessons/:id/draft` | author | stream a draft, save it as `unreviewed` |
 | `POST /api/author/lessons/:id/revise` | author | revise one part, save the lesson |
 | `PUT /api/author/lessons/:id` | author | save the author's own edits (switches, picks) |
+| `GET /api/author/courses` | author | every course with its lessons and marks (no content), for the author home |
+| `GET /api/author/lessons/:id` | author | one lesson in full, any status, for the review screen |
 | `POST /api/author/lessons/:id/signoff` | author | mark as reviewed |
 | `PUT /api/author/courses/:id` | author | the "show unreviewed" switch |
 | `GET /api/author/courses/:id/students` | author | the student list |

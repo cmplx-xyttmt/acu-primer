@@ -1,27 +1,43 @@
 // The Worker: everything under /api/. Static files (the Svelte app) are served before this
 // runs, per the "assets" block in wrangler.jsonc.
 
+import { authorGate } from "./auth.ts";
 import { json } from "./http.ts";
 import { getCourse } from "./routes/courses.ts";
+import { listCourses, getLesson, signOff, setShowUnreviewed } from "./routes/author.ts";
 
-type Handler = (env: Env, ...params: string[]) => Promise<Response>;
+export interface Ctx {
+  request: Request;
+  env: Env;
+  url: URL;
+}
 
+type Handler = (ctx: Ctx, ...params: string[]) => Promise<Response>;
+
+const id = "([a-z0-9-]+)";
 const routes: [method: string, pattern: RegExp, handler: Handler][] = [
-  ["GET", /^\/api\/courses\/([a-z0-9-]+)$/, getCourse],
+  ["GET", new RegExp(`^/api/courses/${id}$`), getCourse],
+  ["GET", /^\/api\/author\/courses$/, listCourses],
+  ["GET", new RegExp(`^/api/author/lessons/${id}$`), getLesson],
+  ["POST", new RegExp(`^/api/author/lessons/${id}/signoff$`), signOff],
+  ["PUT", new RegExp(`^/api/author/courses/${id}$`), setShowUnreviewed],
 ];
 
 export default {
   async fetch(request, env) {
-    const { pathname } = new URL(request.url);
+    const url = new URL(request.url);
     for (const [method, pattern, handler] of routes) {
-      const match = pathname.match(pattern);
-      if (match && request.method === method) {
-        try {
-          return await handler(env, ...match.slice(1));
-        } catch (err) {
-          console.error(err);
-          return json({ error: "Something went wrong on the server." }, 500);
+      const match = url.pathname.match(pattern);
+      if (!match || request.method !== method) continue;
+      try {
+        if (url.pathname.startsWith("/api/author/")) {
+          const gate = await authorGate(url, request.headers.get("x-author-passphrase"), env.AUTHOR_PASSPHRASE);
+          if (!gate.ok) return json({ error: gate.error }, gate.status);
         }
+        return await handler({ request, env, url }, ...match.slice(1));
+      } catch (err) {
+        console.error(err);
+        return json({ error: "Something went wrong on the server." }, 500);
       }
     }
     return json({ error: "Not found." }, 404);

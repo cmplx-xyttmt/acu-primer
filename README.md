@@ -17,7 +17,9 @@ npm run import:local -- content/openintro-sampling # load the sample 5.1 lesson
 npm run dev                                        # http://localhost:5173
 ```
 
-The player is at http://localhost:5173/c/openintro-sampling.
+The player is at http://localhost:5173/c/openintro-sampling, and the author side (review,
+sign-off, the show-unreviewed switch) at http://localhost:5173/author. Locally the author side
+is open until you set `AUTHOR_PASSPHRASE` in `.dev.vars`; after that it asks for it.
 
 ## Check it
 

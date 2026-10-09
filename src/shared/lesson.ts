@@ -123,3 +123,26 @@ export interface CourseResponse {
   course: { slug: string; title: string; showUnreviewed: boolean };
   lessons: CourseLesson[];
 }
+
+// What the author routes return.
+export interface AuthorLessonSummary {
+  id: string;
+  courseId: string;
+  position: number;
+  title: string;
+  status: LessonStatus;
+  updatedAt: string;
+  signedOffAt: string | null;
+}
+
+export interface AuthorLesson extends AuthorLessonSummary {
+  content: Lesson;
+}
+
+export interface AuthorCourse {
+  id: string;
+  slug: string;
+  title: string;
+  showUnreviewed: boolean;
+  lessons: AuthorLessonSummary[];
+}

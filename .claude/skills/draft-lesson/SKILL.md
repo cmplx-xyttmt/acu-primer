@@ -40,14 +40,15 @@ Book PDFs never go in this repo.
 5. **Check it.** `npx tsx scripts/check-lesson.ts <file>`. Fix what it reports and check again. If
    it still fails after two rounds of fixes, stop and show Isaac the problems instead of looping.
 6. **Add it to the course.** Add an entry to `content/<course>/course.json` with `"status":
-   "unreviewed"` and the next `position`. Until the review screen exists (slice 4), set
-   `"showUnreviewed": true` on the course so the player shows it with a "Not yet reviewed" mark.
+   "unreviewed"` and the next `position`. Students won't see it until Isaac signs it off at
+   `/author`, or switches on **Show unreviewed lessons to students** for the course there.
 7. **Import it locally.** `npm run import:local -- content/<course>`. Remote only if Isaac asks
    (`npm run import:remote -- content/<course>`).
 8. **Report**, briefly: the outcomes; modules and checks; how many wrong answers came from the
    catalogue and how many are your guesses; anything in the source you left out and why; and what
    Isaac should look at first when reviewing (the hardest maths, the guesses, any check you're unsure
-   of). Then the link: `http://localhost:5173/c/<course>`.
+   of). Then the links: `http://localhost:5173/author` to review and sign off, and
+   `http://localhost:5173/c/<course>` for the player.
 
 ## Don'ts
 

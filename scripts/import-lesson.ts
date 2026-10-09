@@ -4,7 +4,9 @@
 //   npm run import:remote -- content/openintro-sampling
 //
 // The folder holds course.json (slug, title, lessons with file/position/status) and one
-// JSON file per lesson. Re-running replaces the lessons with the same id.
+// JSON file per lesson. Re-running updates lessons with the same id. A lesson signed off in
+// the app keeps its sign-off as long as its content is unchanged; changed content takes the
+// status from course.json again, because the sign-off was for the old version.
 
 import { readFileSync, writeFileSync, mkdtempSync } from "node:fs";
 import { join } from "node:path";
@@ -16,8 +18,8 @@ import { lessonProblems } from "../src/shared/lessonChecks.ts";
 interface CourseFile {
   slug: string;
   title: string;
-  // Show lessons nobody has signed off yet, with a "Not yet reviewed" mark. Until the
-  // review screen exists (slice 4), this is how a drafted lesson gets into the player.
+  // Show lessons nobody has signed off yet, with a "Not yet reviewed" mark. Usually set
+  // with the switch on the author side; when this is left out, the import doesn't touch it.
   showUnreviewed?: boolean;
   lessons: { file: string; position: number; status: "reviewed" | "unreviewed" }[];
 }
@@ -40,7 +42,9 @@ const now = new Date().toISOString();
 const statements = [
   `INSERT INTO courses (id, slug, title, show_unreviewed)
    VALUES (${sql(courseId)}, ${sql(course.slug)}, ${sql(course.title)}, ${course.showUnreviewed ? 1 : 0})
-   ON CONFLICT (id) DO UPDATE SET title = excluded.title, show_unreviewed = excluded.show_unreviewed;`,
+   ON CONFLICT (id) DO UPDATE SET title = excluded.title${
+     course.showUnreviewed === undefined ? "" : ", show_unreviewed = excluded.show_unreviewed"
+   };`,
 ];
 
 let failed = false;
@@ -63,8 +67,11 @@ for (const entry of course.lessons) {
     `INSERT INTO lessons (id, course_id, source_id, position, title, status, content, updated_at, signed_off_at)
      VALUES (${sql(lesson.id)}, ${sql(courseId)}, NULL, ${entry.position}, ${sql(lesson.title)}, ${sql(entry.status)},
              ${sql(JSON.stringify(lesson))}, ${sql(now)}, ${sql(entry.status === "reviewed" ? now : null)})
-     ON CONFLICT (id) DO UPDATE SET position = excluded.position, title = excluded.title, status = excluded.status,
-       content = excluded.content, updated_at = excluded.updated_at, signed_off_at = excluded.signed_off_at;`,
+     ON CONFLICT (id) DO UPDATE SET position = excluded.position, title = excluded.title,
+       status = CASE WHEN lessons.content = excluded.content THEN lessons.status ELSE excluded.status END,
+       signed_off_at = CASE WHEN lessons.content = excluded.content THEN lessons.signed_off_at ELSE excluded.signed_off_at END,
+       updated_at = CASE WHEN lessons.content = excluded.content THEN lessons.updated_at ELSE excluded.updated_at END,
+       content = excluded.content;`,
   );
 }
 if (failed) process.exit(1);

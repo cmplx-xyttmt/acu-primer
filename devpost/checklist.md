@@ -9,7 +9,7 @@ Build mode: learn (chosen Sep 25, 2026)
 
 ## Slices
 
-- [ ] **1. A student can play a small stats lesson at a link**
+- [x] **1. A student can play a small stats lesson at a link**
   Becomes usable: Open `/c/openintro-sampling`, type a name, see the module overview with progress, press **Continue**, and move through a short hand-written 5.1 lesson one module at a time, answering pick-an-answer and type-a-number checks correctly. Progress survives a reload for the same name. The same thing works at the deployed `workers.dev` link.
   Why now: Everything else lands on this path (scaffold, lesson schema, D1, the course API, the player shell, the theme). Deploying on day one surfaces Cloudflare surprises while the app is still tiny.
   PRD ref: `prd.md > The Core Journey` (steps 4-5), `prd.md > Course overview and progress`, `prd.md > Modules and checks`, `prd.md > Look and Feel`
@@ -117,6 +117,6 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Three TypeScript configs (`tsconfig.json` for the app, `tsconfig.worker.json`, `tsconfig.node.json` for scripts and tests) instead of one — browser and Worker types clash in a single config.
 - TypeScript pinned to 6 — svelte-check 4.7 doesn't accept TypeScript 7 yet.
 - The lesson schema has only the `select` and `number` check types for now — `categorize` and `predict_simulate` join the union in slice 8, so the schema never describes a type the player can't show.
-- Slice 1 status at the end of the Sep 25 session: everything built and verified locally (tests, type checks, build, `curl`, full playthrough in Chrome); the deploy is still to do because Wrangler needs `npx wrangler login`. Saved as a checkpoint commit; the box gets ticked after the deployed checks pass.
+- Slice 1 status at the end of the Sep 25 session: everything built and verified locally (tests, type checks, build, `curl`, full playthrough in Chrome); the deploy is still to do because Wrangler needs `npx wrangler login`. Saved as a checkpoint commit; the box gets ticked after the deployed checks pass. Deployed Oct 9 to https://acu-primer.cmplxxyttmt.workers.dev after a D1 config fix (see commit b2ad15b); Isaac ran the learner check and the test checklist.
 - Added a light/dark switch (Auto, Light, Dark) on every player screen, and a **Back** button that returns to the previous module for re-reading, with the browser's Back button doing the same — Isaac's slice 1 review found no way to see the other theme or to go back. `prd.md > Look and Feel`, `prd.md > Screens and Layout` and `spec.md > Look and Feel`, `spec.md > Components > Player` updated to match.
 - Slice 2's fixture rewrite also fixes the content: symbols defined at each formula (what $p$, $\hat{p}$ and $n$ are, and why the SE formula uses $p$), module 4's check uses $\hat{p}$, and at least one check asks for reasoning; slice 3's draft prompt gains the same two rules — Isaac found the slice 1 fixture easy to pass but thin, and was confused by $p$ versus $\hat{p}$ in the SE formula. Later pipeline ideas recorded in `authoring-pipeline.md`.

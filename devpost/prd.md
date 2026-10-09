@@ -71,7 +71,8 @@ Source: `scope.md > The Core Loop`.
 - The full list of types to choose from later is under `Deferred From the POC > Check types beyond the first list`.
 - As a student, I want to answer something every few paragraphs, so the lesson keeps me doing, not just reading.
   - [ ] Every module in the demo lesson is short enough to read without scrolling far, and the lesson has a check at least every other module.
-  - [ ] A right answer says so and moves on to the next module.
+  - [ ] A right answer says so, explains why it's right in a sentence or two, and moves on to the next module.
+  - [ ] A picked option turns green when right and red when wrong; a wrong pick never reveals the right option (slice 3c).
 
 ### Fallbacks after a wrong answer
 Source: `scope.md > The Core Loop`, `scope.md > Explicitly Cut`.
@@ -178,6 +179,7 @@ Source: `scope.md > The POC Boundary`.
 ## Possible Later Enhancements
 - **A fuller authoring pipeline:** an outline step, checks done by code, simulated students at different levels, a teaching reviewer, and a review report for the author. Ideas and cost estimates in `authoring-pipeline.md`.
 - **Recap button.** A recap of what the student has learned so far, with an optional quick quiz to check they remember.
+- **Recall and spaced repetition** (Isaac, Oct 9). Today recall happens only inside modules, and a lesson ends with a Takeaways page. Later: a short review quiz at the end of each lesson drawn from its outcomes, then questions from earlier lessons coming back after a day, a few days and a week (spaced repetition), scheduled from each student's answer history in the event log. "Spaced review" is already on the deferred check-type list; this makes it a feature of its own.
 - Review per node, where the reviewer walks every branch (`scope.md > Later`).
 - Smarter adaptation, informed by research on adaptive learning.
 - Student feedback carrying part of the review load.

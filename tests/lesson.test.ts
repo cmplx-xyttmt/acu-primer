@@ -48,6 +48,12 @@ describe("lesson schema", () => {
     expect(Lesson.safeParse(lesson).success).toBe(true);
   });
 
+  it("rejects a check without an explanation", () => {
+    const lesson = structuredClone(fixture);
+    delete lesson.modules[0].check.explanation;
+    expect(Lesson.safeParse(lesson).success).toBe(false);
+  });
+
   it("rejects a lesson without outcomes", () => {
     const lesson = structuredClone(fixture);
     lesson.outcomes = [];

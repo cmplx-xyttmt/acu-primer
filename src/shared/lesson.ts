@@ -40,10 +40,14 @@ const numberFields = {
   unit: z.string().optional(),
 };
 
+// Why the right answer is right, shown under "Right." so a student who guessed (or wasn't
+// sure) gets the reasoning. Required on checks; optional on simpler questions.
+const explanation = { explanation: text };
+
 // A simpler question: a check with no fallbacks of its own.
 export const SimpleCheck = z.discriminatedUnion("type", [
-  z.strictObject(selectFields),
-  z.strictObject(numberFields),
+  z.strictObject({ ...selectFields, explanation: text.optional() }),
+  z.strictObject({ ...numberFields, explanation: text.optional() }),
 ]);
 
 export const Fallback = z.strictObject({
@@ -68,13 +72,13 @@ const numberHelp = {
 // A full check minus alternatives. Alternatives are checks of this shape, so an author can
 // swap one in without the tool writing its fallbacks again.
 export const AlternativeCheck = z.discriminatedUnion("type", [
-  z.strictObject({ id, ...selectFields, ...selectHelp }),
-  z.strictObject({ id, ...numberFields, ...numberHelp }),
+  z.strictObject({ id, ...selectFields, ...explanation, ...selectHelp }),
+  z.strictObject({ id, ...numberFields, ...explanation, ...numberHelp }),
 ]);
 
 export const Check = z.discriminatedUnion("type", [
-  z.strictObject({ id, ...selectFields, ...selectHelp, alternatives: z.array(AlternativeCheck) }),
-  z.strictObject({ id, ...numberFields, ...numberHelp, alternatives: z.array(AlternativeCheck) }),
+  z.strictObject({ id, ...selectFields, ...explanation, ...selectHelp, alternatives: z.array(AlternativeCheck) }),
+  z.strictObject({ id, ...numberFields, ...explanation, ...numberHelp, alternatives: z.array(AlternativeCheck) }),
 ]);
 
 export const Module = z.strictObject({

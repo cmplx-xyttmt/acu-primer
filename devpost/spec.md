@@ -94,6 +94,7 @@ The shared schema in `src/shared/lesson.ts`, written in Zod. Everything else dep
   - `wrongAnswers`: each one says what it matches (an option, a value range, a category mistake), names a misconception (text, plus a source: `catalogue` with a reference, or `model`), and gives a **fallback**;
   - `generalFallback`: the fallback for an unplanned wrong answer;
   - `alternatives`: other check options the tool proposed, which only the author side shows.
+  - `explanation`: why the right answer is right, shown under "Right." (required on checks and alternatives, optional on simpler questions).
 - A **fallback** has an optional re-explanation and an optional simpler question. The author turns either one on or off. A simpler question is a check with no fallbacks of its own. The schema enforces this, which is how "no third level" is guaranteed.
 
 PRD ref: `prd.md > Modules and checks`, `prd.md > Fallbacks after a wrong answer`.

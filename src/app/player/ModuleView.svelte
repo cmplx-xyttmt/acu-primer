@@ -65,6 +65,14 @@
   const showSaved = $derived(reread && !(mod.id in checks));
   const end = $derived(showSaved ? "saved" : cs.end);
   const mainLocked = $derived(end !== "none" || (cs.fallback !== null && !cs.retrying));
+  // Green for a right answer, red for a wrong one while its hint (or the last-hint message) shows.
+  const mark = $derived<"right" | "wrong" | null>(
+    end === "right" || end === "saved"
+      ? "right"
+      : end === "material" || (cs.fallback !== null && !cs.retrying)
+        ? "wrong"
+        : null,
+  );
   const canMoveOn = $derived(!mod.check || end === "right" || end === "saved");
 
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -146,9 +154,9 @@
         <section class="check">
           {#key cs.attempt}
             {#if mod.check.type === "select"}
-              <Select check={mod.check} locked={mainLocked} shown={showSaved} onAnswer={answerMain} />
+              <Select check={mod.check} locked={mainLocked} shown={showSaved} {mark} onAnswer={answerMain} />
             {:else if mod.check.type === "number"}
-              <NumberInput check={mod.check} locked={mainLocked} shown={showSaved} onAnswer={answerMain} />
+              <NumberInput check={mod.check} locked={mainLocked} shown={showSaved} {mark} onAnswer={answerMain} />
             {/if}
           {/key}
 
@@ -163,8 +171,10 @@
             </p>
           {:else if end === "right"}
             <p class="feedback right">Right.</p>
+            <div class="explanation">{@html renderReading(mod.check.explanation)}</div>
           {:else if end === "saved"}
             <p class="feedback muted">You've already done this one.</p>
+            <div class="explanation">{@html renderReading(mod.check.explanation)}</div>
           {:else if end === "material"}
             <div class="material">
               <p>
@@ -238,6 +248,9 @@
   }
   .right {
     color: var(--right);
+  }
+  .explanation :global(p) {
+    margin: 0.35rem 0 0;
   }
   .material p {
     margin: 0 0 0.9rem;

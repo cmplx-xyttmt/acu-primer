@@ -158,9 +158,11 @@
                 "enabled": true,
                 "text": "$n$ is the sample size: how many people the poll asked."
               }
-            }
+            },
+            "explanation": "$n$ is the sample size: the number of people the poll actually asked. The population's size is a different number, and the count of yeses is $x$."
           }
-        ]
+        ],
+        "explanation": "0.45 was computed from the 1,000 people in the poll, so it's $\\hat{p}$. It's our estimate of $p$, the share among everyone, which stays unknown. How close the two are is what standard error will tell us."
       }
     },
     {
@@ -290,9 +292,11 @@
                 "enabled": true,
                 "text": "Sampling error depends on how many are asked. Bias depends on how they're asked and who."
               }
-            }
+            },
+            "explanation": "Sampling error comes from the luck of who's in the sample, so asking more people shrinks it. Bias comes from how or whom we ask, and asking more people the same way keeps it."
           }
-        ]
+        ],
+        "explanation": "The wording leans every respondent toward yes, so every sample overestimates support. That's bias. Asking more students the same leading question only makes the wrong answer more precise."
       }
     },
     {
@@ -424,9 +428,11 @@
                 "enabled": true,
                 "text": "Random samples don't lean either way, so their $\\hat{p}$ values gather around the true $p$."
               }
-            }
+            },
+            "explanation": "Random samples don't lean either way, so their $\\hat{p}$ values average out to the true $p = 0.88$. That's why the histogram is centered there."
           }
-        ]
+        ],
+        "explanation": "Each sample gives one $\\hat{p}$. The sampling distribution is the pattern of all the $\\hat{p}$ values you'd get from many random samples of the same size: how much $\\hat{p}$ varies from poll to poll."
       }
     },
     {
@@ -542,9 +548,11 @@
                 "enabled": true,
                 "text": "$p(1-p) = 0.25$; divide by 100; take the square root."
               }
-            }
+            },
+            "explanation": "$0.5 \\times 0.5 / 100 = 0.0025$, and $\\sqrt{0.0025} = 0.05$. With only 100 people, a typical $\\hat{p}$ is about 5 percentage points from $p$."
           }
-        ]
+        ],
+        "explanation": "$0.88 \\times 0.12 = 0.1056$; divided by 1000 gives $0.0001056$; the square root is about 0.010. So a typical $\\hat{p}$ from these polls lands about 1 percentage point from $p$."
       }
     },
     {
@@ -676,9 +684,11 @@
                 "enabled": true,
                 "text": "Try the formula with $n = 1000$, then $n = 4000$."
               }
-            }
+            },
+            "explanation": "$n$ is inside a square root. Four times the sample multiplies $\\sqrt{n}$ by 2, so the SE is divided by 2."
           }
-        ]
+        ],
+        "explanation": "With $n = 50$ the SE is $\\sqrt{p(1-p)/50}$, which is larger than $\\sqrt{p(1-p)/1000}$. A small sample is more at the mercy of who happens to be in it, so its $\\hat{p}$ is more likely to land far from $p$."
       }
     },
     {
@@ -787,9 +797,11 @@
                 "enabled": true,
                 "text": "$1 - p = 0.12$, then multiply by $n = 1000$."
               }
-            }
+            },
+            "explanation": "$n(1-p) = 1000 \\times 0.12 = 120$ expected nos. Together with $np = 880$ expected yeses, both are well above 10, so the normal model works."
           }
-        ]
+        ],
+        "explanation": "The success-failure condition needs both $np$ and $n(1-p)$ to be at least 10. Here $np = 10 \\times 0.25 = 2.5$, so we expect only 2 or 3 yeses per sample, and the distribution of $\\hat{p}$ is lumpy and skewed, not normal."
       }
     },
     {
@@ -921,9 +933,11 @@
                 "enabled": true,
                 "text": "Independence usually comes from random selection."
               }
-            }
+            },
+            "explanation": "In a simple random sample everyone has the same chance of being asked, and one person's answer doesn't affect another's. Volunteers and friends are chosen in ways that link their answers."
           }
-        ]
+        ],
+        "explanation": "Precision comes from $n$, the number asked, and from random sampling. 400 is 8% of 5,000, which also meets the rule that a sample should be at most 10% of the population."
       }
     },
     {
@@ -1052,9 +1066,11 @@
                 "enabled": true,
                 "text": "Ask: which of $p$ and $\\hat{p}$ do we actually know after a poll?"
               }
-            }
+            },
+            "explanation": "After a poll we know $\\hat{p}$ but not $p$, which is why we polled. $\\hat{p}$ is close enough that the SE barely changes."
           }
-        ]
+        ],
+        "explanation": "$\\hat{p} = 120/400 = 0.30$. Then $0.30 \\times 0.70 / 400 = 0.000525$, and its square root is about 0.023. We plug in $\\hat{p}$ because $p$ is unknown."
       }
     },
     {
@@ -1188,9 +1204,11 @@
                 "enabled": true,
                 "text": "Center, spread and shape behave differently: only the spread and shape depend on $n$."
               }
-            }
+            },
+            "explanation": "Sample size changes the spread and the shape, not the center. Random samples of any size give $\\hat{p}$ values that average out to $p$, which is what unbiased means."
           }
-        ]
+        ],
+        "explanation": "The SE depends on $p(1-p)$. That product is 0.09 for $p = 0.1$ or $0.9$, and 0.25 for $p = 0.5$, its largest value. When answers are split evenly, samples disagree the most."
       }
     },
     {

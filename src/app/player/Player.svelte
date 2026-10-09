@@ -75,13 +75,17 @@
     show({ kind: "overview" }, "replace");
   }
 
-  // Opening a lesson part-way through adds an entry for each earlier module, so Back from
-  // the module you continued at goes to the module before it, then on to the overview.
+  // Going to a module from anywhere but the module before it (Continue from the overview, a
+  // pick in the intro or Contents) adds an entry for each earlier module first. So Back, which
+  // is history.back(), always lands on the module before, and the browser's Back does the same.
+  function goTo(lessonId: string, index: number) {
+    for (let i = 0; i <= index; i++) show({ kind: "module", lessonId, index: i });
+  }
+
   function open(lessonId: string) {
     const lesson = data?.lessons.find((l) => l.id === lessonId);
     if (!lesson) return;
-    const at = resumeIndex(lessonProgress(progress, lessonId), lesson.content.modules.map((m) => m.id));
-    for (let index = 0; index <= at; index++) show({ kind: "module", lessonId, index });
+    goTo(lessonId, resumeIndex(lessonProgress(progress, lessonId), lesson.content.modules.map((m) => m.id)));
   }
 
   function update(lessonId: string, change: (p: LessonProgress) => LessonProgress) {
@@ -98,7 +102,7 @@
     if (index + 1 >= moduleIds.length) return show({ kind: "overview" });
     if (!reachedEnd) return show({ kind: "module", lessonId, index: index + 1 });
     const skipped = moduleIds.findIndex((id, i) => i > index && p.skipped.includes(id) && !p.done.includes(id));
-    if (skipped >= 0) show({ kind: "module", lessonId, index: skipped });
+    if (skipped >= 0) goTo(lessonId, skipped);
     else show({ kind: "overview" });
   }
 </script>
@@ -130,7 +134,7 @@
     }}
     onBack={() => history.back()}
     onExit={() => show({ kind: "overview" })}
-    onJump={(i) => show({ kind: "module", lessonId, index: i })}
+    onJump={(i) => goTo(lessonId, i)}
   />
 {:else if view.kind === "intro" && openLesson}
   {@const lessonId = openLesson.id}
@@ -138,7 +142,7 @@
     lesson={openLesson.content}
     progress={lessonProgress(progress, lessonId)}
     onStart={() => open(lessonId)}
-    onPick={(i) => show({ kind: "module", lessonId, index: i })}
+    onPick={(i) => goTo(lessonId, i)}
     onExit={() => show({ kind: "overview" })}
   />
 {:else}

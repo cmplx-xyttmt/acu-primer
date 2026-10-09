@@ -32,6 +32,7 @@ Checks:
 - Mix the kinds: some recall, some apply a formula, and at least a third that ask the student to explain why, compare, or predict.
 - Number checks: say in the prompt how to round. Set "tolerance" to cover that rounding. Make every wrong-answer range reachable at that rounding, and never overlapping the right answer plus or minus the tolerance.
 - Select checks: 3 or 4 options. Wrong options must be things a real student might believe, never jokes.
+- Every check and alternative has an "explanation": one to three sentences on why the right answer is right, shown after a right answer. Explain the reasoning, don't just restate the answer, so a student who guessed learns why.
 
 Wrong answers and fallbacks:
 - Each anticipated wrong answer names the misconception behind it. Use the misconception catalogue you're given whenever an entry fits: set source to {"kind": "catalogue", "reference": <the entry's reference>}. If nothing in the catalogue fits, write your own and set source to {"kind": "model"}. Never label your own guess as "catalogue".

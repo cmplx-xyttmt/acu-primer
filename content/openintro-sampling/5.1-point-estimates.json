@@ -95,7 +95,8 @@
             "text": "Ask where the number came from: everyone, or the people who were asked? Numbers from the people asked are estimates."
           }
         },
-        "alternatives": []
+        "alternatives": [],
+        "explanation": "0.887 was computed from the 1,000 adults who were asked, so it's a sample proportion $\\hat{p}$. It estimates $p$, the share among all adults, which nobody knows exactly."
       }
     },
     {
@@ -161,7 +162,8 @@
             "text": "Find $x$ (how many said yes) and $n$ (how many were asked), then divide $x$ by $n$."
           }
         },
-        "alternatives": []
+        "alternatives": [],
+        "explanation": "$\\hat{p} = x/n = 43/50 = 0.86$: the 43 who own a smartphone, divided by the 50 students asked."
       }
     },
     {
@@ -247,7 +249,8 @@
             "text": "Think about what's different between the two polls: the day, the question, or the people who were asked?"
           }
         },
-        "alternatives": []
+        "alternatives": [],
+        "explanation": "Both polls were done properly; they just asked different random people. Different samples give slightly different $\\hat{p}$ values, and that's sampling variability."
       }
     },
     {
@@ -331,7 +334,8 @@
             "text": "Work it in steps: $1 - \\hat{p} = 0.12$, then $\\hat{p}(1-\\hat{p})$, then divide by $n$, then take the square root."
           }
         },
-        "alternatives": []
+        "alternatives": [],
+        "explanation": "$\\hat{p}(1-\\hat{p})/n = 0.88 \\times 0.12 / 1000 = 0.0001056$, and its square root is about 0.010. A typical $\\hat{p}$ from such a poll lands about 1 percentage point from $p$."
       }
     },
     {
@@ -443,7 +447,8 @@
             }
           }
         },
-        "alternatives": []
+        "alternatives": [],
+        "explanation": "$n$ sits under a square root, so 4 times the sample gives $\\sqrt{4} = 2$ times the denominator, and the SE halves."
       }
     },
     {
@@ -529,7 +534,8 @@
             "text": "Put each poll's numbers into $\\sqrt{\\hat{p}(1-\\hat{p})/n}$ and compare."
           }
         },
-        "alternatives": []
+        "alternatives": [],
+        "explanation": "The SE formula has only $\\hat{p}$ and $n$. The population's size isn't in it, so with the same $n$ and $\\hat{p}$ both polls have the same standard error, as long as each sample is a small part of its population."
       }
     },
     {

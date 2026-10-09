@@ -8,8 +8,9 @@
     check,
     locked,
     shown,
+    mark = null,
     onAnswer,
-  }: { check: SelectCheck; locked: boolean; shown: boolean; onAnswer: (a: Answer) => void } = $props();
+  }: { check: SelectCheck; locked: boolean; shown: boolean; mark?: "right" | "wrong" | null; onAnswer: (a: Answer) => void } = $props();
 
   // shown: the student finished this module before and came back to re-read it.
   // svelte-ignore state_referenced_locally (ModuleView re-creates this per module)
@@ -22,6 +23,8 @@
     <button
       class="option"
       class:picked={picked === option.id}
+      class:right={picked === option.id && mark === "right"}
+      class:wrong={picked === option.id && mark === "wrong"}
       role="radio"
       aria-checked={picked === option.id}
       disabled={locked}
@@ -61,5 +64,14 @@
   }
   .option:disabled {
     cursor: default;
+  }
+  /* Only the student's own pick is colored; a wrong pick never reveals the right option. */
+  .option.right {
+    border-color: var(--right);
+    background: var(--right-bg);
+  }
+  .option.wrong {
+    border-color: var(--wrong);
+    background: var(--wrong-bg);
   }
 </style>

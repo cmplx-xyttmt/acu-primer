@@ -49,6 +49,16 @@ Build mode: learn (chosen Sep 25, 2026)
   Learner check: Read and play the drafted 5.1 lesson next to the hand-written fixture. Say whether the outcomes, the checks and the misconceptions (with their catalogue labels) look like something you'd sign off, and what you'd want the rules to change.
   Commit: `Draft lessons in Claude Code with the shared rules and checks`
 
+- [x] **3c. A right answer is explained, and options show right or wrong**
+  Becomes usable: Answering a check right turns the picked option (or the number box) green and shows "Right." with a short explanation of why it's right; a wrong pick turns red without revealing the right option. Re-reading a finished module shows the explanation too.
+  Why now: Isaac asked for both after playing the 5.1 draft. The explanation is a new required lesson-format field, cheapest to add before slice 3b teaches the API the format.
+  PRD ref: `prd.md > Modules and checks`, `prd.md > Look and Feel`
+  Spec ref: `spec.md > Components > Lesson format`, `spec.md > Components > Player`, `spec.md > Look and Feel`, `spec.md > Components > Claude calls`
+  Build: Add a required `explanation` to checks and alternatives (optional on simpler questions) in `src/shared/lesson.ts`; a line in `DRAFT_RULES` asking for it; explanations written into both 5.1 lessons; right and wrong colors in `theme.css` and the check components; the explanation under "Right." in `ModuleView`.
+  Verify (mechanical): `npm test` passes, including the schema rejecting a check without an explanation; `check-lesson.ts` passes both lessons; type checks and build pass; in the browser, a right pick shows green with the explanation, a wrong pick shows red with the right option unmarked, and a number check colors its box.
+  Learner check: Play a few checks in the 5.1 draft, right and wrong. Say whether the explanations add something beyond "Right.", and whether the colors read clearly in light and dark.
+  Commit: `Explain right answers and color options`
+
 - [ ] **4. The author signs a lesson off, and only then do students see it**
   Becomes usable: The review screen shows the whole lesson in order with every fallback expanded, the mark ("written by the model, not yet reviewed" or "reviewed by a person"), and a **Sign off** button. Before sign-off the lesson doesn't appear at the course link; after, it does. The owner's **Show unreviewed lessons to students** switch shows unreviewed lessons with an obvious badge in the player.
   Why now: Sign-off is what makes the draft from slice 3 reach a student, and "verified before it ships" is half of what makes acu-primer different from asking a chatbot for a quiz.
@@ -150,3 +160,5 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - OpenIntro Statistics 4th ed. is in `~/Projects/curriculum-edtech/` next to the CLRS PDF; section 5.1 is PDF pages 170-180.
 - `src/shared/lessonChecks.ts` (`lessonProblems()`) added: checks by code that the schema can't express (answer is an option, wrong-answer ranges don't overlap the right answer, balanced `$`, no two modules in a row without a check). `\$` is now a literal dollar sign in lesson text (R11).
 - The code checks now cover every piece of lesson text (prompts, options, fallbacks, outcomes), not only readings, and flag a stray `\"` — the first 5.1 draft had 10 backslash-quotes that showed on screen, from writing the JSON through Python raw strings.
+- Added slice 3c (explain right answers, green and red options) before slice 4 — Isaac's suggestions after playing the 5.1 draft; the `explanation` field goes into the format before slice 3b.
+- In-app Back and the browser's Back now always land on the previous module, however a module was reached — opening a module from the lesson intro's list or Contents (or the jump to a skipped module) added only that one history entry, so Back returned to the intro (found by Isaac in slice 3c's check). `goTo()` in `Player.svelte` adds entries for the earlier modules first.

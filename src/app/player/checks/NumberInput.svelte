@@ -8,8 +8,9 @@
     check,
     locked,
     shown,
+    mark = null,
     onAnswer,
-  }: { check: NumberCheck; locked: boolean; shown: boolean; onAnswer: (a: Answer) => void } = $props();
+  }: { check: NumberCheck; locked: boolean; shown: boolean; mark?: "right" | "wrong" | null; onAnswer: (a: Answer) => void } = $props();
 
   // shown: the student finished this module before and came back to re-read it.
   // svelte-ignore state_referenced_locally (ModuleView re-creates this per module)
@@ -25,7 +26,7 @@
     if (valid) onAnswer({ type: "number", value });
   }}
 >
-  <input class="num" type="text" inputmode="decimal" bind:value={raw} disabled={locked} aria-label="Your answer" />
+  <input class="num" class:right={mark === "right"} class:wrong={mark === "wrong"} type="text" inputmode="decimal" bind:value={raw} disabled={locked} aria-label="Your answer" />
   {#if check.unit}<span class="muted">{check.unit}</span>{/if}
   {#if !locked}
     <button class="btn" type="submit" disabled={!valid}>Check</button>
@@ -44,5 +45,13 @@
   }
   input {
     max-width: 10rem;
+  }
+  input.right {
+    border-color: var(--right);
+    background: var(--right-bg);
+  }
+  input.wrong {
+    border-color: var(--wrong);
+    background: var(--wrong-bg);
   }
 </style>

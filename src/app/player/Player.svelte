@@ -6,7 +6,7 @@
   // address, different history.state), so the browser's Back button and a phone's swipe
   // back step through modules the same way the in-app Back button does.
   import type { CourseResponse } from "../../shared/lesson.ts";
-  import { fetchCourse } from "../lib/api.ts";
+  import { fetchCourse, ApiError, OFFLINE } from "../lib/api.ts";
   import {
     loadProgress,
     saveProgress,
@@ -41,7 +41,11 @@
   // svelte-ignore state_referenced_locally (App.svelte re-creates Player when the slug changes)
   fetchCourse(slug).then(
     (course) => (data = course),
-    (err) => (loadError = err.message),
+    (err) =>
+      (loadError =
+        err instanceof ApiError && err.status === OFFLINE
+          ? "Open this course once with a connection, then it works offline."
+          : err.message),
   );
 
   const openLesson = $derived.by(() => {

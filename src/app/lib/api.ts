@@ -20,8 +20,16 @@ export class ApiError extends Error {
   }
 }
 
+// status 0: no connection, and no saved copy either (fetch itself failed).
+export const OFFLINE = 0;
+
 async function request<T>(url: string, init: RequestInit = {}): Promise<T> {
-  const res = await fetch(url, init);
+  let res: Response;
+  try {
+    res = await fetch(url, init);
+  } catch {
+    throw new ApiError("No connection.", OFFLINE);
+  }
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new ApiError(body.error ?? `Request failed (${res.status}).`, res.status);
   return body as T;

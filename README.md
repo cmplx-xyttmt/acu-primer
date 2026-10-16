@@ -21,6 +21,13 @@ The player is at http://localhost:5173/c/openintro-sampling, and the author side
 sign-off, the show-unreviewed switch) at http://localhost:5173/author. Locally the author side
 is open until you set `AUTHOR_PASSPHRASE` in `.dev.vars`; after that it asks for it.
 
+## Try it offline
+
+The service worker only runs in a build, not in `npm run dev`. Run `npm run preview` (or use the
+deployed link), open a course once, then go offline (DevTools > Network > Offline, or turn the
+wifi off) and reload: the course, fonts and formulas still work, and answers queue up until the
+connection is back.
+
 ## Check it
 
 ```sh

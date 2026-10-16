@@ -112,6 +112,7 @@ Source: `scope.md > The Core Loop`. Deliberately thin: the hand-written baseline
 ### Review and sign-off
 Source: `scope.md > The POC Boundary`.
 - A lesson carries one of two marks: "written by the model, not yet reviewed" or "reviewed by a person." One sign-off per lesson.
+- **Review goes step by step** (slice 4b, Oct 16): the outcomes, then one module at a time with every branch open. The author approves each step with one tick, or pins a suggestion to a part of it (the reading, the check, its explanation, one wrong answer's hint, the general fallback, the alternatives). Suggestions are applied by a revision (for now `/revise-lesson` in Claude Code), and a revised step has to be approved again. Sign-off unlocks only when every step is approved and no suggestion is open.
 - The review screen shows every fallback, so the author can read every branch a student might see.
 - As a course author, I want students to get only what I've checked, so "verified before it ships" holds.
   - [ ] Before sign-off, the lesson doesn't appear for students.

@@ -54,6 +54,14 @@ export const authorApi = {
   courses: () => author<{ courses: AuthorCourse[] }>("/api/author/courses").then((r) => r.courses),
   lesson: (id: string) => author<AuthorLesson>(`/api/author/lessons/${id}`),
   signOff: (id: string) => author<AuthorLesson>(`/api/author/lessons/${id}/signoff`, { method: "POST" }),
+  approve: (id: string, stepId: string) =>
+    author<AuthorLesson>(`/api/author/lessons/${id}/steps/${stepId}/approval`, { method: "POST" }),
+  unapprove: (id: string, stepId: string) =>
+    author<AuthorLesson>(`/api/author/lessons/${id}/steps/${stepId}/approval`, { method: "DELETE" }),
+  suggest: (id: string, s: { stepId: string; part: string; partLabel: string; text: string }) =>
+    author<AuthorLesson>(`/api/author/lessons/${id}/suggestions`, { method: "POST", body: JSON.stringify(s) }),
+  withdraw: (suggestionId: string) =>
+    author<AuthorLesson>(`/api/author/suggestions/${suggestionId}/withdraw`, { method: "POST" }),
   setShowUnreviewed: (courseId: string, showUnreviewed: boolean) =>
     author(`/api/author/courses/${courseId}`, { method: "PUT", body: JSON.stringify({ showUnreviewed }) }),
 };

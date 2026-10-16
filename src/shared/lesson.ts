@@ -137,6 +137,10 @@ export interface AuthorLessonSummary {
 
 export interface AuthorLesson extends AuthorLessonSummary {
   content: Lesson;
+  review: {
+    approvedSteps: string[]; // steps whose approval still matches their content
+    suggestions: import("./review.ts").Suggestion[];
+  };
 }
 
 export interface AuthorCourse {

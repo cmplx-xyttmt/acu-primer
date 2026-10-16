@@ -157,7 +157,7 @@ Svelte components under `src/app/player/`. Implements `prd.md > Course overview 
 - A short list of known misconceptions about sampling distributions and standard error, each with a plain description and a reference to where it was published. It gets written during the build from published sources, and Isaac checks it. The tool prompt includes it, and the tool marks anything it adds as its own guess.
 
 ### Lesson review and sign-off
-`src/app/author/Review.svelte` and `POST /api/author/lessons/:id/signoff`. Implements `prd.md > Review and sign-off`.
+`src/app/author/Review.svelte`, `Part.svelte`, the rules in `src/shared/review.ts`, and the routes below. Implements `prd.md > Review and sign-off`. Since slice 4b the review is step by step; suggestions are applied by `.claude/skills/revise-lesson` with `scripts/suggestions.ts` until slice 3b.
 - The whole lesson in order, with every wrong answer's fallback expanded, so the author reads each branch.
 - A **Sign off** button, and the mark ("reviewed by a person" or "written by the model, not yet reviewed") next to each lesson in the author's list.
 - A per-course switch, **Show unreviewed lessons to students**, saved on the course in D1.
@@ -182,7 +182,10 @@ Svelte components under `src/app/player/`. Implements `prd.md > Course overview 
 | `PUT /api/author/lessons/:id` | author | save the author's own edits (switches, picks) |
 | `GET /api/author/courses` | author | every course with its lessons and marks (no content), for the author home |
 | `GET /api/author/lessons/:id` | author | one lesson in full, any status, for the review screen |
-| `POST /api/author/lessons/:id/signoff` | author | mark as reviewed |
+| `POST /api/author/lessons/:id/signoff` | author | mark as reviewed; 409 unless every step is approved and no suggestion is open |
+| `POST`/`DELETE /api/author/lessons/:id/steps/:stepId/approval` | author | approve a review step (stores its content hash), or take it back; 409 while it has an open suggestion |
+| `POST /api/author/lessons/:id/suggestions` | author | pin a suggestion to a part of a step (takes back that step's approval) |
+| `POST /api/author/suggestions/:id/withdraw` | author | withdraw an open suggestion |
 | `PUT /api/author/courses/:id` | author | the "show unreviewed" switch |
 | `GET /api/author/courses/:id/students` | author | the student list |
 | `GET /api/author/courses/:id/students/:key/events` | author | one student's log |
@@ -196,6 +199,8 @@ D1 tables, created by `migrations/0001_init.sql`:
 - **courses**: `id`, `slug`, `title`, `show_unreviewed` (0 or 1).
 - **sources**: `id`, `course_id`, `title`, `pages` (for example "OpenIntro 4th ed., pp. 170–181"), `anthropic_file_id`, `created_at`.
 - **lessons**: `id`, `course_id`, `source_id` (empty for imported lessons), `position`, `title`, `status` (`unreviewed` or `reviewed`), `content` (the lesson JSON), `updated_at`, `signed_off_at`.
+- **step_approvals** (`0002_review.sql`): `lesson_id`, `step_id` (`_outcomes` or a module id), `content_hash` (SHA-256 of the step's JSON when approved; an approval counts only while the hash still matches), `approved_at`.
+- **suggestions** (`0002_review.sql`): `id`, `lesson_id`, `step_id`, `part`, `part_label`, `text`, `status` (`open`, `resolved`, `withdrawn`), `note` (what the revision changed), `created_at`, `resolved_at`.
 - **events**: `id` (made in the browser), `course_id`, `lesson_id`, `student_name`, `device_id`, `type`, `payload` (JSON), `client_time`, `received_at`. There's an index on `(course_id, student_name, device_id, client_time)`.
 
 Event types: `lesson.started`, `module.entered`, `check.answered` (answer, result, which wrong answer, main or fallback level), `fallback.shown` (re-explanation or simpler question), `material.suggested`, `module.skipped`, `sim.run` (sample size), `lesson.completed`.

@@ -1,6 +1,16 @@
 // Author routes, all behind the gate in index.ts.
 
-import { authorCourses, authorLesson, signOffLesson, updateShowUnreviewed } from "../db.ts";
+import {
+  addSuggestion,
+  approveStep,
+  authorCourses,
+  authorLesson,
+  signOffLesson,
+  unapproveStep,
+  updateShowUnreviewed,
+  withdrawSuggestion,
+  type ReviewResult,
+} from "../db.ts";
 import { json } from "../http.ts";
 import type { Ctx } from "../index.ts";
 
@@ -16,11 +26,38 @@ export async function getLesson({ env }: Ctx, lessonId: string): Promise<Respons
   return json(lesson);
 }
 
-// POST /api/author/lessons/:id/signoff — mark as reviewed by a person.
+const reply = (result: ReviewResult) =>
+  result.ok ? json(result.lesson) : json({ error: result.error }, result.status);
+
+// POST /api/author/lessons/:id/signoff — mark as reviewed by a person, once every step is
+// approved and no suggestion is open (409 otherwise, with the reasons).
 export async function signOff({ env }: Ctx, lessonId: string): Promise<Response> {
-  const lesson = await signOffLesson(env.DB, lessonId);
-  if (!lesson) return json({ error: "No lesson with that id." }, 404);
-  return json(lesson);
+  return reply(await signOffLesson(env.DB, lessonId));
+}
+
+// POST / DELETE /api/author/lessons/:id/steps/:stepId/approval — approve a step, or take it back.
+export async function approve({ env }: Ctx, lessonId: string, stepId: string): Promise<Response> {
+  return reply(await approveStep(env.DB, lessonId, stepId));
+}
+
+export async function unapprove({ env }: Ctx, lessonId: string, stepId: string): Promise<Response> {
+  return reply(await unapproveStep(env.DB, lessonId, stepId));
+}
+
+// POST /api/author/lessons/:id/suggestions — { stepId, part, partLabel, text }
+export async function suggest({ env, request }: Ctx, lessonId: string): Promise<Response> {
+  const b = (await request.json().catch(() => null)) as Record<string, unknown> | null;
+  const field = (k: string) => (typeof b?.[k] === "string" ? (b[k] as string).trim() : "");
+  const s = { stepId: field("stepId"), part: field("part"), partLabel: field("partLabel"), text: field("text") };
+  if (!s.stepId || !s.part || !s.partLabel || !s.text)
+    return json({ error: "Send { stepId, part, partLabel, text }, all non-empty." }, 400);
+  if (s.text.length > 4000) return json({ error: "Keep a suggestion under 4,000 characters." }, 400);
+  return reply(await addSuggestion(env.DB, lessonId, s));
+}
+
+// POST /api/author/suggestions/:id/withdraw
+export async function withdraw({ env }: Ctx, suggestionId: string): Promise<Response> {
+  return reply(await withdrawSuggestion(env.DB, suggestionId));
 }
 
 // PUT /api/author/courses/:id — { showUnreviewed: boolean }, the owner's switch.

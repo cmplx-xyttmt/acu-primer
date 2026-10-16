@@ -4,7 +4,16 @@
 import { authorGate } from "./auth.ts";
 import { json } from "./http.ts";
 import { getCourse } from "./routes/courses.ts";
-import { listCourses, getLesson, signOff, setShowUnreviewed } from "./routes/author.ts";
+import {
+  listCourses,
+  getLesson,
+  signOff,
+  setShowUnreviewed,
+  approve,
+  unapprove,
+  suggest,
+  withdraw,
+} from "./routes/author.ts";
 
 export interface Ctx {
   request: Request;
@@ -15,12 +24,17 @@ export interface Ctx {
 type Handler = (ctx: Ctx, ...params: string[]) => Promise<Response>;
 
 const id = "([a-z0-9-]+)";
+const stepId = "([a-z0-9_-]+)"; // module ids, or "_outcomes"
 const routes: [method: string, pattern: RegExp, handler: Handler][] = [
   ["GET", new RegExp(`^/api/courses/${id}$`), getCourse],
   ["GET", /^\/api\/author\/courses$/, listCourses],
   ["GET", new RegExp(`^/api/author/lessons/${id}$`), getLesson],
   ["POST", new RegExp(`^/api/author/lessons/${id}/signoff$`), signOff],
   ["PUT", new RegExp(`^/api/author/courses/${id}$`), setShowUnreviewed],
+  ["POST", new RegExp(`^/api/author/lessons/${id}/steps/${stepId}/approval$`), approve],
+  ["DELETE", new RegExp(`^/api/author/lessons/${id}/steps/${stepId}/approval$`), unapprove],
+  ["POST", new RegExp(`^/api/author/lessons/${id}/suggestions$`), suggest],
+  ["POST", new RegExp(`^/api/author/suggestions/${id}/withdraw$`), withdraw],
 ];
 
 export default {

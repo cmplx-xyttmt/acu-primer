@@ -13,11 +13,13 @@
     lessonProgress,
     passModule,
     skipModule,
+    isComplete,
     resumeIndex,
     rememberName,
     type CourseProgress,
     type LessonProgress,
   } from "../lib/progress.ts";
+  import { record, setStudent, startSending } from "../lib/eventQueue.ts";
   import NameEntry from "./NameEntry.svelte";
   import CourseOverview from "./CourseOverview.svelte";
   import ModuleView from "./ModuleView.svelte";
@@ -72,8 +74,28 @@
     name = typed.trim();
     rememberName(name);
     progress = loadProgress(slug, name);
+    setStudent(slug, name);
+    startSending();
     show({ kind: "overview" }, "replace");
   }
+
+  // module.entered whenever a module comes on screen, however it got there (Continue, Back,
+  // Contents, the browser's buttons). lesson.started when a lesson's first module is entered
+  // in this visit.
+  let lastEntered = "";
+  const startedThisVisit = new Set<string>();
+  $effect(() => {
+    if (view.kind !== "module" || !openLesson) return;
+    const mod = openLesson.content.modules[Math.min(view.index, openLesson.content.modules.length - 1)];
+    const key = `${openLesson.id}/${mod.id}`;
+    if (key === lastEntered) return;
+    lastEntered = key;
+    if (!startedThisVisit.has(openLesson.id)) {
+      startedThisVisit.add(openLesson.id);
+      record("lesson.started", openLesson.id, { title: openLesson.content.title });
+    }
+    record("module.entered", openLesson.id, { moduleId: mod.id, moduleTitle: mod.title, index: view.index });
+  });
 
   // Going to a module from anywhere but the module before it (Continue from the overview, a
   // pick in the intro or Contents) adds an entry for each earlier module first. So Back, which
@@ -125,11 +147,17 @@
     {index}
     progress={lessonProgress(progress, lessonId)}
     onNext={() => {
-      update(lessonId, (p) => passModule(p, openLesson.content.modules[index].id, index));
-      advance(lessonId, index, openLesson.content.modules.map((m) => m.id));
+      const ids = openLesson.content.modules.map((m) => m.id);
+      const wasComplete = isComplete(lessonProgress(progress, lessonId), ids);
+      update(lessonId, (p) => passModule(p, ids[index], index));
+      if (!wasComplete && isComplete(lessonProgress(progress, lessonId), ids))
+        record("lesson.completed", lessonId, { title: openLesson.content.title });
+      advance(lessonId, index, ids);
     }}
     onSkip={() => {
-      update(lessonId, (p) => skipModule(p, openLesson.content.modules[index].id, index));
+      const mod = openLesson.content.modules[index];
+      update(lessonId, (p) => skipModule(p, mod.id, index));
+      record("module.skipped", lessonId, { moduleId: mod.id, moduleTitle: mod.title, index });
       advance(lessonId, index, openLesson.content.modules.map((m) => m.id));
     }}
     onBack={() => history.back()}

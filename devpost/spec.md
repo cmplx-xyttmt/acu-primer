@@ -188,7 +188,7 @@ Svelte components under `src/app/player/`. Implements `prd.md > Course overview 
 | `POST /api/author/suggestions/:id/withdraw` | author | withdraw an open suggestion |
 | `PUT /api/author/courses/:id` | author | the "show unreviewed" switch |
 | `GET /api/author/courses/:id/students` | author | the student list |
-| `GET /api/author/courses/:id/students/:key/events` | author | one student's log |
+| `GET /api/author/courses/:id/student-events?name=&device=` | author | one student's log (query string instead of a path key, since a typed name can contain any character) |
 
 ### Baseline lesson import
 `scripts/import-lesson.ts`. The hand-written lessons (4.1 and 4.3) are written as lesson JSON in `content/`, checked against the schema, and loaded into D1 with this script. The same path loads the CLRS course. The scoping notes' idea of "publishing as course JSON" becomes this import, because lessons live in D1 (see `Decisions and Open Issues`).
@@ -203,7 +203,7 @@ D1 tables, created by `migrations/0001_init.sql`:
 - **suggestions** (`0002_review.sql`): `id`, `lesson_id`, `step_id`, `part`, `part_label`, `text`, `status` (`open`, `resolved`, `withdrawn`), `note` (what the revision changed), `created_at`, `resolved_at`.
 - **events**: `id` (made in the browser), `course_id`, `lesson_id`, `student_name`, `device_id`, `type`, `payload` (JSON), `client_time`, `received_at`. There's an index on `(course_id, student_name, device_id, client_time)`.
 
-Event types: `lesson.started`, `module.entered`, `check.answered` (answer, result, which wrong answer, main or fallback level), `fallback.shown` (re-explanation or simpler question), `material.suggested`, `module.skipped`, `sim.run` (sample size), `lesson.completed`.
+Event types (schema in `src/shared/events.ts`): `lesson.started`, `module.entered`, `check.answered` (answer as the student saw it, result, the misconception for a known wrong answer, level: main, retry or simpler question), `fallback.shown` (re-explanation or simpler question), `material.suggested`, `module.skipped`, `sim.run` (sample size), `lesson.completed`.
 
 Where each piece of data lives:
 

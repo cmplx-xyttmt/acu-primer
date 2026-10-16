@@ -2,6 +2,7 @@
 
 import type { AuthorCourse, AuthorLesson, CourseResponse, Lesson, LessonStatus } from "../shared/lesson.ts";
 import { reviewState, stepContent, type Suggestion } from "../shared/review.ts";
+import type { StudentEvent, StudentSummary } from "../shared/events.ts";
 
 interface CourseRow {
   id: string;
@@ -225,4 +226,66 @@ export async function updateShowUnreviewed(db: D1Database, courseId: string, sho
     .bind(show ? 1 : 0, courseId)
     .run();
   return result.meta.changes > 0;
+}
+
+// Save a batch of student events, ignoring ids already saved (a batch can arrive twice).
+// Returns how many were accepted (already-saved ids among them are ignored by the database)
+// and how many named a course that doesn't exist (those are skipped).
+export async function saveEvents(db: D1Database, events: StudentEvent[]): Promise<{ accepted: number; unknownCourse: number }> {
+  const slugs = [...new Set(events.map((e) => e.courseSlug))];
+  const known = await db
+    .prepare(`SELECT id, slug FROM courses WHERE slug IN (${slugs.map(() => "?").join(",")})`)
+    .bind(...slugs)
+    .all<{ id: string; slug: string }>();
+  const courseIds = new Map(known.results.map((c) => [c.slug, c.id]));
+  const now = new Date().toISOString();
+  const statements = events
+    .filter((e) => courseIds.has(e.courseSlug))
+    .map((e) =>
+      db
+        .prepare(
+          `INSERT OR IGNORE INTO events (id, course_id, lesson_id, student_name, device_id, type, payload, client_time, received_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(e.id, courseIds.get(e.courseSlug)!, e.lessonId, e.studentName, e.deviceId, e.type, JSON.stringify(e.payload), e.clientTime, now),
+    );
+  if (statements.length > 0) await db.batch(statements);
+  return { accepted: statements.length, unknownCourse: events.length - statements.length };
+}
+
+// Students who have opened a course: one row per name (ignoring case) and device.
+export async function courseStudents(db: D1Database, courseId: string): Promise<StudentSummary[]> {
+  const { results } = await db
+    .prepare(
+      `SELECT MAX(student_name) AS name, device_id, MAX(client_time) AS last_seen,
+              COUNT(DISTINCT lesson_id) AS lessons, COUNT(*) AS events
+       FROM events WHERE course_id = ?
+       GROUP BY LOWER(TRIM(student_name)), device_id
+       ORDER BY last_seen DESC`,
+    )
+    .bind(courseId)
+    .all<{ name: string; device_id: string; last_seen: string; lessons: number; events: number }>();
+  return results.map((r) => ({ name: r.name, deviceId: r.device_id, lastSeen: r.last_seen, lessons: r.lessons, events: r.events }));
+}
+
+export interface LoggedEvent {
+  id: string;
+  lessonId: string | null;
+  type: string;
+  payload: Record<string, unknown>;
+  clientTime: string;
+}
+
+// One student's events in the order they happened on their device (not the order they arrived,
+// which differs for events sent after being offline).
+export async function studentEvents(db: D1Database, courseId: string, name: string, deviceId: string): Promise<LoggedEvent[]> {
+  const { results } = await db
+    .prepare(
+      `SELECT id, lesson_id, type, payload, client_time FROM events
+       WHERE course_id = ? AND LOWER(TRIM(student_name)) = LOWER(TRIM(?)) AND device_id = ?
+       ORDER BY client_time, received_at`,
+    )
+    .bind(courseId, name, deviceId)
+    .all<{ id: string; lesson_id: string | null; type: string; payload: string; client_time: string }>();
+  return results.map((r) => ({ id: r.id, lessonId: r.lesson_id, type: r.type, payload: JSON.parse(r.payload), clientTime: r.client_time }));
 }

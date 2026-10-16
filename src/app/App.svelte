@@ -4,13 +4,39 @@
   import AuthorGate from "./author/AuthorGate.svelte";
   import AuthorHome from "./author/AuthorHome.svelte";
   import Review from "./author/Review.svelte";
+  import Students from "./author/Students.svelte";
+  import StudentLog from "./author/StudentLog.svelte";
 
   const courseMatch = $derived(route.path.match(/^\/c\/([a-z0-9-]+)\/?$/));
   const reviewMatch = $derived(route.path.match(/^\/author\/lessons\/([a-z0-9-]+)\/?$/));
   const authorHome = $derived(/^\/author\/?$/.test(route.path));
+  const studentsMatch = $derived(route.path.match(/^\/author\/courses\/([a-z0-9-]+)\/students\/?$/));
+  const logMatch = $derived(route.path.match(/^\/author\/courses\/([a-z0-9-]+)\/log\/?$/));
+  const logParams = $derived(logMatch ? new URLSearchParams(route.search) : null);
 </script>
 
-{#if reviewMatch}
+{#if studentsMatch}
+  <AuthorGate>
+    {#snippet children({ onLocked })}
+      {#key studentsMatch[1]}
+        <Students courseId={studentsMatch[1]} {onLocked} />
+      {/key}
+    {/snippet}
+  </AuthorGate>
+{:else if logMatch && logParams}
+  <AuthorGate>
+    {#snippet children({ onLocked })}
+      {#key route.search}
+        <StudentLog
+          courseId={logMatch[1]}
+          name={logParams.get("name") ?? ""}
+          device={logParams.get("device") ?? ""}
+          {onLocked}
+        />
+      {/key}
+    {/snippet}
+  </AuthorGate>
+{:else if reviewMatch}
   <AuthorGate>
     {#snippet children({ onLocked })}
       {#key reviewMatch[1]}

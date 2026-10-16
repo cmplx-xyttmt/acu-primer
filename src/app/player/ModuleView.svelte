@@ -11,6 +11,9 @@
   import ThemeSwitch from "./ThemeSwitch.svelte";
   import Fallback from "./Fallback.svelte";
   import LessonOutline from "./LessonOutline.svelte";
+  import { record } from "../lib/eventQueue.ts";
+  import type { AnsweredPayload, FallbackPayload } from "../../shared/events.ts";
+  import type { SimpleCheck } from "../../shared/lesson.ts";
   import type { LessonProgress } from "../lib/progress.ts";
 
   let {
@@ -82,18 +85,57 @@
     checks[mod.id] = { ...cs, ...change };
   }
 
+  // What the student picked or typed, as they saw it, for the author's log.
+  const answerText = (c: SimpleCheck, a: Answer) =>
+    a.type === "select" && c.type === "select"
+      ? (c.options.find((o) => o.id === a.optionId)?.text ?? a.optionId)
+      : a.type === "number"
+        ? String(a.value)
+        : "";
+
+  function log(type: "check.answered" | "fallback.shown" | "material.suggested", payload: object) {
+    record(type, lesson.id, { moduleId: mod.id, moduleTitle: mod.title, ...payload });
+  }
+
   function answerMain(a: Answer) {
     if (!mod.check) return;
-    const step = afterMainAnswer(mod.check, grade(mod.check, a), cs.level);
+    const g = grade(mod.check, a);
+    log("check.answered", {
+      checkId: mod.check.id,
+      level: cs.level === "main" ? "main" : "retry",
+      answerText: answerText(mod.check as SimpleCheck, a),
+      result: g.kind,
+      misconception: g.kind === "known-wrong" ? mod.check.wrongAnswers[g.index].misconception.text : undefined,
+    } satisfies Omit<AnsweredPayload, "moduleId" | "moduleTitle">);
+    const step = afterMainAnswer(mod.check, g, cs.level);
     if (step.kind === "move-on") set({ end: "right" });
-    else if (step.kind === "material") set({ end: "material" });
-    else set({ fallback: step, level: "fallback" });
+    else if (step.kind === "material") {
+      set({ end: "material" });
+      log("material.suggested", {});
+    } else {
+      set({ fallback: step, level: "fallback" });
+      log("fallback.shown", {
+        reason: step.reason,
+        misconception: step.misconception,
+        parts: [
+          ...(step.reExplanation ? (["reExplanation"] as const) : []),
+          ...(step.simplerQuestion ? (["simplerQuestion"] as const) : []),
+        ],
+      } satisfies Omit<FallbackPayload, "moduleId" | "moduleTitle">);
+    }
   }
 
   function answerSimpler(a: Answer) {
     const simpler = cs.fallback?.simplerQuestion;
     if (!simpler) return;
     const right = grade(simpler, a).kind === "right";
+    log("check.answered", {
+      checkId: `${mod.check?.id}-simpler`,
+      level: "simpler",
+      answerText: answerText(simpler, a),
+      result: right ? "right" : "unplanned",
+    } satisfies Omit<AnsweredPayload, "moduleId" | "moduleTitle">);
+    if (!right) log("material.suggested", {});
     // Right: the hint folds away and the original question opens again straight away.
     if (afterSimplerAnswer(right) === "retry-main")
       set({ simpler: "right", retrying: true, attempt: cs.attempt + 1 });

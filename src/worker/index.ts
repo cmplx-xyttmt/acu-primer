@@ -4,6 +4,7 @@
 import { authorGate } from "./auth.ts";
 import { json } from "./http.ts";
 import { getCourse } from "./routes/courses.ts";
+import { postEvents } from "./routes/events.ts";
 import {
   listCourses,
   getLesson,
@@ -13,6 +14,8 @@ import {
   unapprove,
   suggest,
   withdraw,
+  students,
+  studentLog,
 } from "./routes/author.ts";
 
 export interface Ctx {
@@ -27,6 +30,7 @@ const id = "([a-z0-9-]+)";
 const stepId = "([a-z0-9_-]+)"; // module ids, or "_outcomes"
 const routes: [method: string, pattern: RegExp, handler: Handler][] = [
   ["GET", new RegExp(`^/api/courses/${id}$`), getCourse],
+  ["POST", /^\/api\/events$/, postEvents],
   ["GET", /^\/api\/author\/courses$/, listCourses],
   ["GET", new RegExp(`^/api/author/lessons/${id}$`), getLesson],
   ["POST", new RegExp(`^/api/author/lessons/${id}/signoff$`), signOff],
@@ -35,6 +39,8 @@ const routes: [method: string, pattern: RegExp, handler: Handler][] = [
   ["DELETE", new RegExp(`^/api/author/lessons/${id}/steps/${stepId}/approval$`), unapprove],
   ["POST", new RegExp(`^/api/author/lessons/${id}/suggestions$`), suggest],
   ["POST", new RegExp(`^/api/author/suggestions/${id}/withdraw$`), withdraw],
+  ["GET", new RegExp(`^/api/author/courses/${id}/students$`), students],
+  ["GET", new RegExp(`^/api/author/courses/${id}/student-events$`), studentLog],
 ];
 
 export default {

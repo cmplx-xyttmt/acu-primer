@@ -50,7 +50,10 @@
       <section class="course">
         <div class="course-head">
           <h2>{course.title}</h2>
-          <a href="/c/{course.slug}" onclick={(e) => go(e, `/c/${course.slug}`)}>Open as a student</a>
+          <span class="links">
+            <a href="/author/courses/{course.id}/students" onclick={(e) => go(e, `/author/courses/${course.id}/students`)}>Students</a>
+            <a href="/c/{course.slug}" onclick={(e) => go(e, `/c/${course.slug}`)}>Open as a student</a>
+          </span>
         </div>
         <label class="switch">
           <input type="checkbox" checked={course.showUnreviewed} onchange={() => toggle(course)} />
@@ -127,6 +130,10 @@
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
+  }
+  .links {
+    display: flex;
+    gap: 1rem;
   }
   .right-side {
     display: flex;

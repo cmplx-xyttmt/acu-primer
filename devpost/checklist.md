@@ -79,7 +79,7 @@ Build mode: learn (chosen Sep 25, 2026)
   Learner check: Review the 5.1 draft step by step: approve what's right, suggest a change to at least one part, let the revise skill apply it, check the change, and sign off. Say whether this is how you'd want to review a lesson.
   Commit: `Step-by-step review with approvals and suggestions`
 
-- [ ] **5. The author sees one student's path through the lesson**
+- [x] **5. The author sees one student's path through the lesson**
   Becomes usable: Every student action is recorded and sent to the Worker. The author's student list shows each name, a shortened device id, last seen and lessons touched. One student's log shows, in order, modules entered, each answer, right or wrong, the misconception it hit, the fallback shown, the material suggestion, and time taken. This closes the whole loop.
   Why now: With this slice the kernel's four steps work end to end on the signed-off draft, which is the proof of concept's definition of done. Everything after it makes the loop better rather than making it exist.
   PRD ref: `prd.md > The Core Journey` (step 8), `prd.md > Per-student view`
@@ -181,3 +181,4 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Slices 4 and 4b ticked on Oct 16 while Isaac was away (he asked for 2-3 slices with my judgement on decisions): mechanical checks done, learner check pending in `devpost/review-checklist.html`. If his check turns something up, the fix goes in as a revision.
 - Locally, a `.env` file (gitignored) now holds Isaac's AUTHOR_PASSPHRASE, so the local author side asks for it too. Wrangler reads `.env` as well as `.dev.vars`. For tests I ran a second local Worker on port 8788 with a generated test passphrase (`wrangler dev -c dist/acu_primer/wrangler.json --var AUTHOR_PASSPHRASE:...`), never reading his.
 - In 4b, a step can't be approved while it has an open suggestion, and adding a suggestion takes back that step's approval (my call: approving a step you've asked to change would contradict itself).
+- Slice 5 built Oct 16 (Isaac away; learner check pending in `devpost/review-checklist.html`). The student log is at `/author/courses/:id/log?name=&device=` and its API takes the name and device as a query string, not the spec's `:studentKey` path segment: a typed name can contain any character. `check.answered` stores the answer as the student saw it (option text or the typed number), so the log reads without the lesson. Simpler-question answers are logged with level `simpler`. `POST /api/events` replies `accepted` (not `saved`), since ids already saved are ignored silently.

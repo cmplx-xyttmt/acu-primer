@@ -9,6 +9,8 @@ import {
   unapproveStep,
   updateShowUnreviewed,
   withdrawSuggestion,
+  courseStudents,
+  studentEvents,
   type ReviewResult,
 } from "../db.ts";
 import { json } from "../http.ts";
@@ -67,4 +69,18 @@ export async function setShowUnreviewed({ env, request }: Ctx, courseId: string)
   const ok = await updateShowUnreviewed(env.DB, courseId, body.showUnreviewed);
   if (!ok) return json({ error: "No course with that id." }, 404);
   return json({ id: courseId, showUnreviewed: body.showUnreviewed });
+}
+
+// GET /api/author/courses/:id/students — everyone who has opened the course, newest first.
+export async function students({ env }: Ctx, courseId: string): Promise<Response> {
+  return json({ students: await courseStudents(env.DB, courseId) });
+}
+
+// GET /api/author/courses/:id/student-events?name=...&device=... — one student's log.
+// (A query string, not a path segment: a typed name can contain any character.)
+export async function studentLog({ env, url }: Ctx, courseId: string): Promise<Response> {
+  const name = url.searchParams.get("name");
+  const device = url.searchParams.get("device");
+  if (!name || !device) return json({ error: "Give ?name= and &device=." }, 400);
+  return json({ events: await studentEvents(env.DB, courseId, name, device) });
 }

@@ -1,6 +1,15 @@
 // Fetch helpers for /api/*.
 
 import type { AuthorCourse, AuthorLesson, CourseResponse } from "../../shared/lesson.ts";
+import type { StudentSummary } from "../../shared/events.ts";
+
+export interface LoggedEvent {
+  id: string;
+  lessonId: string | null;
+  type: string;
+  payload: Record<string, unknown>;
+  clientTime: string;
+}
 
 export class ApiError extends Error {
   constructor(
@@ -60,6 +69,12 @@ export const authorApi = {
     author<AuthorLesson>(`/api/author/lessons/${id}/steps/${stepId}/approval`, { method: "DELETE" }),
   suggest: (id: string, s: { stepId: string; part: string; partLabel: string; text: string }) =>
     author<AuthorLesson>(`/api/author/lessons/${id}/suggestions`, { method: "POST", body: JSON.stringify(s) }),
+  students: (courseId: string) =>
+    author<{ students: StudentSummary[] }>(`/api/author/courses/${courseId}/students`).then((r) => r.students),
+  studentLog: (courseId: string, name: string, device: string) =>
+    author<{ events: LoggedEvent[] }>(
+      `/api/author/courses/${courseId}/student-events?name=${encodeURIComponent(name)}&device=${encodeURIComponent(device)}`,
+    ).then((r) => r.events),
   withdraw: (suggestionId: string) =>
     author<AuthorLesson>(`/api/author/suggestions/${suggestionId}/withdraw`, { method: "POST" }),
   setShowUnreviewed: (courseId: string, showUnreviewed: boolean) =>

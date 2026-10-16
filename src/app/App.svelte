@@ -6,16 +6,26 @@
   import Review from "./author/Review.svelte";
   import Students from "./author/Students.svelte";
   import StudentLog from "./author/StudentLog.svelte";
+  import Session from "./author/Session.svelte";
 
   const courseMatch = $derived(route.path.match(/^\/c\/([a-z0-9-]+)\/?$/));
   const reviewMatch = $derived(route.path.match(/^\/author\/lessons\/([a-z0-9-]+)\/?$/));
   const authorHome = $derived(/^\/author\/?$/.test(route.path));
   const studentsMatch = $derived(route.path.match(/^\/author\/courses\/([a-z0-9-]+)\/students\/?$/));
+  const draftMatch = $derived(route.path.match(/^\/author\/courses\/([a-z0-9-]+)\/draft\/?$/));
   const logMatch = $derived(route.path.match(/^\/author\/courses\/([a-z0-9-]+)\/log\/?$/));
   const logParams = $derived(logMatch ? new URLSearchParams(route.search) : null);
 </script>
 
-{#if studentsMatch}
+{#if draftMatch}
+  <AuthorGate>
+    {#snippet children({ onLocked })}
+      {#key draftMatch[1]}
+        <Session courseId={draftMatch[1]} {onLocked} />
+      {/key}
+    {/snippet}
+  </AuthorGate>
+{:else if studentsMatch}
   <AuthorGate>
     {#snippet children({ onLocked })}
       {#key studentsMatch[1]}

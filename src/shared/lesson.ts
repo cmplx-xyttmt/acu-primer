@@ -148,5 +148,6 @@ export interface AuthorCourse {
   slug: string;
   title: string;
   showUnreviewed: boolean;
+  brief: string | null;
   lessons: AuthorLessonSummary[];
 }

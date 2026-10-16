@@ -23,6 +23,8 @@
 		}
 	],
 	"vars": {
-		"DRAFT_MODEL": "claude-opus-5-5"
+		"DRAFT_MODEL": "claude-opus-5-5",
+		// Claude calls stop for the month once logged spend reaches this many dollars.
+		"MONTHLY_BUDGET_USD": "15"
 	}
 }

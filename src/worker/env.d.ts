@@ -3,6 +3,7 @@
 interface Secrets {
   AUTHOR_PASSPHRASE?: string;
   ANTHROPIC_API_KEY?: string;
+  CLAUDE_API_KEY?: string; // the same key under the name Isaac uses in .env
 }
 interface Env extends Secrets {}
 declare namespace Cloudflare {

@@ -83,8 +83,54 @@ export const authorApi = {
     author<{ events: LoggedEvent[] }>(
       `/api/author/courses/${courseId}/student-events?name=${encodeURIComponent(name)}&device=${encodeURIComponent(device)}`,
     ).then((r) => r.events),
+  budget: () => author<{ spentUsd: number; budgetUsd: number; model: string; hasKey: boolean }>("/api/author/budget"),
+  setBrief: (courseId: string, brief: string) =>
+    author(`/api/author/courses/${courseId}`, { method: "PUT", body: JSON.stringify({ brief }) }),
+  uploadSource: (courseId: string, title: string, pages: string, pdf: Uint8Array) =>
+    request<{ sourceId: string; kb: number }>(
+      `/api/author/sources?courseId=${encodeURIComponent(courseId)}&title=${encodeURIComponent(title)}&pages=${encodeURIComponent(pages)}`,
+      { method: "POST", headers: { "x-author-passphrase": savedPassphrase(), "content-type": "application/pdf" }, body: pdf as BufferSource },
+    ),
+  revise: (id: string, stepId: string) =>
+    author<{ lesson: AuthorLesson; note: string; usage: { costUsd: number } }>(`/api/author/lessons/${id}/steps/${stepId}/revise`, { method: "POST" }),
+  swap: (id: string, moduleId: string, alternativeId: string) =>
+    author<AuthorLesson>(`/api/author/lessons/${id}/edits`, { method: "POST", body: JSON.stringify({ kind: "swap", moduleId, alternativeId }) }),
+  setPart: (id: string, moduleId: string, which: number | "general", part: "reExplanation" | "simplerQuestion", enabled: boolean) =>
+    author<AuthorLesson>(`/api/author/lessons/${id}/edits`, { method: "POST", body: JSON.stringify({ kind: "switch", moduleId, which, part, enabled }) }),
   withdraw: (suggestionId: string) =>
     author<AuthorLesson>(`/api/author/suggestions/${suggestionId}/withdraw`, { method: "POST" }),
   setShowUnreviewed: (courseId: string, showUnreviewed: boolean) =>
     author(`/api/author/courses/${courseId}`, { method: "PUT", body: JSON.stringify({ showUnreviewed }) }),
 };
+
+export type DraftEvent =
+  | { chars: number; attempt: number }
+  | { alive: number; phase: "thinking" | "writing" }
+  | { done: string; usage: { costUsd: number; input: number; output: number }; seconds: number; attempts: number }
+  | { error: string; usage?: { costUsd: number } };
+
+/** Start a draft and read its progress, one JSON object per line, until it ends. */
+export async function streamDraft(sourceId: string, section: string, onEvent: (e: DraftEvent) => void): Promise<void> {
+  const res = await fetch("/api/author/drafts", {
+    method: "POST",
+    headers: { "x-author-passphrase": savedPassphrase(), "content-type": "application/json" },
+    body: JSON.stringify({ sourceId, section }),
+  });
+  if (!res.ok || !res.body) {
+    const body = await res.json().catch(() => ({}));
+    throw new ApiError(body.error ?? `Request failed (${res.status}).`, res.status);
+  }
+  const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+  let buffer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += value;
+    let nl: number;
+    while ((nl = buffer.indexOf("\n")) >= 0) {
+      const line = buffer.slice(0, nl).trim();
+      buffer = buffer.slice(nl + 1);
+      if (line) onEvent(JSON.parse(line));
+    }
+  }
+}

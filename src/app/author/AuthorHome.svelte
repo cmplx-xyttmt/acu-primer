@@ -18,6 +18,21 @@
 
   authorApi.courses().then((c) => (courses = c), fail);
 
+  let budget = $state<{ spentUsd: number; budgetUsd: number; model: string; hasKey: boolean } | null>(null);
+  authorApi.budget().then((b) => (budget = b), fail);
+
+  // The course brief: who the learner is and how they learn. Every draft for the course gets it.
+  let briefs = $state<Record<string, string>>({});
+  let savedBrief = $state<Record<string, boolean>>({});
+  async function saveBrief(course: AuthorCourse) {
+    try {
+      await authorApi.setBrief(course.id, briefs[course.id] ?? "");
+      savedBrief[course.id] = true;
+    } catch (err) {
+      fail(err);
+    }
+  }
+
   async function toggle(course: AuthorCourse) {
     const next = !course.showUnreviewed;
     try {
@@ -40,6 +55,11 @@
     <ThemeSwitch />
   </div>
   {#if error}<p class="error">{error}</p>{/if}
+  {#if budget}
+    <p class="muted budget">
+      Claude this month: <span class="num">${budget.spentUsd.toFixed(2)}</span> of <span class="num">${budget.budgetUsd}</span> ({budget.model}){budget.hasKey ? "" : ", no API key on this server"}.
+    </p>
+  {/if}
 
   {#if !courses}
     <p class="muted">Loading…</p>
@@ -51,10 +71,22 @@
         <div class="course-head">
           <h2>{course.title}</h2>
           <span class="links">
+            <a href="/author/courses/{course.id}/draft" onclick={(e) => go(e, `/author/courses/${course.id}/draft`)}>Draft a lesson</a>
             <a href="/author/courses/{course.id}/students" onclick={(e) => go(e, `/author/courses/${course.id}/students`)}>Students</a>
             <a href="/c/{course.slug}" onclick={(e) => go(e, `/c/${course.slug}`)}>Open as a student</a>
           </span>
         </div>
+        <details class="brief">
+          <summary>Course brief{course.brief ? "" : " (none yet)"}</summary>
+          <p class="muted">Who the learner is and how they want to learn. Every draft for this course follows it.</p>
+          <textarea
+            rows="4"
+            value={briefs[course.id] ?? course.brief ?? ""}
+            oninput={(e) => ((briefs[course.id] = (e.currentTarget as HTMLTextAreaElement).value), (savedBrief[course.id] = false))}
+            placeholder="e.g. I'm a software engineer learning operating systems on my own. I learn by doing: give me commands to run on my Mac."
+          ></textarea>
+          <button class="btn-quiet" onclick={() => saveBrief(course)}>{savedBrief[course.id] ? "Saved ✓" : "Save the brief"}</button>
+        </details>
         <label class="switch">
           <input type="checkbox" checked={course.showUnreviewed} onchange={() => toggle(course)} />
           Show unreviewed lessons to students
@@ -130,6 +162,28 @@
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
+  }
+  .brief {
+    margin-top: 0.6rem;
+    font-size: 0.92rem;
+  }
+  .brief summary {
+    cursor: pointer;
+    color: var(--text-2);
+  }
+  .brief textarea {
+    width: 100%;
+    font: inherit;
+    color: var(--text);
+    background: var(--bg);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.5rem 0.7rem;
+    margin: 0.3rem 0;
+  }
+  .budget {
+    margin: 0.25rem 0 0;
+    font-size: 0.9rem;
   }
   .links {
     display: flex;

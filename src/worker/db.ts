@@ -71,17 +71,18 @@ const lessonSummary = (row: AuthorLessonRow) => ({
 // Every course with its lessons and their marks, for the author's home screen.
 export async function authorCourses(db: D1Database): Promise<AuthorCourse[]> {
   const [courses, lessons] = await db.batch([
-    db.prepare("SELECT id, slug, title, show_unreviewed FROM courses ORDER BY title"),
+    db.prepare("SELECT id, slug, title, show_unreviewed, brief FROM courses ORDER BY title"),
     db.prepare(
       "SELECT id, course_id, position, title, status, updated_at, signed_off_at FROM lessons ORDER BY position",
     ),
   ]);
   const lessonRows = lessons.results as unknown as AuthorLessonRow[];
-  return (courses.results as unknown as CourseRow[]).map((c) => ({
+  return (courses.results as unknown as (CourseRow & { brief: string | null })[]).map((c) => ({
     id: c.id,
     slug: c.slug,
     title: c.title,
     showUnreviewed: c.show_unreviewed === 1,
+    brief: c.brief,
     lessons: lessonRows.filter((l) => l.course_id === c.id).map(lessonSummary),
   }));
 }
@@ -220,13 +221,6 @@ export async function withdrawSuggestion(db: D1Database, suggestionId: string): 
   return { ok: true, lesson: (await authorLesson(db, row.lesson_id))! };
 }
 
-export async function updateShowUnreviewed(db: D1Database, courseId: string, show: boolean): Promise<boolean> {
-  const result = await db
-    .prepare("UPDATE courses SET show_unreviewed = ? WHERE id = ?")
-    .bind(show ? 1 : 0, courseId)
-    .run();
-  return result.meta.changes > 0;
-}
 
 // Save a batch of student events, ignoring ids already saved (a batch can arrive twice).
 // Returns how many were accepted (already-saved ids among them are ignored by the database)
@@ -288,4 +282,92 @@ export async function studentEvents(db: D1Database, courseId: string, name: stri
     .bind(courseId, name, deviceId)
     .all<{ id: string; lesson_id: string | null; type: string; payload: string; client_time: string }>();
   return results.map((r) => ({ id: r.id, lessonId: r.lesson_id, type: r.type, payload: JSON.parse(r.payload), clientTime: r.client_time }));
+}
+
+// --- Drafting and revising with Claude (slices 3b and 6) --------------------------------
+
+const monthStart = () => new Date().toISOString().slice(0, 7) + "-01";
+
+export async function monthSpend(db: D1Database): Promise<number> {
+  const row = await db.prepare("SELECT COALESCE(SUM(cost_usd), 0) AS total FROM spend WHERE at >= ?").bind(monthStart()).first<{ total: number }>();
+  return row?.total ?? 0;
+}
+
+export async function recordSpend(
+  db: D1Database,
+  s: { kind: "draft" | "revise"; model: string; lessonId: string | null; input: number; output: number; cacheWrite: number; cacheRead: number; costUsd: number },
+) {
+  await db
+    .prepare(
+      `INSERT INTO spend (id, at, kind, model, lesson_id, input_tokens, output_tokens, cache_write_tokens, cache_read_tokens, cost_usd)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .bind(crypto.randomUUID(), new Date().toISOString(), s.kind, s.model, s.lessonId, s.input, s.output, s.cacheWrite, s.cacheRead, s.costUsd)
+    .run();
+}
+
+export async function courseForDrafting(db: D1Database, courseId: string) {
+  return db.prepare("SELECT id, slug, title, brief FROM courses WHERE id = ?").bind(courseId).first<{ id: string; slug: string; title: string; brief: string | null }>();
+}
+
+export async function updateCourse(db: D1Database, courseId: string, change: { showUnreviewed?: boolean; brief?: string | null }): Promise<boolean> {
+  const sets: string[] = [];
+  const values: (string | number | null)[] = [];
+  if (change.showUnreviewed !== undefined) sets.push("show_unreviewed = ?"), values.push(change.showUnreviewed ? 1 : 0);
+  if (change.brief !== undefined) sets.push("brief = ?"), values.push(change.brief);
+  if (sets.length === 0) return false;
+  const result = await db.prepare(`UPDATE courses SET ${sets.join(", ")} WHERE id = ?`).bind(...values, courseId).run();
+  return result.meta.changes > 0;
+}
+
+export async function saveSource(db: D1Database, s: { courseId: string; title: string; pages: string; fileId: string }): Promise<string> {
+  const id = crypto.randomUUID();
+  await db
+    .prepare("INSERT INTO sources (id, course_id, title, pages, anthropic_file_id, created_at) VALUES (?, ?, ?, ?, ?, ?)")
+    .bind(id, s.courseId, s.title, s.pages, s.fileId, new Date().toISOString())
+    .run();
+  return id;
+}
+
+export async function getSource(db: D1Database, sourceId: string) {
+  return db
+    .prepare("SELECT id, course_id, title, pages, anthropic_file_id FROM sources WHERE id = ?")
+    .bind(sourceId)
+    .first<{ id: string; course_id: string; title: string; pages: string; anthropic_file_id: string }>();
+}
+
+// A new draft goes at the end of its course, unreviewed.
+export async function insertDraft(db: D1Database, courseId: string, sourceId: string, lesson: Lesson) {
+  const pos = await db.prepare("SELECT COALESCE(MAX(position), 0) + 1 AS next FROM lessons WHERE course_id = ?").bind(courseId).first<{ next: number }>();
+  await db
+    .prepare(
+      `INSERT INTO lessons (id, course_id, source_id, position, title, status, content, updated_at, signed_off_at)
+       VALUES (?, ?, ?, ?, ?, 'unreviewed', ?, ?, NULL)`,
+    )
+    .bind(lesson.id, courseId, sourceId, pos?.next ?? 1, lesson.title, JSON.stringify(lesson), new Date().toISOString())
+    .run();
+}
+
+/** Save edited content. Changed content voids a sign-off: the sign-off was for the old version.
+ *  (Approvals of unchanged steps survive, because they're checked by hash.) */
+export async function saveLessonContent(db: D1Database, lessonId: string, content: Lesson) {
+  await db
+    .prepare(
+      `UPDATE lessons SET content = ?1, title = ?2, updated_at = ?3,
+         status = CASE WHEN content = ?1 THEN status ELSE 'unreviewed' END,
+         signed_off_at = CASE WHEN content = ?1 THEN signed_off_at ELSE NULL END
+       WHERE id = ?4`,
+    )
+    .bind(JSON.stringify(content), content.title, new Date().toISOString(), lessonId)
+    .run();
+}
+
+export async function resolveSuggestions(db: D1Database, ids: string[], note: string) {
+  if (ids.length === 0) return;
+  const now = new Date().toISOString();
+  await db.batch(
+    ids.map((id) =>
+      db.prepare("UPDATE suggestions SET status = 'resolved', note = ?, resolved_at = ? WHERE id = ? AND status = 'open'").bind(note, now, id),
+    ),
+  );
 }

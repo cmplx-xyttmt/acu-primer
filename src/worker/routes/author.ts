@@ -7,7 +7,6 @@ import {
   authorLesson,
   signOffLesson,
   unapproveStep,
-  updateShowUnreviewed,
   withdrawSuggestion,
   courseStudents,
   studentEvents,
@@ -62,14 +61,6 @@ export async function withdraw({ env }: Ctx, suggestionId: string): Promise<Resp
   return reply(await withdrawSuggestion(env.DB, suggestionId));
 }
 
-// PUT /api/author/courses/:id — { showUnreviewed: boolean }, the owner's switch.
-export async function setShowUnreviewed({ env, request }: Ctx, courseId: string): Promise<Response> {
-  const body = (await request.json().catch(() => null)) as { showUnreviewed?: unknown } | null;
-  if (typeof body?.showUnreviewed !== "boolean") return json({ error: "Send { showUnreviewed: true | false }." }, 400);
-  const ok = await updateShowUnreviewed(env.DB, courseId, body.showUnreviewed);
-  if (!ok) return json({ error: "No course with that id." }, 404);
-  return json({ id: courseId, showUnreviewed: body.showUnreviewed });
-}
 
 // GET /api/author/courses/:id/students — everyone who has opened the course, newest first.
 export async function students({ env }: Ctx, courseId: string): Promise<Response> {

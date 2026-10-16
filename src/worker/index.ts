@@ -5,12 +5,12 @@ import { authorGate } from "./auth.ts";
 import { json } from "./http.ts";
 import { getCourse } from "./routes/courses.ts";
 import { postEvents } from "./routes/events.ts";
+import { getBudget, putCourse, postSource, postDraft, postRevise, postEdit } from "./routes/drafting.ts";
 import {
   listCourses,
   getLesson,
   signOff,
-  setShowUnreviewed,
-  approve,
+    approve,
   unapprove,
   suggest,
   withdraw,
@@ -34,7 +34,12 @@ const routes: [method: string, pattern: RegExp, handler: Handler][] = [
   ["GET", /^\/api\/author\/courses$/, listCourses],
   ["GET", new RegExp(`^/api/author/lessons/${id}$`), getLesson],
   ["POST", new RegExp(`^/api/author/lessons/${id}/signoff$`), signOff],
-  ["PUT", new RegExp(`^/api/author/courses/${id}$`), setShowUnreviewed],
+  ["PUT", new RegExp(`^/api/author/courses/${id}$`), putCourse],
+  ["GET", /^\/api\/author\/budget$/, getBudget],
+  ["POST", /^\/api\/author\/sources$/, postSource],
+  ["POST", /^\/api\/author\/drafts$/, postDraft],
+  ["POST", new RegExp(`^/api/author/lessons/${id}/steps/${stepId}/revise$`), postRevise],
+  ["POST", new RegExp(`^/api/author/lessons/${id}/edits$`), postEdit],
   ["POST", new RegExp(`^/api/author/lessons/${id}/steps/${stepId}/approval$`), approve],
   ["DELETE", new RegExp(`^/api/author/lessons/${id}/steps/${stepId}/approval$`), unapprove],
   ["POST", new RegExp(`^/api/author/lessons/${id}/suggestions$`), suggest],

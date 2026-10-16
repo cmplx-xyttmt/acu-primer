@@ -103,6 +103,8 @@ Source: `scope.md > The Core Loop`. Deliberately thin: the hand-written baseline
 - **Misconceptions come from published catalogues where they exist.** Models are poor at guessing which mistakes real students make (Feng et al. 2024), so the tool starts from catalogued misconceptions for the topic and adds its own guesses as a supplement. It shows the author where each misconception came from: a catalogue, or the model.
 - **All help is written at authoring time and approved by a person.** Fallbacks and hints are never generated on the fly for a student. Hints written by a model for statistics still had 13% errors after filtering (Pardos and Bhandari 2024), which is why every fallback goes through sign-off.
 - The author never sees the internal lesson format.
+- **Each course has a brief** (who the learner is, how they learn), which every draft follows (slice 3b, from the OSTEP dog-food).
+- **Shaping happens on the review screen** (slice 6): "Apply with Claude" revises one step from its open suggestions; "Use this check instead" swaps in an alternative (the old check becomes an alternative); each hint has a "shown to students" switch. Any change voids a sign-off and needs that step approved again.
 - As a course author, I want to shape the lesson with the tool rather than accept a finished draft, so the result is something I'd put my name to.
   - [ ] From one uploaded OpenIntro section, the session produces a playable lesson with modules, checks and fallbacks.
   - [ ] The author can replace a proposed check with a different option, and change it by telling the tool what to change.

@@ -145,7 +145,7 @@ Svelte components under `src/app/player/`. Implements `prd.md > Course overview 
 - **What persists:** the lesson JSON in D1 after every accepted change. Closing the tab loses only a draft or revision that's still streaming.
 
 ### Claude calls
-`src/worker/claude.ts`. Implements `prd.md > Authoring session`.
+`src/worker/claude.ts`. Implements `prd.md > Authoring session`. **Since slice 3b, Claude writes a flat wire format** (`src/shared/wire.ts`) because structured outputs refused the lesson schema ("compiled grammar is too large"); the Worker converts it to the lesson format and runs the same checks. Every call is logged in `spend` (migration 0003) and refused once the month reaches `MONTHLY_BUDGET_USD`. Revise sends one module plus the lesson's outcomes and module titles, not the whole lesson, to keep it cheap (first real revise: 3,470 in / 2,941 out, $0.092, 32 s).
 - **Draft:** a system prompt with the lesson rules (short modules, frequent checks, split prose instead of trivial checks, only the supported check types, a fallback for each wrong answer, a general fallback per check, every symbol defined where it's used and restated at each formula, and checks that ask why as well as what). Then the lesson JSON Schema as the structured output format, the misconception catalogue, and the cut pages by file id. It streams, with effort `high`.
 - **Revise:** the current part of the lesson, the author's instruction, and the JSON Schema for just that part. Effort `medium`.
 - The system prompt and schema come first and are marked for prompt caching, so repeated calls on the same section cost less.

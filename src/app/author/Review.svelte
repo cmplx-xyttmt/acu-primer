@@ -56,6 +56,7 @@
 
   function goToStep(i: number) {
     stepIndex = i;
+    reviseNote = "";
     confirming = false;
     scrollTo({ top: 0 });
   }
@@ -72,6 +73,28 @@
   const suggestFor = (part: string, partLabel: string) => (text: string) =>
     run(() => authorApi.suggest(lessonId, { stepId: step!.id, part, partLabel, text }));
   const withdraw = (id: string) => run(() => authorApi.withdraw(id));
+
+  // Slice 6: shaping the draft. Claude applies a step's open suggestions (one paid call), or the
+  // author swaps in an alternative or switches a hint on or off (no call).
+  let reviseNote = $state("");
+  async function applyWithClaude() {
+    if (!step) return;
+    reviseNote = "";
+    busy = true;
+    error = "";
+    try {
+      const r = await authorApi.revise(lessonId, step.id);
+      lesson = r.lesson;
+      reviseNote = r.note;
+    } catch (err) {
+      fail(err);
+    } finally {
+      busy = false;
+    }
+  }
+  const swapIn = (moduleId: string, altId: string) => run(() => authorApi.swap(lessonId, moduleId, altId));
+  const setPart = (moduleId: string, which: number | "general", part: "reExplanation" | "simplerQuestion", enabled: boolean) =>
+    run(() => authorApi.setPart(lessonId, moduleId, which, part, enabled));
 
   function back(e: MouseEvent) {
     e.preventDefault();
@@ -108,16 +131,27 @@
   {/if}
 {/snippet}
 
-{#snippet fallback(f: Fallback)}
+{#snippet toggle(on: boolean, moduleId: string | null, which: number | "general" | null, part: "reExplanation" | "simplerQuestion")}
+  {#if moduleId !== null && which !== null}
+    <label class="toggle">
+      <input type="checkbox" checked={on} disabled={busy} onchange={() => setPart(moduleId, which, part, !on)} />
+      shown to students
+    </label>
+  {/if}
+{/snippet}
+
+{#snippet fallback(f: Fallback, moduleId: string | null = null, which: number | "general" | null = null)}
   {#if f.reExplanation}
     <div class="sub" class:off={!f.reExplanation.enabled}>
       <span class="tag">Re-explanation{f.reExplanation.enabled ? "" : " (switched off)"}</span>
+      {@render toggle(f.reExplanation.enabled, moduleId, which, "reExplanation")}
       {@html renderReading(f.reExplanation.text)}
     </div>
   {/if}
   {#if f.simplerQuestion}
     <div class="sub" class:off={!f.simplerQuestion.enabled}>
       <span class="tag">Simpler question{f.simplerQuestion.enabled ? "" : " (switched off)"}</span>
+      {@render toggle(f.simplerQuestion.enabled, moduleId, which, "simplerQuestion")}
       {@render simpleCheck(f.simplerQuestion.check)}
     </div>
   {/if}
@@ -222,7 +256,7 @@
                     {w.misconception.source.kind === "catalogue" ? `catalogue: ${w.misconception.source.reference}` : "model's guess"}
                   </span>
                 </p>
-                {@render fallback(w.fallback)}
+                {@render fallback(w.fallback, mod.id, i)}
               </Part>
             {/each}
             <Part
@@ -231,7 +265,7 @@
               onSuggest={suggestFor("check.generalFallback", "General fallback for unplanned answers")}
               onWithdraw={withdraw}
             >
-              {@render fallback(c.generalFallback)}
+              {@render fallback(c.generalFallback, mod.id, "general")}
             </Part>
             {#if c.alternatives.length > 0}
               <Part
@@ -243,7 +277,10 @@
                 <details>
                   <summary>Show the checks the tool proposed instead</summary>
                   {#each c.alternatives as alt (alt.id)}
-                    <div class="alt">{@render altCheck(alt)}</div>
+                    <div class="alt">
+                      {@render altCheck(alt)}
+                      <button class="btn-quiet" disabled={busy} onclick={() => swapIn(mod.id, alt.id)}>Use this check instead</button>
+                    </div>
                   {/each}
                 </details>
               </Part>
@@ -253,6 +290,7 @@
           {/if}
         {/if}
 
+        {#if reviseNote}<p class="ok note">{reviseNote}</p>{/if}
         <div class="decide">
           {#if step.approved}
             <p class="ok">Approved ✓</p>
@@ -261,9 +299,10 @@
             </button>
           {:else if !canApprove(step.id, lesson.review.suggestions)}
             <p class="muted">
-              This step has an open suggestion, so it can't be approved yet. A revision will resolve it, or you can
-              withdraw it.
+              This step has {step.open === 1 ? "an open suggestion" : `${step.open} open suggestions`}, so it can't be approved yet.
+              Let Claude apply {step.open === 1 ? "it" : "them"} (one call, usually a few cents to about $0.30), or withdraw.
             </p>
+            <button class="btn" disabled={busy} onclick={applyWithClaude}>{busy ? "Claude is revising…" : "Apply with Claude"}</button>
           {:else}
             <button class="btn" disabled={busy} onclick={approveAndNext}>Approve and go on</button>
           {/if}
@@ -456,6 +495,17 @@
     color: var(--right);
     font-weight: 600;
     margin: 0;
+  }
+  .note {
+    margin-top: 1rem;
+  }
+  .toggle {
+    float: right;
+    font-size: 0.8rem;
+    color: var(--text-2);
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
   }
   .moves {
     display: flex;

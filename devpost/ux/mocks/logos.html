@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>acu-primer logo options</title>
+<style>
+  /* The page itself: Isaac's Verdant Glass (from cmplx-xyttmt.github.io/assets/custom.css). */
+  :root {
+    --color-forest: #17492f; --color-pine: #20603e; --color-emerald: #2e8659; --color-amber: #e4882e;
+    --color-cream: #f4efdd; --color-sage: #dce4c7; --color-ink: #1a281c;
+    --text: #23352a; --heading: var(--color-forest); --muted: #5d6b60;
+    --surface: rgba(255, 255, 255, 0.55); --surface-border: rgba(23, 73, 47, 0.14);
+    --surface-shadow: 0 1px 2px rgba(23, 73, 47, 0.06), 0 10px 30px -14px rgba(23, 73, 47, 0.28);
+    --radius-glass: 18px;
+    --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, ui-serif, serif;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, Helvetica, Arial, sans-serif;
+    --bg: var(--color-cream);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --text: #dfe7dc; --heading: #bfe3c9; --muted: #9fb0a4; --bg: #121a15;
+      --surface: rgba(255, 255, 255, 0.05); --surface-border: rgba(191, 227, 201, 0.14);
+      --surface-shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.6);
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-sans); line-height: 1.55; }
+  main { max-width: 64rem; margin: 0 auto; padding: 2.5rem 16px 4rem; }
+  h1, h2 { font-family: var(--font-serif); color: var(--heading); }
+  h1 { margin: 0 0 0.4rem; font-size: 2rem; }
+  .lede { color: var(--muted); max-width: 46rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 1.1rem; margin-top: 1.8rem; }
+  .card { background: var(--surface); border: 1px solid var(--surface-border); border-radius: var(--radius-glass); box-shadow: var(--surface-shadow); padding: 1rem 1.1rem 1.2rem; }
+  .card h2 { font-size: 1.15rem; margin: 0.2rem 0 0.3rem; }
+  .card p { margin: 0.35rem 0 0; font-size: 0.92rem; }
+  .n { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; color: var(--color-amber); }
+  /* The logos themselves are shown in the app's new look: warm paper, teal, a bright sun yellow. */
+  .stage { display: grid; grid-template-columns: 1fr 1fr; border-radius: 12px; overflow: hidden; margin-top: 0.6rem; }
+  .paper, .night { display: grid; place-items: center; gap: 0.6rem; padding: 1.1rem 0.6rem; }
+  .paper { background: #fbf8f1; color: #1f2430; }
+  .night { background: #14161a; color: #e6e3dc; }
+  .lockup { display: flex; align-items: center; gap: 0.4rem; font-family: "Iowan Old Style", Palatino, Georgia, serif; font-size: clamp(0.85rem, 2.4vw, 1rem); max-width: 100%; font-weight: 700; letter-spacing: 0.01em; }
+  .lockup span em { font-style: normal; color: #0f766e; }
+  .night .lockup span em { color: #5eead4; }
+  .tiny { display: flex; gap: 0.45rem; align-items: center; font-size: 0.7rem; opacity: 0.75; }
+  svg { display: block; }
+  .pick { margin-top: 2rem; padding: 1rem 1.2rem; border-left: 3px solid var(--color-amber); background: var(--surface); border-radius: 0 12px 12px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Logo options for acu-primer</h1>
+  <p class="lede">Each mark is drawn in the new look you picked: warm paper and teal, with the sun yellow from Bright steps. Each one is shown on paper and at night, next to the name, and at favicon size (the hardest test: it has to read at 16 pixels). All are inspired by the Young Lady's Illustrated Primer in <i>The Diamond Age</i>, the book that teaches its reader and changes its story to fit her. None copies anything from the novel's covers.</p>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <!-- 1. Open primer: a book whose right page holds a path that bends and carries on -->
+      <symbol id="m1" viewBox="0 0 64 64">
+        <path d="M8 16c8-3 16-3 24 2v34c-8-5-16-5-24-2z" fill="#0f766e"/>
+        <path d="M56 16c-8-3-16-3-24 2v34c8-5 16-5 24-2z" fill="#fbf8f1" stroke="#0f766e" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M37 42c3-6 6-2 9-8s4-4 6-9" fill="none" stroke="#facc15" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="52" cy="25" r="3" fill="#facc15"/>
+      </symbol>
+      <!-- 2. Illuminated P: a drop capital, as on the first page of a primer -->
+      <symbol id="m2" viewBox="0 0 64 64">
+        <rect x="6" y="6" width="52" height="52" rx="14" fill="#0f766e"/>
+        <path d="M24 46V18h11a9 9 0 0 1 0 18H24" fill="none" stroke="#fbf8f1" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="45" cy="45" r="4.5" fill="#facc15"/>
+        <path d="M14 15l3 3M14 21l3-3" stroke="#facc15" stroke-width="2" stroke-linecap="round"/>
+      </symbol>
+      <!-- 3. The talking page: a page whose corner turns into a speech bubble (the book answers back) -->
+      <symbol id="m3" viewBox="0 0 64 64">
+        <path d="M14 8h26l12 12v26a4 4 0 0 1-4 4H30l-10 8v-8h-6a4 4 0 0 1-4-4V12a4 4 0 0 1 4-4z" fill="#fbf8f1" stroke="#0f766e" stroke-width="3.5" stroke-linejoin="round"/>
+        <path d="M40 8v12h12" fill="#e6f2ef" stroke="#0f766e" stroke-width="3.5" stroke-linejoin="round"/>
+        <path d="M19 26h18M19 33h12" stroke="#0f766e" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="42" cy="38" r="5" fill="#facc15"/>
+      </symbol>
+      <!-- 4. Seal: a round neo-Victorian stamp with a small book, for the Primer's maker -->
+      <symbol id="m4" viewBox="0 0 64 64">
+        <circle cx="32" cy="32" r="27" fill="#0f766e"/>
+        <circle cx="32" cy="32" r="21.5" fill="none" stroke="#fbf8f1" stroke-width="2" stroke-dasharray="3 3"/>
+        <path d="M20 26c4-2 8-2 12 1v14c-4-3-8-3-12-1zM44 26c-4-2-8-2-12 1v14c4-3 8-3 12-1z" fill="#fbf8f1"/>
+        <path d="M32 16l1.8 3.6 4 .6-2.9 2.8.7 4L32 25.1 28.4 27l.7-4-2.9-2.8 4-.6z" fill="#facc15"/>
+      </symbol>
+      <!-- 5. Detour: a path that takes a wrong turn and is brought back (the fallback idea) -->
+      <symbol id="m5" viewBox="0 0 64 64">
+        <rect x="6" y="6" width="52" height="52" rx="16" fill="#fbf8f1" stroke="#0f766e" stroke-width="3"/>
+        <path d="M14 42h36" stroke="#0f766e" stroke-width="4.5" stroke-linecap="round"/>
+        <path d="M22 42c2-14 18-14 20 0" fill="none" stroke="#e4a72e" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="1 6"/>
+        <circle cx="50" cy="42" r="4.5" fill="#facc15" stroke="#0f766e" stroke-width="2"/>
+      </symbol>
+      <!-- 6. Nanobook: a closed book whose cover is made of small dots (the Primer is built from nanotech) -->
+      <symbol id="m6" viewBox="0 0 64 64">
+        <rect x="14" y="8" width="38" height="48" rx="5" fill="#0f766e"/>
+        <rect x="10" y="8" width="8" height="48" rx="3" fill="#0b5650"/>
+        <g fill="#fbf8f1">
+          <circle cx="28" cy="22" r="2.2"/><circle cx="35" cy="22" r="2.2"/><circle cx="42" cy="22" r="2.2"/>
+          <circle cx="28" cy="29" r="2.2"/><circle cx="35" cy="29" r="2.2" fill="#facc15"/><circle cx="42" cy="29" r="2.2"/>
+          <circle cx="28" cy="36" r="2.2"/><circle cx="35" cy="36" r="2.2"/><circle cx="42" cy="36" r="2.2"/>
+        </g>
+        <path d="M26 46h18" stroke="#fbf8f1" stroke-width="2.5" stroke-linecap="round"/>
+      </symbol>
+      <!-- 7. Ink drop: a quill nib with a drop that turns into a dot, for writing that answers -->
+      <symbol id="m7" viewBox="0 0 64 64">
+        <path d="M32 6c8 10 14 20 14 30a14 14 0 0 1-28 0c0-10 6-20 14-30z" fill="#0f766e"/>
+        <path d="M32 22v20" stroke="#fbf8f1" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="32" cy="45" r="4" fill="#facc15"/>
+        <path d="M24 32c0-4 2-8 5-11" fill="none" stroke="#e6f2ef" stroke-width="2.5" stroke-linecap="round"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="pick">
+    <strong>To choose:</strong> tell Claude a number (or two to combine, e.g. "1's book with 5's path"), whether you want the name next to it set in a serif as shown, and anything to change (colour, shape). A plain wordmark, option 8, is always possible too.
+  </div>
+</main>
+<script>
+  const options = [
+    ["1", "Open primer", "A book whose right page holds a path that bends and carries on: the lesson changing course. Reads well at small sizes thanks to the solid left page."],
+    ["2", "Illuminated P", "A drop capital, like the first page of an old primer, with a sun-yellow dot. The simplest at favicon size, and it works as an app icon."],
+    ["3", "The talking page", "A page whose corner turns into a speech bubble: a book that answers back. Says what acu-primer does in one shape."],
+    ["4", "Seal", "A round stamp with a small open book and a star, in the neo-Victorian style of the Primer's world. Feels like a mark of quality, fitting for \"reviewed by a person\"."],
+    ["5", "Detour", "A path takes a wrong turn and is brought back to where it was going: the fallback idea. The mark from the first mockups, redrawn in the new palette."],
+    ["6", "Nanobook", "A closed book whose cover is a grid of small dots, one of them lit, because the Primer is built from nanotech. More abstract; good as an icon."],
+    ["7", "Ink drop", "A drop of ink with a dot at its foot: writing that becomes an answer. Friendly and simple, less obviously a book."],
+    ["8", "Wordmark only", "No mark: the name in a warm serif with \"primer\" in teal. Cleanest, least memorable."],
+  ];
+  const grid = document.getElementById("grid");
+  for (const [n, name, why] of options) {
+    const mark = n === "8" ? "" : `<svg width="56" height="56"><use href="#m${n}"/></svg>`;
+    const lock = n === "8"
+      ? `<div class="lockup"><span>acu<em>primer</em></span></div>`
+      : `<div class="lockup"><svg width="30" height="30"><use href="#m${n}"/></svg><span>acu<em>primer</em></span></div>`;
+    const tiny = n === "8" ? "" : `<div class="tiny"><svg width="16" height="16"><use href="#m${n}"/></svg> favicon size</div>`;
+    grid.insertAdjacentHTML("beforeend", `
+      <div class="card">
+        <span class="n">OPTION ${n}</span>
+        <h2>${name}</h2>
+        <div class="stage">
+          <div class="paper">${mark}${lock}${tiny}</div>
+          <div class="night">${mark}${lock}${tiny}</div>
+        </div>
+        <p>${why}</p>
+      </div>`);
+  }
+</script>
+</body>
+</html>

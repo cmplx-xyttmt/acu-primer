@@ -22,3 +22,6 @@ dist/
 
 # Lesson drafts from scripts/try-draft.ts (model output from copyrighted or unreviewed pages)
 content/drafts/
+
+# Demo video recordings and renders (large binaries, made locally)
+/devpost/demo-video/media/

@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Page to lesson</title>
+<!-- Prototype for concept B. Every frame is a pure function of time: render(t).
+     Open in a browser to watch it loop (click to pause). ?capture leaves the clock to the renderer.
+     The book page is drawn as grey lines on purpose: the final video shows the real OpenIntro page.
+     Placeholder copy: bracketed lines are for Isaac to rewrite in his words. -->
+<style>
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 400; src: url(fonts/plus-jakarta-sans-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 600; src: url(fonts/plus-jakarta-sans-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 700; src: url(fonts/plus-jakarta-sans-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 800; src: url(fonts/plus-jakarta-sans-latin-800-normal.woff2) format("woff2"); }
+:root { --text: #111827; --text-2: #6b7280; --border: #e5e7eb; --surface: #f3f4f6; --accent: #2563eb; --right: #15803d; --right-bg: #ecfdf3; --wrong: #b91c1c; --fallback-bg: #eff4ff; }
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; background: #0d0f12; overflow: hidden; }
+body { display: grid; place-items: center; font-family: "Plus Jakarta Sans", system-ui, sans-serif; color: var(--text); }
+#stage { position: relative; width: 1280px; height: 720px; background: #eef0f3; overflow: hidden; transform-origin: center; flex: none; }
+.abs { position: absolute; }
+#page { left: 130px; top: 70px; width: 420px; height: 560px; background: #fff; border-radius: 4px; box-shadow: 0 18px 40px -18px rgba(0,0,0,.35); padding: 34px 34px; }
+#page .sec { font-family: Georgia, serif; font-size: 19px; font-weight: 700; margin-bottom: 16px; }
+.para { margin-bottom: 16px; border-radius: 4px; }
+.ln { height: 7px; background: #d7dbe1; border-radius: 4px; margin-bottom: 7px; }
+#scan { left: 130px; width: 420px; height: 46px; background: linear-gradient(180deg, rgba(37,99,235,0), rgba(37,99,235,.22), rgba(37,99,235,0)); }
+#src { left: 130px; top: 640px; font-size: 14px; color: var(--text-2); }
+.mod { position: absolute; width: 330px; height: 50px; background: #fff; border: 1.5px solid var(--border); border-radius: 12px; display: flex; align-items: center; gap: 12px; padding: 0 14px; font-size: 16px; font-weight: 600; box-shadow: 0 6px 16px -10px rgba(0,0,0,.25); }
+.mod .n { width: 26px; height: 26px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; font-size: 13px; color: var(--text-2); flex: none; }
+.mod .tick { margin-left: auto; color: var(--right); font-weight: 800; font-size: 18px; }
+#tree { left: 0; top: 0; width: 1280px; height: 720px; }
+.box { position: absolute; background: #fff; border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 14px; font-size: 15px; line-height: 1.35; box-shadow: 0 6px 16px -10px rgba(0,0,0,.25); }
+.box .k { font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); margin-bottom: 3px; font-weight: 700; }
+.tag { display: inline-block; font-size: 11.5px; padding: 2px 8px; border-radius: 999px; background: var(--surface); color: var(--text-2); margin-top: 6px; font-weight: 600; }
+.fbk { background: var(--fallback-bg); border-color: #c7d7fe; }
+.ok { background: var(--right-bg); border-color: #a7e3bd; }
+#mark { left: 130px; top: 40px; font-size: 15px; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid #f59e0b; color: #92400e; background: #fffbeb; }
+#mark2 { left: 130px; top: 40px; font-size: 15px; font-weight: 700; padding: 6px 14px; border-radius: 999px; border: 1.5px solid #16a34a; color: #166534; background: #f0fdf4; }
+#count { left: 130px; top: 660px; font-size: 15px; color: var(--text-2); font-weight: 600; }
+#title { left: 0; right: 0; top: 270px; text-align: center; }
+#title h1 { font-size: 62px; font-weight: 800; letter-spacing: -0.02em; }
+#title p { margin: 10px auto 0; width: 560px; font-size: 19px; line-height: 1.45; color: var(--text-2); }
+#flow { left: 0; right: 0; top: 430px; text-align: center; font-size: 17px; font-weight: 600; color: var(--accent); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="page" class="abs">
+    <div class="sec">5.1 Point estimates and sampling variability</div>
+  </div>
+  <div id="scan" class="abs"></div>
+  <div id="src" class="abs">[Real page in the final cut: OpenIntro Statistics, Section 5.1, CC BY-SA]</div>
+  <div id="mods"></div>
+  <div id="tree" class="abs">
+    <svg width="1280" height="720" style="position:absolute;left:0;top:0" id="wires"></svg>
+    <div class="box" id="bq" style="left:540px; top:150px; width:330px"><div class="k">Check</div>A poll of 1,000 adults finds 887 say yes. What is 0.887?</div>
+    <div class="box ok" id="bR" style="left:930px; top:70px; width:300px"><div class="k">Right answer</div>A point estimate, with a short explanation of why</div>
+    <div class="box" id="bW1" style="left:930px; top:205px; width:300px"><div class="k">Wrong answer</div>Picks "the parameter p"<br><span class="tag">model's guess</span></div>
+    <div class="box fbk" id="bF1" style="left:930px; top:330px; width:140px"><div class="k">Fallback</div>Re-explain</div>
+    <div class="box fbk" id="bF2" style="left:1090px; top:330px; width:140px"><div class="k">Fallback</div>Simpler question</div>
+    <div class="box" id="bW2" style="left:930px; top:455px; width:300px"><div class="k">Wrong answer</div>Picks "the exact share"<br><span class="tag">catalogue</span></div>
+    <div class="box fbk" id="bF3" style="left:930px; top:580px; width:140px"><div class="k">Fallback</div>Re-explain</div>
+  </div>
+  <div id="mark" class="abs">Written by the model, not yet reviewed</div>
+  <div id="mark2" class="abs">Reviewed by a person</div>
+  <div id="count" class="abs"></div>
+  <div id="title" class="abs"><h1>acu-primer</h1><p>[Placeholder line, in Isaac's words]</p></div>
+  <div id="flow" class="abs">book section &rarr; lesson &rarr; review &rarr; student &rarr; log</div>
+</div>
+<script>
+const DUR = 20;
+const $ = (id) => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const P = (t, a, b) => ease(clamp((t - a) / (b - a)));
+const lerp = (a, b, k) => a + (b - a) * k;
+const style = (el, o, tf) => { el.style.opacity = o; if (tf !== undefined) el.style.transform = tf; };
+
+// grey paragraphs on the page
+const page = $("page");
+const paraLines = [4, 3, 5, 3, 4, 4, 2];
+const paras = paraLines.map((n, i) => {
+  const p = document.createElement("div"); p.className = "para";
+  for (let j = 0; j < n; j++) { const l = document.createElement("div"); l.className = "ln"; l.style.width = (j === n - 1 ? 55 + ((i * 17) % 30) : 92 + ((i + j) % 3) * 3) + "%"; p.appendChild(l); }
+  page.appendChild(p); return p;
+});
+// module cards
+const titles = ["What are we estimating?", "Computing a point estimate", "Samples vary", "Standard error", "Bigger samples, smaller error", "Sample size, not population size", "Takeaways"];
+const mods = titles.map((tt, i) => {
+  const m = document.createElement("div"); m.className = "mod";
+  m.innerHTML = `<span class="n">${i + 1}</span><span>${tt}</span><span class="tick">&#10003;</span>`;
+  $("mods").appendChild(m); return m;
+});
+// wires of the tree
+const wires = [["bq", "bR"], ["bq", "bW1"], ["bq", "bW2"], ["bW1", "bF1"], ["bW1", "bF2"], ["bW2", "bF3"]];
+const wireEls = wires.map(() => { const p = document.createElementNS("http://www.w3.org/2000/svg", "path"); p.setAttribute("fill", "none"); p.setAttribute("stroke", "#9ca3af"); p.setAttribute("stroke-width", "2"); $("wires").appendChild(p); return p; });
+const order = ["bq", "bR", "bW1", "bF1", "bF2", "bW2", "bF3"];
+
+function render(t) {
+  // page in, scan, page out
+  const pin = P(t, 0, 0.8), pout = P(t, 6.0, 6.8);
+  style(page, pin * (1 - pout), `translateX(${-pout * 80}px)`);
+  style($("src"), pin * (1 - pout));
+  const sc = clamp((t - 1.0) / 1.6);
+  $("scan").style.top = 70 + sc * 520 + "px";
+  $("scan").style.opacity = t > 1.0 && t < 2.7 ? 1 : 0;
+
+  // paragraphs lift into module cards (column at x=640), then column moves left (x=130)
+  const colX = lerp(660, 130, P(t, 6.2, 7.2));
+  mods.forEach((m, i) => {
+    const a = 2.7 + i * 0.42, k = P(t, a, a + 0.8);
+    const r = paras[i].getBoundingClientRect(), s = $("stage").getBoundingClientRect();
+    const scale = s.width / 1280;
+    const fromX = (r.left - s.left) / scale, fromY = (r.top - s.top) / scale;
+    const toY = 120 + i * 62;
+    m.style.left = lerp(fromX, colX, k) + "px"; m.style.top = lerp(fromY, toY, k) + "px";
+    m.style.opacity = k === 0 ? 0 : Math.min(1, k * 3) * (1 - P(t, 16.4, 17.0));
+    m.style.transform = `scale(${lerp(0.9, 1, k)})`;
+    paras[i].style.background = t > a - 0.3 && t < a + 0.5 ? "rgba(37,99,235,.12)" : "transparent";
+    // first card is the one we open
+    m.style.borderColor = i === 0 && t > 7.2 && t < 16.4 ? "var(--accent)" : "var(--border)";
+    // approval ticks
+    const ap = 11.2 + i * 0.4;
+    m.querySelector(".tick").style.opacity = P(t, ap, ap + 0.2);
+    m.querySelector(".n").style.background = t > ap ? "var(--right-bg)" : "var(--surface)";
+  });
+
+  // the tree for module 1
+  const treeOut = P(t, 16.4, 17.0);
+  order.forEach((id, i) => { const a = 7.4 + i * 0.35, k = P(t, a, a + 0.5); style($(id), k * (1 - treeOut), `translateY(${(1 - k) * 12}px)`); });
+  wires.forEach(([a, b], i) => {
+    const A = $(a), B = $(b);
+    const ax = A.offsetLeft + A.offsetWidth, ay = A.offsetTop + A.offsetHeight / 2;
+    let bx = B.offsetLeft, by = B.offsetTop + B.offsetHeight / 2;
+    if (a !== "bq") { bx = B.offsetLeft + B.offsetWidth / 2; by = B.offsetTop; }
+    const sx = a === "bq" ? ax : A.offsetLeft + A.offsetWidth / 2, sy = a === "bq" ? ay : A.offsetTop + A.offsetHeight;
+    const d = a === "bq" ? `M${sx} ${sy} C ${sx + 40} ${sy}, ${bx - 40} ${by}, ${bx} ${by}` : `M${sx} ${sy} C ${sx} ${sy + 12}, ${bx} ${by - 12}, ${bx} ${by}`;
+    const w = wireEls[i]; w.setAttribute("d", d);
+    const L = 400, k = P(t, 7.6 + i * 0.35, 8.2 + i * 0.35);
+    w.style.strokeDasharray = L; w.style.strokeDashoffset = L * (1 - k); w.style.opacity = 1 - treeOut;
+  });
+
+  // marks and the review count
+  style($("mark"), P(t, 9.6, 10.1) * (1 - P(t, 14.0, 14.3)));
+  const st = P(t, 14.2, 14.7);
+  style($("mark2"), st * (1 - treeOut), `scale(${lerp(1.4, 1, st)})`);
+  const approved = Math.round(clamp((t - 11.2) / 0.4 + 1, 0, 7)) ;
+  $("count").textContent = t < 10.6 ? "" : `${t < 11.2 ? 0 : Math.min(7, Math.floor((t - 11.2) / 0.4) + 1)} of 7 modules approved`;
+  style($("count"), P(t, 10.6, 11.0) * (1 - treeOut));
+
+  const ti = P(t, 17.0, 17.8);
+  style($("title"), ti, `translateY(${(1 - ti) * 18}px)`);
+  style($("flow"), P(t, 17.8, 18.5));
+}
+
+window.render = render; window.DUR = DUR;
+const stage = $("stage");
+const capture = new URLSearchParams(location.search).has("capture");
+if (capture) { document.body.style.display = "block"; render(0); }
+else {
+  const fit = () => stage.style.transform = `scale(${Math.min(innerWidth / 1280, innerHeight / 720)})`;
+  addEventListener("resize", fit); fit();
+  let paused = false, offset = 0, start = performance.now();
+  addEventListener("click", () => { paused = !paused; if (!paused) start = performance.now() - offset * 1000; });
+  (function loop(now) { if (!paused) { offset = ((now - start) / 1000) % DUR; render(offset); } requestAnimationFrame(loop); })(start);
+}
+</script>
+</body>
+</html>

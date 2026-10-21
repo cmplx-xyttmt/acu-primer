@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Primer</title>
+<!-- Prototype for concept A. Every frame is a pure function of time: render(t).
+     Open in a browser to watch it loop (click to pause). ?capture leaves the clock to the renderer.
+     Uses the Mac's system serif (Iowan Old Style), so it renders as intended on macOS.
+     Placeholder copy: bracketed lines are for Isaac to rewrite in his words. No text from the novel is quoted. -->
+<style>
+:root { --forest: #17492f; --pine: #20603e; --gold: #d9b45a; --paper: #f7f1df; --ink: #2a2418; --faint: #c9bfa5; --red: #b3261e; --green: #2e7d32; --blue: #1f4fa8; }
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; background: #0d0f12; overflow: hidden; }
+body { display: grid; place-items: center; font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; color: var(--ink); }
+#stage { position: relative; width: 1280px; height: 720px; overflow: hidden; transform-origin: center; flex: none;
+  background: radial-gradient(ellipse at 50% 45%, #2b261c 0%, #17140f 70%); }
+.abs { position: absolute; }
+#book { left: 260px; top: 110px; width: 760px; height: 500px; perspective: 2200px; transform-origin: 50% 50%; }
+.pg { position: absolute; top: 0; width: 380px; height: 500px; background: var(--paper); padding: 40px 38px; box-shadow: inset 0 0 40px rgba(120,95,40,.18); }
+#left { left: 0; border-radius: 6px 0 0 6px; box-shadow: inset -24px 0 30px -20px rgba(80,60,20,.35); }
+#right { left: 380px; border-radius: 0 6px 6px 0; box-shadow: inset 24px 0 30px -20px rgba(80,60,20,.35); }
+#cover { left: 380px; top: -6px; width: 392px; height: 512px; transform-origin: 0 50%; transform-style: preserve-3d; }
+#cover .front, #cover .back { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 0 8px 8px 0; }
+#cover .front { background: linear-gradient(135deg, #1f5a3a, var(--forest)); border: 2px solid #0f3220; box-shadow: 0 30px 60px -20px rgba(0,0,0,.7); display: grid; place-items: center; }
+#cover .front .frame { position: absolute; inset: 22px; border: 2px solid var(--gold); border-radius: 4px; opacity: .8; }
+#cover .front h1 { color: var(--gold); font-size: 50px; font-weight: 600; letter-spacing: .02em; }
+#cover .front p { color: var(--gold); opacity: .8; font-size: 16px; font-style: italic; position: absolute; bottom: 70px; left: 0; right: 0; text-align: center; }
+#cover .back { background: #efe6cc; transform: rotateY(180deg); border-radius: 8px 0 0 8px; }
+h2 { font-size: 22px; font-weight: 600; margin-bottom: 18px; }
+.ln { height: 6px; background: var(--faint); border-radius: 3px; margin-bottom: 9px; }
+.q { font-size: 19px; line-height: 1.4; margin-bottom: 16px; }
+.o { font-size: 18px; margin: 0 0 14px 6px; position: relative; display: inline-block; padding: 2px 8px; }
+.o svg { position: absolute; left: -12px; top: -9px; overflow: visible; }
+.w { font-size: 17.5px; line-height: 1.45; white-space: nowrap; overflow: hidden; color: var(--blue); font-style: italic; }
+#lnot { font-size: 24px; color: var(--blue); font-style: italic; margin-bottom: 8px; }
+#stamp { right: 30px; bottom: 26px; border: 2.5px solid var(--green); color: var(--green); font-size: 14px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 6px 10px; border-radius: 4px; transform: rotate(-6deg); font-family: system-ui, sans-serif; }
+#title { left: 0; right: 0; top: 280px; text-align: center; color: var(--gold); }
+#title h1 { font-size: 66px; font-weight: 600; }
+#title p { color: #e9dfc3; opacity: .85; margin: 12px auto 0; width: 560px; font-size: 20px; line-height: 1.45; font-style: italic; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="book" class="abs">
+    <div id="left" class="pg">
+      <div id="lnot">Not quite.</div>
+      <div class="w" id="w1">p is about everyone, and nobody knows it.</div>
+      <div class="w" id="w2">0.887 came from the 1,000 people asked,</div>
+      <div class="w" id="w3">so it is an estimate: p&#770;.</div>
+      <div id="lq" style="margin-top:26px">
+        <div class="q" style="font-size:18px">Where did 0.887 come from?</div>
+        <div class="o" id="la">Every adult in the country<svg width="10" height="10"><ellipse cx="130" cy="20" rx="135" ry="20" fill="none" stroke-width="2.5"/></svg></div><br>
+        <div class="o" id="lb">The 1,000 adults who were asked<svg width="10" height="10"><ellipse cx="148" cy="20" rx="155" ry="20" fill="none" stroke-width="2.5"/></svg></div>
+      </div>
+    </div>
+    <div id="right" class="pg">
+      <h2>5.1 Point estimates</h2>
+      <div id="text"></div>
+      <div id="lesson" class="abs" style="left:38px; top:96px; width:310px">
+        <div class="q">A poll asks 1,000 adults, and 887 say yes. What is 0.887?</div>
+        <div class="o" id="ra">The parameter p<svg width="10" height="10"><ellipse cx="78" cy="20" rx="84" ry="20" fill="none" stroke-width="2.5"/></svg></div><br>
+        <div class="o" id="rb">A point estimate p&#770;<svg width="10" height="10"><ellipse cx="98" cy="20" rx="104" ry="20" fill="none" stroke-width="2.5"/></svg></div><br>
+        <div class="o" id="rc">The exact share of all adults<svg width="10" height="10"><ellipse cx="128" cy="20" rx="134" ry="20" fill="none" stroke-width="2.5"/></svg></div>
+        <div class="w" id="rr" style="color:var(--green); margin-top:10px">Right. It was computed from a sample.</div>
+      </div>
+      <div id="stamp" class="abs">Reviewed by a person</div>
+    </div>
+    <div id="cover" class="abs"><div class="front"><div class="frame"></div><h1>acu-primer</h1><p>[a book that teaches back]</p></div><div class="back"></div></div>
+  </div>
+  <div id="title" class="abs"><h1>acu-primer</h1><p>[Placeholder line, in Isaac's words]</p></div>
+</div>
+<script>
+const DUR = 20;
+const $ = (id) => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const P = (t, a, b) => ease(clamp((t - a) / (b - a)));
+const lerp = (a, b, k) => a + (b - a) * k;
+const style = (el, o, tf) => { el.style.opacity = o; if (tf !== undefined) el.style.transform = tf; };
+
+const text = $("text");
+const lines = [...Array(17)].map((_, i) => { const l = document.createElement("div"); l.className = "ln"; l.style.width = (i % 6 === 5 ? 50 : 88 + (i % 3) * 4) + "%"; if (i % 6 === 5) l.style.marginBottom = "20px"; text.appendChild(l); return l; });
+function circle(el, k, color) {
+  const e = el.querySelector("ellipse"); const L = 700;
+  e.style.stroke = color; e.style.strokeDasharray = L; e.style.strokeDashoffset = L * (1 - k); e.style.opacity = k > 0 ? 1 : 0;
+}
+
+function render(t) {
+  // book arrives centred on the cover, then slides so the open spread is centred
+  const arrive = P(t, 0, 1.2), open = P(t, 2.2, 4.0), out = P(t, 16.8, 17.6);
+  const bx = lerp(-190, 0, open);
+  style($("book"), arrive * (1 - out), `translateX(${bx}px) translateY(${(1 - arrive) * 30}px) scale(${lerp(1, 0.9, out)})`);
+  $("cover").style.transform = `rotateY(${-180 * open}deg)`;
+  $("left").style.visibility = open > 0.5 ? "visible" : "hidden";
+  $("cover").style.zIndex = open > 0.5 ? 0 : 5;
+  $("cover").style.display = open >= 0.999 ? "none" : "block";
+
+  // the book text rewrites itself into a lesson
+  lines.forEach((l, i) => { const k = P(t, 5.4 + i * 0.05, 6.0 + i * 0.05); l.style.opacity = 1 - k; l.style.transform = `scaleX(${1 - k * 0.6})`; l.style.transformOrigin = "left"; });
+  const les = P(t, 6.2, 7.0);
+  style($("lesson"), les, `translateY(${(1 - les) * 10}px)`);
+
+  // wrong pick circled in red; the left page answers in ink
+  circle($("ra"), P(t, 8.0, 8.6), "var(--red)");
+  style($("lnot"), P(t, 9.0, 9.5));
+  $("w1").style.maxWidth = P(t, 9.5, 10.6) * 330 + "px";
+  $("w2").style.maxWidth = P(t, 10.6, 11.7) * 330 + "px";
+  $("w3").style.maxWidth = P(t, 11.7, 12.4) * 330 + "px";
+  style($("lq"), P(t, 12.4, 12.9));
+  circle($("la"), 0, "var(--green)");
+  circle($("lb"), P(t, 13.3, 13.9), "var(--green)");
+
+  // back to the question: right answer
+  circle($("rb"), P(t, 14.3, 14.9), "var(--green)");
+  circle($("rc"), 0, "var(--green)");
+  $("rr").style.maxWidth = P(t, 15.0, 15.8) * 320 + "px";
+  const st = P(t, 15.9, 16.3);
+  style($("stamp"), st, `rotate(-6deg) scale(${lerp(1.6, 1, st)})`);
+
+  const ti = P(t, 17.4, 18.2);
+  style($("title"), ti, `translateY(${(1 - ti) * 16}px)`);
+}
+
+window.render = render; window.DUR = DUR;
+const stage = $("stage");
+const capture = new URLSearchParams(location.search).has("capture");
+if (capture) { document.body.style.display = "block"; render(0); }
+else {
+  const fit = () => stage.style.transform = `scale(${Math.min(innerWidth / 1280, innerHeight / 720)})`;
+  addEventListener("resize", fit); fit();
+  let paused = false, offset = 0, start = performance.now();
+  addEventListener("click", () => { paused = !paused; if (!paused) start = performance.now() - offset * 1000; });
+  (function loop(now) { if (!paused) { offset = ((now - start) / 1000) % DUR; render(offset); } requestAnimationFrame(loop); })(start);
+}
+</script>
+</body>
+</html>

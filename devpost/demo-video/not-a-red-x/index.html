@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Not a red X</title>
+<!-- Prototype for concept C. Every frame is a pure function of time: render(t).
+     Open in a browser to watch it loop (click to pause). ?capture leaves the clock to the renderer.
+     Placeholder copy: the captions and the title line are labels for Isaac to rewrite in his words. -->
+<style>
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 400; src: url(fonts/plus-jakarta-sans-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 600; src: url(fonts/plus-jakarta-sans-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 700; src: url(fonts/plus-jakarta-sans-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 800; src: url(fonts/plus-jakarta-sans-latin-800-normal.woff2) format("woff2"); }
+:root {
+  --bg: #ffffff; --surface: #f3f4f6; --border: #e5e7eb; --text: #111827; --text-2: #6b7280;
+  --accent: #2563eb; --fallback-bg: #eff4ff; --right: #15803d; --right-bg: #ecfdf3; --wrong: #b91c1c; --wrong-bg: #fef2f2;
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; background: #0d0f12; overflow: hidden; }
+body { display: grid; place-items: center; font-family: "Plus Jakarta Sans", system-ui, sans-serif; color: var(--text); }
+#stage { position: relative; width: 1280px; height: 720px; background: var(--bg); overflow: hidden; transform-origin: center; flex: none; }
+.abs { position: absolute; }
+#card { left: 320px; top: 34px; width: 640px; transform-origin: 50% 40%; }
+#card h3 { font-size: 23px; font-weight: 700; line-height: 1.35; margin-bottom: 18px; }
+.opt { border: 2px solid var(--border); background: var(--surface); border-radius: 12px; padding: 13px 18px; font-size: 18px; margin-bottom: 10px; }
+.opt.small { font-size: 17px; padding: 10px 16px; background: #fff; }
+#fb { left: 0; top: 270px; width: 640px; background: var(--fallback-bg); border-radius: 12px; padding: 18px 22px; }
+#fb .lead { font-weight: 700; font-size: 18px; margin-bottom: 8px; }
+#fb .txt { font-size: 16.5px; line-height: 1.5; color: #1f2937; white-space: nowrap; overflow: hidden; }
+#fb .label { font-size: 13px; color: var(--text-2); margin: 12px 0 6px; }
+#fb .q { font-weight: 700; font-size: 16.5px; margin-bottom: 10px; }
+#retry { left: 0; top: 285px; font-weight: 700; font-size: 18px; }
+#right { left: 0; top: 285px; width: 640px; }
+#right .r { color: var(--right); font-weight: 700; font-size: 18px; margin-bottom: 6px; }
+#right .why { font-size: 16.5px; line-height: 1.5; color: #1f2937; }
+#x { left: 360px; top: 40px; width: 560px; height: 360px; pointer-events: none; }
+#cap { left: 0; right: 0; bottom: 22px; text-align: center; }
+#cap span { display: inline-block; background: rgba(17,24,39,.88); color: #fff; font-size: 24px; font-weight: 600; padding: 10px 22px; border-radius: 10px; }
+#ring { left: 0; top: 0; width: 1280px; height: 720px; }
+.node { position: absolute; width: 210px; margin-left: -105px; text-align: center; font-size: 17px; font-weight: 600; color: var(--text); }
+.node .dot { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 10px; background: var(--surface); border: 3px solid var(--border); display: grid; place-items: center; font-size: 22px; font-weight: 800; color: var(--text-2); }
+#title { left: 0; right: 0; top: 262px; text-align: center; }
+#title h1 { font-size: 60px; font-weight: 800; letter-spacing: -0.02em; }
+#title p { margin: 10px auto 0; width: 520px; font-size: 19px; line-height: 1.45; color: var(--text-2); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="card" class="abs">
+    <h3>A poll asks 1,000 random adults, and 887 say they support more solar farms. What is 0.887?</h3>
+    <div id="oa" class="opt">The parameter <i>p</i></div>
+    <div id="ob" class="opt">A point estimate <i>p&#770;</i></div>
+    <div id="oc" class="opt">The exact share of all adults who support solar farms</div>
+    <div style="position:relative">
+      <div id="fb" class="abs" style="top:6px">
+        <div class="lead">Not quite.</div>
+        <div class="txt" id="fbt1"><i>p</i> describes everyone in the population, and nobody knows it.</div>
+        <div class="txt" id="fbt2">0.887 came from the 1,000 people who were asked: a sample.</div>
+        <div id="simpler">
+          <div class="label">Try this one first</div>
+          <div class="q">Where did the number 0.887 come from?</div>
+          <div id="sa" class="opt small">Every adult in the country</div>
+          <div id="sb" class="opt small">The 1,000 adults who were asked</div>
+        </div>
+      </div>
+      <div id="retry" class="abs" style="top:10px">Right. Now try the original question again.</div>
+      <div id="right" class="abs" style="top:10px">
+        <div class="r">Right.</div>
+        <div class="why">0.887 was computed from the 1,000 adults who were asked, so it's a sample proportion. It estimates <i>p</i>, which nobody knows exactly.</div>
+      </div>
+    </div>
+  </div>
+  <svg id="x" class="abs" viewBox="0 0 560 360">
+    <path id="x1" d="M150 40 L410 320" stroke="#dc2626" stroke-width="34" stroke-linecap="round" fill="none"/>
+    <path id="x2" d="M410 40 L150 320" stroke="#dc2626" stroke-width="34" stroke-linecap="round" fill="none"/>
+  </svg>
+  <div id="ring" class="abs">
+    <svg width="1280" height="720" style="position:absolute;left:0;top:0">
+      <ellipse id="loop" cx="640" cy="340" rx="420" ry="215" fill="none" stroke="#c7d2fe" stroke-width="3" stroke-dasharray="8 10"/>
+    </svg>
+    <div class="node" id="n0"><div class="dot">1</div>A book section</div>
+    <div class="node" id="n1"><div class="dot">2</div>Drafted with Claude</div>
+    <div class="node" id="n2"><div class="dot">3</div>Reviewed and signed off</div>
+    <div class="node" id="n3"><div class="dot">4</div>A student plays it</div>
+    <div class="node" id="n4"><div class="dot">5</div>The author reads the log</div>
+  </div>
+  <div id="title" class="abs">
+    <h1>acu-primer</h1>
+    <p>[Placeholder line, in Isaac's words: what it is and who it's for]</p>
+  </div>
+  <div id="cap" class="abs"><span id="capt"></span></div>
+</div>
+<script>
+const DUR = 21;
+const $ = (id) => document.getElementById(id);
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const P = (t, a, b) => ease(clamp((t - a) / (b - a)));
+const lerp = (a, b, k) => a + (b - a) * k;
+const style = (el, o, tf) => { el.style.opacity = o; if (tf !== undefined) el.style.transform = tf; };
+function mark(el, kind) {
+  el.style.borderColor = kind === "picked" ? "#93b4f5" : kind === "wrong" ? "var(--wrong)" : kind === "right" ? "var(--right)" : "var(--border)";
+  el.style.background = kind === "wrong" ? "var(--wrong-bg)" : kind === "right" ? "var(--right-bg)" : el.classList.contains("small") ? "#fff" : "var(--surface)";
+}
+const captions = [
+  [0.4, 4.4, "[Caption: most quizzes stop at a red X]"],
+  [5.0, 10.6, "[Caption: here the lesson answers the mistake]"],
+  [11.2, 14.0, "[Caption: then explains why the right answer is right]"],
+];
+// node positions around the loop (ellipse), card lands on node 3
+const nodes = [0, 1, 2, 3, 4].map((i) => {
+  const a = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
+  return { x: 640 + 420 * Math.cos(a), y: 340 + 215 * Math.sin(a) - 40 };
+});
+
+function render(t) {
+  // quiz card
+  const cardIn = P(t, 0, 0.6);
+  const shake = t > 2.1 && t < 2.6 ? Math.sin((t - 2.1) * 60) * 10 * (1 - (t - 2.1) / 0.5) : 0;
+  const shrink = P(t, 14, 15.2);
+  const tx = lerp(0, nodes[3].x - 640, shrink), ty = lerp(0, nodes[3].y - 220, shrink);
+  style($("card"), cardIn * (1 - P(t, 15.0, 15.4)), `translate(${tx + shake}px, ${ty + (1 - cardIn) * 20}px) scale(${lerp(1, 0.16, shrink)})`);
+
+  // option a: picked, then wrong
+  mark($("oa"), t < 0.8 ? "" : t < 1.5 ? "picked" : "wrong");
+  mark($("ob"), t < 11.5 ? "" : t < 12.0 ? "picked" : "right");
+  mark($("oc"), "");
+
+  // the red X draws, then undraws
+  const L = 381;
+  const d1 = P(t, 1.5, 1.85) - P(t, 4.6, 5.0), d2 = P(t, 1.8, 2.15) - P(t, 4.4, 4.8);
+  $("x1").style.strokeDasharray = L; $("x1").style.strokeDashoffset = L * (1 - d1);
+  $("x2").style.strokeDasharray = L; $("x2").style.strokeDashoffset = L * (1 - d2);
+  $("x").style.opacity = t < 1.5 || t > 5.1 ? 0 : 1;
+
+  // fallback panel rises, text reveals, simpler question, folds away
+  const fbIn = P(t, 5.0, 5.7), fbOut = P(t, 10.4, 10.9);
+  style($("fb"), fbIn * (1 - fbOut), `translateY(${(1 - fbIn) * 28}px)`);
+  $("fbt1").style.maxWidth = `${P(t, 5.8, 6.9) * 600}px`;
+  $("fbt2").style.maxWidth = `${P(t, 6.8, 7.9) * 600}px`;
+  style($("simpler"), P(t, 8.0, 8.5), `translateY(${(1 - P(t, 8.0, 8.5)) * 14}px)`);
+  $("simpler").style.maxHeight = `${P(t, 7.8, 8.3) * 200}px`; $("simpler").style.overflow = "hidden";
+  mark($("sa"), "");
+  mark($("sb"), t < 9.0 ? "" : t < 9.5 ? "picked" : "right");
+
+  style($("retry"), P(t, 10.8, 11.2) * (1 - P(t, 11.9, 12.1)));
+  const rIn = P(t, 12.0, 12.5);
+  style($("right"), rIn, `translateY(${(1 - rIn) * 14}px)`);
+
+  // the loop
+  const ringIn = P(t, 14.6, 15.6);
+  $("ring").style.opacity = ringIn;
+  $("loop").style.strokeDashoffset = -t * 30;
+  nodes.forEach((n, i) => {
+    const el = $("n" + i), k = P(t, 14.8 + i * 0.18, 15.4 + i * 0.18);
+    el.style.left = n.x + "px"; el.style.top = n.y + "px";
+    style(el, k, `translateY(${(1 - k) * 16}px)`);
+    const hot = t > 15.6 && t < 18.6 && Math.floor(clamp((t - 15.6) / 0.6, 0, 4.99)) === i;
+    const dot = el.firstElementChild;
+    dot.style.background = hot || (i === 3 && t > 15.0 && t < 15.6) ? "var(--accent)" : "var(--surface)";
+    dot.style.color = hot || (i === 3 && t > 15.0 && t < 15.6) ? "#fff" : "var(--text-2)";
+    dot.style.borderColor = hot ? "var(--accent)" : "var(--border)";
+  });
+
+  // title
+  const ti = P(t, 17.4, 18.2);
+  style($("title"), ti, `translateY(${(1 - ti) * 18}px)`);
+
+  // captions (burned in for sound-off viewing)
+  const c = captions.find(([a, b]) => t >= a && t < b);
+  $("capt").textContent = c ? c[2] : "";
+  $("cap").style.opacity = c ? Math.min(P(t, c[0], c[0] + 0.3), 1 - P(t, c[1] - 0.3, c[1])) : 0;
+}
+
+window.render = render; window.DUR = DUR;
+const stage = $("stage");
+const capture = new URLSearchParams(location.search).has("capture");
+if (capture) { document.body.style.display = "block"; render(0); }
+else {
+  const fit = () => stage.style.transform = `scale(${Math.min(innerWidth / 1280, innerHeight / 720)})`;
+  addEventListener("resize", fit); fit();
+  let paused = false, offset = 0, start = performance.now();
+  addEventListener("click", () => { paused = !paused; if (!paused) start = performance.now() - offset * 1000; });
+  (function loop(now) { if (!paused) { offset = ((now - start) / 1000) % DUR; render(offset); } requestAnimationFrame(loop); })(start);
+}
+</script>
+</body>
+</html>

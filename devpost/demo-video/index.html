@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo video options</title>
+<!-- Compares the three demo-video concepts for acu-primer. Styled with the Verdant Glass tokens from
+     cmplx-xyttmt.github.io/assets/custom.css. Media lives in media/ (gitignored); open this file locally. -->
+<style>
+:root {
+  --color-forest: #17492f; --color-pine: #20603e; --color-emerald: #2e8659; --color-moss: #5b9e5a; --color-leaf: #9ac85a;
+  --color-amber: #e4882e; --color-peach: #f2b15e; --color-clay: #d96e43;
+  --text: #24312a; --heading: var(--color-forest); --link: var(--color-pine);
+  --muted: rgba(26, 40, 28, 0.72); --faint: rgba(26, 40, 28, 0.52);
+  --hr: rgba(23, 73, 47, 0.15);
+  --surface: rgba(255, 255, 255, 0.55); --surface-border: rgba(255, 255, 255, 0.78);
+  --surface-shadow: 0 20px 48px -24px rgba(23, 73, 47, 0.45); --surface-shine: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  --glass-blur: blur(18px) saturate(135%);
+  --inline-code-bg: rgba(46, 134, 89, 0.12); --inline-code-text: #20603e;
+  --bg-grad: linear-gradient(165deg, #f5f0de 0%, #e9ebd0 52%, #dce4c7 100%);
+  --bg-solid: #ecebd5;
+  --gel-green: linear-gradient(135deg, #2e8659 0%, #17492f 100%);
+  --radius-glass: 1.1rem; --radius-button: 0.75rem; --radius-pill: 999px;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Palatino LT STD", Georgia, ui-serif, serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --text: #d4dae3; --heading: #eef3fa; --link: #5fbf99; --muted: rgba(212, 218, 227, 0.7); --faint: rgba(212, 218, 227, 0.46);
+    --hr: rgba(255, 255, 255, 0.12);
+    --surface: rgba(255, 255, 255, 0.05); --surface-border: rgba(255, 255, 255, 0.12);
+    --surface-shadow: 0 20px 48px -24px rgba(0, 0, 0, 0.6); --surface-shine: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    --inline-code-bg: rgba(95, 191, 153, 0.15); --inline-code-text: #83d1b0;
+    --bg-grad: linear-gradient(165deg, #1a2028 0%, #151a21 55%, #11151a 100%); --bg-solid: #151a21;
+  }
+}
+:root[data-theme="dark"] {
+  --text: #d4dae3; --heading: #eef3fa; --link: #5fbf99; --muted: rgba(212, 218, 227, 0.7); --faint: rgba(212, 218, 227, 0.46);
+  --hr: rgba(255, 255, 255, 0.12);
+  --surface: rgba(255, 255, 255, 0.05); --surface-border: rgba(255, 255, 255, 0.12);
+  --surface-shadow: 0 20px 48px -24px rgba(0, 0, 0, 0.6); --surface-shine: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --inline-code-bg: rgba(95, 191, 153, 0.15); --inline-code-text: #83d1b0;
+  --bg-grad: linear-gradient(165deg, #1a2028 0%, #151a21 55%, #11151a 100%); --bg-solid: #151a21;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg-solid); }
+body { margin: 0; background: var(--bg-grad); background-attachment: fixed; color: var(--text); font-family: var(--font-sans); line-height: 1.55; }
+main { max-width: 1180px; margin: 0 auto; padding: 40px 16px 80px; }
+h1, h2, h3 { font-family: var(--font-serif); color: var(--heading); font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
+h1 { font-size: clamp(2rem, 4vw, 2.8rem); margin: 0.2em 0 0.3em; }
+h2 { font-size: 1.6rem; margin: 2.4em 0 0.6em; }
+h3 { font-size: 1.25rem; margin: 0 0 0.35em; }
+p { margin: 0 0 0.9em; }
+a { color: var(--link); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+code { background: var(--inline-code-bg); color: var(--inline-code-text); padding: 0.12em 0.4em; border-radius: 0.35em; font-family: var(--font-mono); font-size: 0.85em; }
+.lede { font-size: 1.1rem; color: var(--muted); max-width: 46rem; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.tag { display: inline-flex; align-items: center; background: var(--inline-code-bg); color: var(--color-pine); font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: var(--radius-pill); }
+:root[data-theme="dark"] .tag { color: var(--heading); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tag { color: var(--heading); } }
+.tag.amber { background: rgba(228, 136, 46, 0.16); color: #9a5410; }
+.glass { background: var(--surface); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); border: 1px solid var(--surface-border); border-radius: var(--radius-glass); box-shadow: var(--surface-shadow), var(--surface-shine); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 24px 0; }
+.fact { padding: 14px 16px; }
+.fact b { display: block; font-family: var(--font-serif); color: var(--heading); font-size: 1.15rem; font-weight: 600; }
+.fact span { font-size: 0.85rem; color: var(--muted); }
+.callout { border-left: 3px solid var(--color-emerald); background: var(--surface); border-radius: 0 var(--radius-button) var(--radius-button) 0; padding: 16px 20px; margin: 24px 0; }
+.callout h3 { margin-bottom: 0.4em; }
+.concepts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+@media (max-width: 960px) { .concepts { grid-template-columns: 1fr; } }
+.concept { padding: 16px; display: flex; flex-direction: column; }
+.concept.pick { outline: 2px solid var(--color-emerald); outline-offset: 2px; }
+.concept video { width: 100%; border-radius: 0.7rem; display: block; background: #000; aspect-ratio: 16 / 9; }
+.concept .meta { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0 8px; }
+.concept .pitch { font-family: var(--font-serif); font-size: 1.05rem; color: var(--text); }
+.concept dl { margin: 0.4em 0 0.8em; font-size: 0.92rem; }
+.concept dt { font-weight: 600; color: var(--heading); margin-top: 0.6em; }
+.concept dd { margin: 0.1em 0 0; color: var(--muted); }
+.concept .links { margin-top: auto; display: flex; gap: 10px; flex-wrap: wrap; padding-top: 8px; }
+.gel-btn { display: inline-flex; align-items: center; background: var(--gel-green); color: #fff; font-weight: 600; font-size: 0.88rem; padding: 0.5rem 0.95rem; border-radius: var(--radius-button); text-decoration: none; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 10px 20px -9px rgba(23, 73, 47, 0.7); }
+.quiet-btn { display: inline-flex; align-items: center; font-size: 0.88rem; padding: 0.5rem 0.95rem; border-radius: var(--radius-button); border: 1px solid var(--hr); text-decoration: none; }
+table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--hr); vertical-align: top; }
+th { font-family: var(--font-serif); color: var(--heading); font-weight: 600; }
+.tablewrap { overflow-x: auto; padding: 6px 10px; }
+.clips { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.clip { padding: 12px; }
+.clip video { width: 100%; border-radius: 0.6rem; display: block; background: #000; aspect-ratio: 16 / 9; }
+.clip p { margin: 8px 2px 0; font-size: 0.9rem; color: var(--muted); }
+.clip b { color: var(--heading); font-family: var(--font-serif); font-weight: 600; font-size: 1rem; }
+.stills { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.stills figure { margin: 0; padding: 8px; }
+.stills img { width: 100%; border-radius: 0.5rem; display: block; }
+.stills figcaption { font-size: 0.8rem; color: var(--faint); padding: 6px 2px 0; }
+ul { padding-left: 1.2em; } li { margin-bottom: 0.35em; }
+.theme { background: var(--surface); border: 1px solid var(--surface-border); color: var(--text); border-radius: var(--radius-pill); padding: 6px 14px; font: inherit; font-size: 0.85rem; cursor: pointer; }
+.missing { display: none; padding: 12px 16px; margin: 16px 0; border-left: 3px solid var(--color-amber); }
+footer { margin-top: 48px; font-size: 0.85rem; color: var(--faint); }
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <span class="tag">acu-primer &middot; devpost</span>
+    <button class="theme" id="theme" type="button">Theme: auto</button>
+  </div>
+  <h1>Demo video options</h1>
+  <p class="lede">Three ways to tell the same loop in under three minutes. Each one has a storyboard and a short motion-graphics prototype, and they all use the same real recordings of the app. You pick, and you write the words: the captions and narration points here are placeholders.</p>
+
+  <div class="glass missing" id="missing">The videos and pictures live in <code>media/</code>, which is gitignored. If they don't load, you're looking at a fresh clone: the recordings were made locally on Oct 21 and aren't in the repo.</div>
+
+  <div class="facts">
+    <div class="glass fact"><b>Mon Oct 26</b><span>deadline, midnight EAT (5 PM ET)</span></div>
+    <div class="glass fact"><b>2:15 to 2:45</b><span>target length; a listing says 1-3 minutes, so check the form</span></div>
+    <div class="glass fact"><b>Public on YouTube</b><span>Devpost accepts YouTube, Vimeo or Youku links</span></div>
+    <div class="glass fact"><b>$0 spent</b><span>no Draft or Apply with Claude was pressed while recording</span></div>
+  </div>
+
+  <div class="callout">
+    <h3>What I'd pick: C, "Not a red X"</h3>
+    <p>It opens on the problem. A viewer who stops after five seconds has still seen what acu-primer does: a wrong answer gets help aimed at that mistake, instead of a red X. Every claim after that is shown in a real recording, so nothing depends on a paid draft or a mock-up. The loop graphic introduces the author half in ten seconds, before the recordings show it.</p>
+    <p>I'd borrow one piece from B: its page-to-modules transition, laid over a screenshot of the real OpenIntro page, works well as the opener for the drafting beat (C's shot 6).</p>
+  </div>
+
+  <h2>The three concepts</h2>
+  <div class="concepts">
+    <article class="glass concept">
+      <video src="media/renders/primer.mp4" poster="media/renders/primer.jpg" controls muted loop playsinline preload="metadata"></video>
+      <div class="meta"><span class="tag">A</span><span class="tag">2:34</span><span class="tag amber">most personal</span></div>
+      <h3>The Primer</h3>
+      <p class="pitch">A book opens, its page turns into a question, and it answers a wrong pick in the margin. Then the real app does the same.</p>
+      <dl>
+        <dt>Strong at</dt><dd>A look nobody else will have, and a direct line to where the name comes from.</dd>
+        <dt>Risk</dt><dd>Takes 20 seconds to set up before the app appears. The match cut from book to app is fiddly to get right.</dd>
+        <dt>Uses</dt><dd>Clips 01, 02, 03, 04, 05, 06; the book opener, a match cut, a stamp overlay.</dd>
+      </dl>
+      <div class="links"><a class="gel-btn" href="primer/index.html">Play prototype</a><a class="quiet-btn" href="primer/storyboard.md">Storyboard</a></div>
+    </article>
+
+    <article class="glass concept">
+      <video src="media/renders/page-to-lesson.mp4" poster="media/renders/page-to-lesson.jpg" controls muted loop playsinline preload="metadata"></video>
+      <div class="meta"><span class="tag">B</span><span class="tag">2:32</span><span class="tag amber">most Claude</span></div>
+      <h3>A page becomes a lesson</h3>
+      <p class="pitch">Follow one textbook page until it's a lesson: modules, checks, a fallback for each wrong answer, a person's sign-off, then a student.</p>
+      <dl>
+        <dt>Strong at</dt><dd>Shows the AI part clearly, in the order the loop runs. Fits a "Build With AI" judge.</dd>
+        <dt>Risk</dt><dd>The student's moment arrives late (about 1:45). It needs one real paid draft on camera (about $1.30), or the transition looks like a mock-up.</dd>
+        <dt>Uses</dt><dd>Clips 01, 02, 04, 05; a new recording of Draft and of shaping the draft; the page-to-modules transition.</dd>
+      </dl>
+      <div class="links"><a class="gel-btn" href="page-to-lesson/index.html">Play prototype</a><a class="quiet-btn" href="page-to-lesson/storyboard.md">Storyboard</a></div>
+    </article>
+
+    <article class="glass concept pick">
+      <video src="media/renders/not-a-red-x.mp4" poster="media/renders/not-a-red-x.jpg" controls muted loop playsinline preload="metadata"></video>
+      <div class="meta"><span class="tag">C</span><span class="tag">2:28</span><span class="tag">recommended</span></div>
+      <h3>Not a red X</h3>
+      <p class="pitch">Open on the red X every quiz ends with, show acu-primer answering the mistake instead, then pull back to the loop that made that help.</p>
+      <dl>
+        <dt>Strong at</dt><dd>The problem and the answer in the first 15 seconds. Burned-in captions, so it works with the sound off.</dd>
+        <dt>Risk</dt><dd>The opener restages the app in motion graphics, so the real clips need to follow quickly to show it isn't a mock-up.</dd>
+        <dt>Uses</dt><dd>All six clips; the red X opener and the loop graphic.</dd>
+      </dl>
+      <div class="links"><a class="gel-btn" href="not-a-red-x/index.html">Play prototype</a><a class="quiet-btn" href="not-a-red-x/storyboard.md">Storyboard</a></div>
+    </article>
+  </div>
+
+  <h2>How they compare</h2>
+  <div class="glass tablewrap">
+    <table>
+      <thead><tr><th></th><th>A. The Primer</th><th>B. Page to lesson</th><th>C. Not a red X</th></tr></thead>
+      <tbody>
+        <tr><td>First 10 seconds</td><td>a book opening</td><td>a textbook page</td><td>a wrong answer and a red X</td></tr>
+        <tr><td>Student's fallback appears at</td><td>0:50</td><td>1:50</td><td>0:08 (motion), 1:35 (real)</td></tr>
+        <tr><td>Needs a paid draft on camera</td><td>optional</td><td>yes, about $1.30</td><td>optional</td></tr>
+        <tr><td>New motion work</td><td>the most (match cut, stamp)</td><td>medium (real page under the transition)</td><td>the least (captions, end card)</td></tr>
+        <tr><td>Looks like the app</td><td>no, on purpose</td><td>yes</td><td>yes</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Real recordings</h2>
+  <p>Recorded with Playwright on a local <code>wrangler dev</code> at 1280x720, as student "Amina" on the hand-written 5.1 lesson, and on the in-app Claude draft for the review. They're good enough for a rough cut. For the final cut, re-record them at 1920x1080 at the pace of your voice.</p>
+  <div class="clips">
+    <div class="glass clip"><video src="media/clips/01-student-wrong-then-right.mp4" poster="media/clips/01-student-wrong-then-right.jpg" controls muted playsinline preload="metadata"></video><p><b>01 Wrong, then right</b> (44 s). Name, intro with outcomes, a wrong pick, re-explanation and simpler question, retry, green with the explanation.</p></div>
+    <div class="glass clip"><video src="media/clips/02-student-fails-fallback.mp4" poster="media/clips/02-student-fails-fallback.jpg" controls muted playsinline preload="metadata"></video><p><b>02 Fails the fallback</b> (25 s, dark). Types the count, fails the simpler question, "go back through the material", Skip for now.</p></div>
+    <div class="glass clip"><video src="media/clips/04-author-review.mp4" poster="media/clips/04-author-review.jpg" controls muted playsinline preload="metadata"></video><p><b>04 Author review</b> (25 s). The gate, Author home, step-by-step review of the Claude draft, approvals, the resolved suggestion. Shows "Claude this month: $1.37 of $15".</p></div>
+    <div class="glass clip"><video src="media/clips/05-student-log.mp4" poster="media/clips/05-student-log.jpg" controls muted playsinline preload="metadata"></video><p><b>05 Student log</b> (11 s). The student list, then Amina's path with every answer, fallback, and the material suggestion.</p></div>
+    <div class="glass clip"><video src="media/clips/06-offline.mp4" poster="media/clips/06-offline.jpg" controls muted playsinline preload="metadata"></video><p><b>06 Offline</b> (23 s). Network off, reload, the course opens and module 2 plays and grades. The red pill is an overlay I added.</p></div>
+    <div class="glass clip"><video src="media/clips/03-theme-switch.mp4" poster="media/clips/03-theme-switch.jpg" controls muted playsinline preload="metadata"></video><p><b>03 Light and dark</b> (12 s). The switch cycles Auto, Light, Dark.</p></div>
+  </div>
+
+  <h2>Stills</h2>
+  <div class="stills">
+    <figure class="glass"><img src="media/stills/intro.png" alt="Lesson intro with outcomes"><figcaption>Lesson intro with outcomes</figcaption></figure>
+    <figure class="glass"><img src="media/stills/fallback.png" alt="Fallback after a wrong answer"><figcaption>The fallback for that misconception</figcaption></figure>
+    <figure class="glass"><img src="media/stills/right-green.png" alt="Right answer in green with explanation"><figcaption>Right, with the explanation</figcaption></figure>
+    <figure class="glass"><img src="media/stills/material.png" alt="Go back through the material"><figcaption>The stop after the last hint</figcaption></figure>
+    <figure class="glass"><img src="media/stills/review.png" alt="Step-by-step review"><figcaption>Step-by-step review</figcaption></figure>
+    <figure class="glass"><img src="media/stills/log.png" alt="Per-student log"><figcaption>The per-student log</figcaption></figure>
+    <figure class="glass"><img src="media/stills/offline.png" alt="Offline module"><figcaption>Offline, after a reload</figcaption></figure>
+  </div>
+
+  <h2>Tools for the final edit</h2>
+  <ul>
+    <li><b>Nothing new is required.</b> The prototypes are plain HTML. They render to MP4 with Playwright (already on this Mac) and ffmpeg (in Homebrew). <code>render.cjs</code> in this folder does it; its header says how to run it.</li>
+    <li><b>An editor</b> to cut it together: iMovie (already free on the Mac), DaVinci Resolve (free), or Shotcut.</li>
+    <li><b>Screen and voice:</b> Cmd+Shift+5 or QuickTime is enough. Cap (free, open source) adds zooms and backgrounds.</li>
+    <li><b>Optional:</b> Remotion, if you want the whole edit in code. It's free for individuals.</li>
+    <li><b>Music:</b> none is the safe choice. The YouTube Audio Library is the easiest source if you want some.</li>
+  </ul>
+
+  <footer>Made Oct 21, 2026. Sources and requirements are in <a href="research.md">research.md</a>.</footer>
+</main>
+<script>
+  // Theme switch: auto, light, dark. Remembered per browser if storage works.
+  const root = document.documentElement, btn = document.getElementById("theme");
+  const order = ["auto", "light", "dark"];
+  let choice = "auto";
+  try { choice = localStorage.getItem("demo-video-theme") || "auto"; } catch (e) {}
+  const apply = () => { if (choice === "auto") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", choice); btn.textContent = "Theme: " + choice; };
+  apply();
+  btn.addEventListener("click", () => { choice = order[(order.indexOf(choice) + 1) % 3]; try { localStorage.setItem("demo-video-theme", choice); } catch (e) {} apply(); });
+  // Say so if the gitignored media folder is missing.
+  const probe = new Image();
+  probe.onerror = () => { document.getElementById("missing").style.display = "block"; };
+  probe.src = "media/stills/intro.png";
+</script>
+</body>
+</html>

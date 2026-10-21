@@ -17,7 +17,7 @@ applyTheme(loadTheme());
 
 mount(App, { target: document.getElementById("app")! });
 
-// The service worker keeps the app and every opened course for offline use. Not in `npm run
+// The service worker keeps the app and every opened chapter for offline use. Not in `npm run
 // dev`, where the plugin leaves it off; try offline with a build (`npm run preview` or deployed).
 registerSW({ immediate: true });
 

@@ -13,11 +13,12 @@ You need Node 20 or newer.
 ```sh
 npm install
 npm run db:migrate:local                          # create the local D1 tables
-npm run import:local -- content/openintro-sampling # load the sample 5.1 lesson
+npm run import:local -- content/openintro-sampling # load the sample chapter (and its subject)
 npm run dev                                        # http://localhost:5173
 ```
 
-The player is at http://localhost:5173/c/openintro-sampling, and the author side (review,
+The home page at http://localhost:5173 lists subjects; a chapter plays at
+http://localhost:5173/s/openintro-statistics/openintro-sampling. The author side (review,
 sign-off, the show-unreviewed switch) at http://localhost:5173/author. Locally the author side
 is open until you set `AUTHOR_PASSPHRASE` in `.dev.vars`; after that it asks for it.
 

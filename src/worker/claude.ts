@@ -1,7 +1,7 @@
 // Draft calls to Claude. Used by the Worker's draft route and by scripts/try-draft.ts, so it
 // touches nothing Worker-specific: just the SDK, the lesson schema and the code checks.
 //
-// One draft = one streamed request with the book pages (by Files API id), the course brief, the
+// One draft = one streamed request with the book pages (by Files API id), the chapter brief, the
 // misconception catalogue (if any) and the lesson rules. One revision = one module (or the
 // outcomes) and the author's suggestions. Claude must answer in the JSON Schema (structured
 // outputs); the reply then has to pass the Zod schema and lessonProblems(); if it doesn't, the
@@ -15,9 +15,9 @@ import { lessonProblems } from "../shared/lessonChecks.ts";
 import { WIRE_NOTES, WireLesson, WireModule, lessonFromWire, moduleFromWire, moduleToWire } from "../shared/wire.ts";
 
 // Kept byte-for-byte stable so the prompt cache can reuse it across drafts.
-export const DRAFT_RULES = `You write interactive lessons for acu-primer, from pages of a textbook or another reading. A course author will review and edit every lesson before any student sees it.
+export const DRAFT_RULES = `You write interactive lessons for acu-primer, from pages of a textbook or another reading. A chapter author will review and edit every lesson before any student sees it.
 
-Who reads the lesson: the course brief, if there is one, says who the learner is and how they want to learn; follow it. Without a brief, assume first-year university students working alone, often on a phone.
+Who reads the lesson: the chapter brief, if there is one, says who the learner is and how they want to learn; follow it. Without a brief, assume first-year university students working alone, often on a phone.
 
 What to write: one lesson covering the section in the pages you're given, as JSON matching the schema.
 
@@ -57,7 +57,7 @@ export interface DraftRequest {
   book: string; // e.g. "OpenIntro Statistics, 4th ed."
   section: string; // e.g. "5.1 Point estimates and sampling variability"
   pages: string; // e.g. "pp. 170-180"
-  brief?: string | null; // the course brief: who the learner is, how they learn
+  brief?: string | null; // the chapter brief: who the learner is, how they learn
   catalogue?: unknown; // the misconception catalogue for the topic, if there is one
 }
 
@@ -190,7 +190,7 @@ export function draftLesson(
   onProgress?: (chars: number, attempt: number) => void,
 ): Promise<CallResult<Lesson>> {
   const context = [
-    req.brief ? `Course brief:\n${req.brief}` : "There is no course brief.",
+    req.brief ? `Chapter brief:\n${req.brief}` : "There is no chapter brief.",
     req.catalogue
       ? `Misconception catalogue for this topic:\n${JSON.stringify(req.catalogue, null, 2)}`
       : "There is no misconception catalogue for this topic, so every misconception is your own and labelled {\"kind\": \"model\"}.",
@@ -252,7 +252,7 @@ export function reviseStep(
   const current = isOutcomes ? { outcomes: req.lesson.outcomes } : found ? moduleToWire(found) : null;
   const asks = req.instructions.map((i) => `- On ${i.partLabel} (${i.part}): ${i.text}`).join("\n");
   const text =
-    (req.brief ? `Course brief:\n${req.brief}\n\n` : "") +
+    (req.brief ? `Chapter brief:\n${req.brief}\n\n` : "") +
     // Context, kept small to keep the cost down: the lesson's outcomes and its module titles.
     `The lesson "${req.lesson.title}" has these outcomes:\n${req.lesson.outcomes.map((o) => `- ${o}`).join("\n")}\n` +
     `and these modules: ${req.lesson.modules.map((m) => `${m.id} "${m.title}"`).join(", ")}.\n\n` +

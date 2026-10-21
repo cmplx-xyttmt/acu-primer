@@ -3,6 +3,9 @@ doc: spec
 status: approved
 ---
 
+
+> **Naming since slice 9 (Oct 21):** the structure is **subject → chapter → lesson → module**. A subject is usually a book; a chapter is one of its chapters, or a single article; a lesson is about a section; a module is one screen (a short reading and at most one check). What this document calls a **course** is now a **chapter**, everywhere in the app and code. The learner brief lives on the subject.
+
 # acu-primer — Technical Spec
 
 ## How This Works, In Plain Language
@@ -194,7 +197,7 @@ Svelte components under `src/app/player/`. Implements `prd.md > Course overview 
 `scripts/import-lesson.ts`. The hand-written lessons (4.1 and 4.3) are written as lesson JSON in `content/`, checked against the schema, and loaded into D1 with this script. The same path loads the CLRS course. The scoping notes' idea of "publishing as course JSON" becomes this import, because lessons live in D1 (see `Decisions and Open Issues`).
 
 ## Data Model
-D1 tables, created by `migrations/0001_init.sql`:
+D1 tables, created by `migrations/0001_init.sql` and changed by later migrations (0004 renamed `courses` to `chapters`, every `course_id` to `chapter_id`, and added **subjects**: `id`, `slug`, `title`, `overview`, `brief`, `position`; chapters gained `subject_id`, `overview`, `position`). The original list, in its old names:
 
 - **courses**: `id`, `slug`, `title`, `show_unreviewed` (0 or 1).
 - **sources**: `id`, `course_id`, `title`, `pages` (for example "OpenIntro 4th ed., pp. 170–181"), `anthropic_file_id`, `created_at`.

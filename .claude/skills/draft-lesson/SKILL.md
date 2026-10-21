@@ -15,7 +15,8 @@ Ask only for what's missing, in one message:
 
 - the PDF (or other source) and the pages, as the PDF viewer numbers them;
 - the section number and title;
-- which course it goes in (an existing folder in `content/`, or a new slug and title).
+- which chapter it goes in (an existing folder in `content/`, or a new one: its subject, slug, title and
+  overview). A subject is usually a book; a chapter is one of its chapters, or a single article.
 
 Known books: `~/Projects/curriculum-edtech/OpenIntro Statistics 4th ed.pdf` (section 5.1 is
 PDF pages 170-180) and `~/Projects/curriculum-edtech/Cormen Introduction to Algorithms.pdf`.
@@ -33,22 +34,25 @@ Book PDFs never go in this repo.
    misconception `{"kind": "catalogue", "reference": ...}` only when it comes from an entry there,
    copying the entry's `reference`; everything else is `{"kind": "model"}`. If there's no
    catalogue for the topic, say so in the report.
-4. **Write the lesson** to `content/<course>/<section>-<short-name>.json`. Outcomes first, then the
-   modules. Lesson id: `<course>-<section>-draft`. Source: the book and the section with its pages.
+4. **Write the lesson** to `content/<chapter>/<section>-<short-name>.json`. Outcomes first, then the
+   modules. Lesson id: `<chapter>-<section>-draft`, with dots in the section turned into dashes. Source: the book and the section with its pages.
    Write in your own words; don't copy passages from the source. For OpenIntro (CC BY-SA), the
    source field is the attribution.
 5. **Check it.** `npx tsx scripts/check-lesson.ts <file>`. Fix what it reports and check again. If
    it still fails after two rounds of fixes, stop and show Isaac the problems instead of looping.
-6. **Add it to the course.** Add an entry to `content/<course>/course.json` with `"status":
+6. **Add it to the chapter.** A new chapter folder needs a `chapter.json` with `"subject": { "slug",
+   "title", "overview" }`, `"slug"`, `"title"`, `"overview"` and `"lessons"` (see the existing ones).
+   Add an entry to `content/<chapter>/chapter.json` with `"status":
    "unreviewed"` and the next `position`. Students won't see it until Isaac signs it off at
-   `/author`, or switches on **Show unreviewed lessons to students** for the course there.
-7. **Import it locally.** `npm run import:local -- content/<course>`. Remote only if Isaac asks
-   (`npm run import:remote -- content/<course>`).
+   `/author`, or switches on **Show unreviewed lessons to students** for the chapter there.
+7. **Import it locally.** `npm run import:local -- content/<chapter>`. Remote only if Isaac asks
+   (`npm run import:remote -- content/<chapter>`).
 8. **Report**, briefly: the outcomes; modules and checks; how many wrong answers came from the
    catalogue and how many are your guesses; anything in the source you left out and why; and what
    Isaac should look at first when reviewing (the hardest maths, the guesses, any check you're unsure
    of). Then the links: `http://localhost:5173/author` to review and sign off, and
-   `http://localhost:5173/c/<course>` for the player.
+   `http://localhost:5173/s/<subject>/<chapter>` for the player. The learner brief lives on the subject
+   (edit it on the author home); follow it if the subject has one.
 
 ## Don'ts
 

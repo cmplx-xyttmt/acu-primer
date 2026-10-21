@@ -3,7 +3,7 @@ import { EventBatch } from "../src/shared/events.ts";
 
 const event = (over: object = {}) => ({
   id: "0f8fad5b-d9cb-469f-a165-70867728950e",
-  courseSlug: "openintro-sampling",
+  chapterSlug: "openintro-sampling",
   lessonId: "openintro-5-1-fixture",
   studentName: "Demo",
   deviceId: "7c9e6679-7425-40de-944b-e07fc1f90ae7",

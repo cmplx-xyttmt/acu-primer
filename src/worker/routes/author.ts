@@ -3,21 +3,21 @@
 import {
   addSuggestion,
   approveStep,
-  authorCourses,
+  authorSubjects,
   authorLesson,
   signOffLesson,
   unapproveStep,
   withdrawSuggestion,
-  courseStudents,
+  chapterStudents,
   studentEvents,
   type ReviewResult,
 } from "../db.ts";
 import { json } from "../http.ts";
 import type { Ctx } from "../index.ts";
 
-// GET /api/author/courses — every course with its lessons and their marks (no lesson content).
-export async function listCourses({ env }: Ctx): Promise<Response> {
-  return json({ courses: await authorCourses(env.DB) });
+// GET /api/author/subjects — every subject with its chapters, lessons and marks.
+export async function listSubjects({ env }: Ctx): Promise<Response> {
+  return json({ subjects: await authorSubjects(env.DB) });
 }
 
 // GET /api/author/lessons/:id — one lesson in full, whatever its status, for the review screen.
@@ -62,16 +62,16 @@ export async function withdraw({ env }: Ctx, suggestionId: string): Promise<Resp
 }
 
 
-// GET /api/author/courses/:id/students — everyone who has opened the course, newest first.
-export async function students({ env }: Ctx, courseId: string): Promise<Response> {
-  return json({ students: await courseStudents(env.DB, courseId) });
+// GET /api/author/chapters/:id/students — everyone who has opened the chapter, newest first.
+export async function students({ env }: Ctx, chapterId: string): Promise<Response> {
+  return json({ students: await chapterStudents(env.DB, chapterId) });
 }
 
-// GET /api/author/courses/:id/student-events?name=...&device=... — one student's log.
+// GET /api/author/chapters/:id/student-events?name=...&device=... — one student's log.
 // (A query string, not a path segment: a typed name can contain any character.)
-export async function studentLog({ env, url }: Ctx, courseId: string): Promise<Response> {
+export async function studentLog({ env, url }: Ctx, chapterId: string): Promise<Response> {
   const name = url.searchParams.get("name");
   const device = url.searchParams.get("device");
   if (!name || !device) return json({ error: "Give ?name= and &device=." }, 400);
-  return json({ events: await studentEvents(env.DB, courseId, name, device) });
+  return json({ events: await studentEvents(env.DB, chapterId, name, device) });
 }

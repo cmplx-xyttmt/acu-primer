@@ -1,17 +1,17 @@
 <script lang="ts">
-  // Everyone who has opened a course, by the name they typed and their device.
+  // Everyone who has opened a chapter, by the name they typed and their device.
   import type { StudentSummary } from "../../shared/events.ts";
   import { authorApi, ApiError } from "../lib/api.ts";
   import { navigate } from "../router.svelte.ts";
   import ThemeSwitch from "../player/ThemeSwitch.svelte";
 
-  let { courseId, onLocked }: { courseId: string; onLocked: () => void } = $props();
+  let { chapterId, onLocked }: { chapterId: string; onLocked: () => void } = $props();
 
   let students = $state<StudentSummary[] | null>(null);
   let error = $state("");
 
-  // svelte-ignore state_referenced_locally (App.svelte re-creates this per course)
-  authorApi.students(courseId).then(
+  // svelte-ignore state_referenced_locally (App.svelte re-creates this per chapter)
+  authorApi.students(chapterId).then(
     (s) => (students = s),
     (err) => (err instanceof ApiError && err.status === 401 ? onLocked() : (error = err.message)),
   );
@@ -21,7 +21,7 @@
     navigate(to);
   };
   const logHref = (s: StudentSummary) =>
-    `/author/courses/${courseId}/log?name=${encodeURIComponent(s.name)}&device=${encodeURIComponent(s.deviceId)}`;
+    `/author/chapters/${chapterId}/log?name=${encodeURIComponent(s.name)}&device=${encodeURIComponent(s.deviceId)}`;
   const when = (iso: string) => new Date(iso).toLocaleString();
 </script>
 
@@ -31,12 +31,12 @@
 </div>
 <main class="page wide">
   <h1>Students</h1>
-  <p class="muted">Everyone who has opened this course, by the name they typed. The same name on two devices shows twice.</p>
+  <p class="muted">Everyone who has opened this chapter, by the name they typed. The same name on two devices shows twice.</p>
   {#if error}<p class="error">{error}</p>{/if}
   {#if !students}
     {#if !error}<p class="muted">Loading…</p>{/if}
   {:else if students.length === 0}
-    <p>No students have opened this course yet.</p>
+    <p>No students have opened this chapter yet.</p>
   {:else}
     <table>
       <thead><tr><th>Name</th><th>Device</th><th>Last seen</th><th>Lessons</th><th></th></tr></thead>

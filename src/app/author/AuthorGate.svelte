@@ -12,7 +12,7 @@
 
   async function check() {
     try {
-      await authorApi.courses();
+      await authorApi.subjects();
       phase = "open";
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {

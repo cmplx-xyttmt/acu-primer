@@ -1,12 +1,12 @@
 <script lang="ts">
-  // Holds one course for one student: loads it, then moves between name entry, the
+  // Holds one chapter for one student: loads it, then moves between name entry, the
   // overview and a lesson's modules without leaving the page.
   //
   // Every move between the overview and a module adds a browser history entry (same
   // address, different history.state), so the browser's Back button and a phone's swipe
   // back step through modules the same way the in-app Back button does.
-  import type { CourseResponse } from "../../shared/lesson.ts";
-  import { fetchCourse, ApiError, OFFLINE } from "../lib/api.ts";
+  import type { ChapterResponse } from "../../shared/lesson.ts";
+  import { fetchChapter, ApiError, OFFLINE } from "../lib/api.ts";
   import {
     loadProgress,
     saveProgress,
@@ -16,35 +16,36 @@
     isComplete,
     resumeIndex,
     rememberName,
-    type CourseProgress,
+    type ChapterProgress,
     type LessonProgress,
   } from "../lib/progress.ts";
   import { record, setStudent, startSending } from "../lib/eventQueue.ts";
+  import { rememberPlayed } from "../lib/lastPlayed.ts";
   import NameEntry from "./NameEntry.svelte";
-  import CourseOverview from "./CourseOverview.svelte";
+  import ChapterOverview from "./ChapterOverview.svelte";
   import ModuleView from "./ModuleView.svelte";
   import LessonIntro from "./LessonIntro.svelte";
 
-  let { slug }: { slug: string } = $props();
+  let { subjectSlug, slug }: { subjectSlug: string; slug: string } = $props();
 
   type View =
     | { kind: "overview" }
     | { kind: "intro"; lessonId: string }
     | { kind: "module"; lessonId: string; index: number };
 
-  let data = $state<CourseResponse | null>(null);
+  let data = $state<ChapterResponse | null>(null);
   let loadError = $state("");
   let name = $state("");
-  let progress = $state<CourseProgress>({});
+  let progress = $state<ChapterProgress>({});
   let view = $state<View>({ kind: "overview" });
 
   // svelte-ignore state_referenced_locally (App.svelte re-creates Player when the slug changes)
-  fetchCourse(slug).then(
-    (course) => (data = course),
+  fetchChapter(slug).then(
+    (chapter) => (data = chapter),
     (err) =>
       (loadError =
         err instanceof ApiError && err.status === OFFLINE
-          ? "Open this course once with a connection, then it works offline."
+          ? "Open this chapter once with a connection, then it works offline."
           : err.message),
   );
 
@@ -75,6 +76,7 @@
   });
 
   function start(typed: string) {
+    if (data) rememberPlayed({ subjectSlug, chapterSlug: slug, chapterTitle: data.chapter.title });
     name = typed.trim();
     rememberName(name);
     progress = loadProgress(slug, name);
@@ -135,13 +137,13 @@
 
 {#if loadError}
   <main class="page">
-    <h1>Can't open this course</h1>
+    <h1>Can't open this chapter</h1>
     <p class="muted">{loadError}</p>
   </main>
 {:else if !data}
   <main class="page"><p class="muted">Loading…</p></main>
 {:else if !name}
-  <NameEntry title={data.course.title} onStart={start} />
+  <NameEntry title={data.chapter.title} onStart={start} />
 {:else if view.kind === "module" && openLesson}
   {@const lessonId = openLesson.id}
   {@const total = openLesson.content.modules.length}
@@ -178,7 +180,7 @@
     onExit={() => show({ kind: "overview" })}
   />
 {:else}
-  <CourseOverview
+  <ChapterOverview
     {data}
     {name}
     {progress}

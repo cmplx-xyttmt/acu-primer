@@ -1,6 +1,12 @@
 {
+  "subject": {
+    "slug": "openintro-statistics",
+    "title": "OpenIntro Statistics",
+    "overview": "An introduction to statistics: data, probability, and the foundations of inference."
+  },
   "slug": "openintro-sampling",
-  "title": "Sampling distributions (OpenIntro Statistics)",
+  "title": "Sampling distributions",
+  "overview": "How a sample proportion estimates a population, how much it varies from sample to sample, and when a normal model fits.",
   "lessons": [
     {
       "file": "5.1-point-estimates.json",

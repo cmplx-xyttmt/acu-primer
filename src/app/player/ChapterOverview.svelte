@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { CourseResponse } from "../../shared/lesson.ts";
-  import { isComplete, lessonProgress, type CourseProgress } from "../lib/progress.ts";
+  import type { ChapterResponse } from "../../shared/lesson.ts";
+  import { isComplete, lessonProgress, type ChapterProgress } from "../lib/progress.ts";
   import ThemeSwitch from "./ThemeSwitch.svelte";
 
   let {
@@ -11,9 +11,9 @@
     onIntro,
     onChangeName,
   }: {
-    data: CourseResponse;
+    data: ChapterResponse;
     name: string;
-    progress: CourseProgress;
+    progress: ChapterProgress;
     onOpen: (lessonId: string) => void; // straight to where the student stopped
     onIntro: (lessonId: string) => void; // the lesson's outcomes and module list
     onChangeName: () => void;
@@ -47,10 +47,14 @@
     </p>
     <ThemeSwitch />
   </div>
-  <h1>{data.course.title}</h1>
+  {#if data.subject}
+    <a class="up" href="/s/{data.subject.slug}">← {data.subject.title}</a>
+  {/if}
+  <h1>{data.chapter.title}</h1>
+  {#if data.chapter.overview}<p class="muted">{data.chapter.overview}</p>{/if}
 
   {#if rows.length === 0}
-    <p class="muted">Nothing is ready in this course yet.</p>
+    <p class="muted">Nothing is ready in this chapter yet.</p>
   {:else}
     <ul>
       {#each rows as row (row.id)}
@@ -78,6 +82,12 @@
 </main>
 
 <style>
+  .up {
+    display: inline-block;
+    margin-top: 0.75rem;
+    color: var(--accent);
+    font-size: 0.9rem;
+  }
   .hello {
     display: flex;
     justify-content: space-between;

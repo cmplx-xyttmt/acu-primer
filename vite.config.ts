@@ -22,7 +22,8 @@ export default defineConfig({
         runtimeCaching: [
           {
             // Fresh when online, the saved copy when not (or when the network is too slow).
-            urlPattern: ({ url }) => url.pathname.startsWith("/api/courses/"),
+            // Chapters, and the subject lists that lead to them.
+            urlPattern: ({ url }) => url.pathname.startsWith("/api/chapters/") || url.pathname.startsWith("/api/subjects"),
             handler: "NetworkFirst",
             options: { cacheName: "courses", networkTimeoutSeconds: 5 },
           },

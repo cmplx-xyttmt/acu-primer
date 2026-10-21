@@ -1,4 +1,4 @@
-// Student progress, kept in localStorage per course and name (spec.md > Data Model).
+// Student progress, kept in localStorage per chapter and name (spec.md > Data Model).
 // The same name on the same device picks up where it stopped. localStorage can be missing
 // or full (private windows), so every access is wrapped and the app still works without it.
 
@@ -8,7 +8,7 @@ export interface LessonProgress {
   current: number; // furthest module index reached; the lesson's length once at the end
 }
 
-export type CourseProgress = Record<string, LessonProgress>; // by lesson id
+export type ChapterProgress = Record<string, LessonProgress>; // by lesson id
 
 const LAST_NAME_KEY = "acu:lastName";
 
@@ -33,15 +33,15 @@ function write(k: string, value: unknown) {
   }
 }
 
-export function loadProgress(slug: string, name: string): CourseProgress {
-  return read<CourseProgress>(key(slug, name), {});
+export function loadProgress(slug: string, name: string): ChapterProgress {
+  return read<ChapterProgress>(key(slug, name), {});
 }
 
-export function saveProgress(slug: string, name: string, progress: CourseProgress) {
+export function saveProgress(slug: string, name: string, progress: ChapterProgress) {
   write(key(slug, name), progress);
 }
 
-export function lessonProgress(progress: CourseProgress, lessonId: string): LessonProgress {
+export function lessonProgress(progress: ChapterProgress, lessonId: string): LessonProgress {
   const saved = progress[lessonId];
   return { done: saved?.done ?? [], skipped: saved?.skipped ?? [], current: saved?.current ?? 0 };
 }

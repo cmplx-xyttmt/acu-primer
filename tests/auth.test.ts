@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { authorGate } from "../src/worker/auth.ts";
 
-const prod = new URL("https://acu-primer.example.workers.dev/api/author/courses");
-const local = new URL("http://localhost:5173/api/author/courses");
+const prod = new URL("https://acu-primer.example.workers.dev/api/author/chapters");
+const local = new URL("http://localhost:5173/api/author/chapters");
 
 describe("authorGate", () => {
   it("lets the right passphrase in", async () => {

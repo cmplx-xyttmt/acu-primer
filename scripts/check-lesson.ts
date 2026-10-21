@@ -1,7 +1,7 @@
 // Check a lesson file the way the Worker will check a draft from the API: the Zod schema,
 // then lessonProblems() (the checks done by code). Exits non-zero if anything is wrong.
 //
-//   npx tsx scripts/check-lesson.ts content/<course>/<lesson>.json
+//   npx tsx scripts/check-lesson.ts content/<chapter>/<lesson>.json
 
 import { readFileSync } from "node:fs";
 import { Lesson } from "../src/shared/lesson.ts";

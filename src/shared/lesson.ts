@@ -109,25 +109,43 @@ export type Check = z.infer<typeof Check>;
 export type Module = z.infer<typeof Module>;
 export type Lesson = z.infer<typeof Lesson>;
 
-// What GET /api/courses/:slug returns: the course and every visible lesson in full.
+// What GET /api/chapters/:slug returns: the chapter and every visible lesson in full.
 export type LessonStatus = "unreviewed" | "reviewed";
 
-export interface CourseLesson {
+export interface ChapterLesson {
   id: string;
   position: number;
   status: LessonStatus;
   content: Lesson;
 }
 
-export interface CourseResponse {
-  course: { slug: string; title: string; showUnreviewed: boolean };
-  lessons: CourseLesson[];
+export interface ChapterResponse {
+  chapter: { slug: string; title: string; overview: string | null; showUnreviewed: boolean };
+  subject: { slug: string; title: string } | null;
+  lessons: ChapterLesson[];
+}
+
+// The student side's view of subjects (the home page and a subject's page). A chapter card
+// carries each visible lesson's module ids, so the browser can show progress from its own
+// saved progress without loading every lesson.
+export interface ChapterCard {
+  slug: string;
+  title: string;
+  overview: string | null;
+  lessons: { id: string; title: string; moduleIds: string[] }[];
+}
+
+export interface SubjectCard {
+  slug: string;
+  title: string;
+  overview: string | null;
+  chapters: ChapterCard[];
 }
 
 // What the author routes return.
 export interface AuthorLessonSummary {
   id: string;
-  courseId: string;
+  chapterId: string;
   position: number;
   title: string;
   status: LessonStatus;
@@ -143,11 +161,21 @@ export interface AuthorLesson extends AuthorLessonSummary {
   };
 }
 
-export interface AuthorCourse {
+export interface AuthorChapter {
   id: string;
   slug: string;
   title: string;
+  overview: string | null;
+  subjectId: string | null;
   showUnreviewed: boolean;
-  brief: string | null;
   lessons: AuthorLessonSummary[];
+}
+
+export interface AuthorSubject {
+  id: string; // "" for the group of chapters that have no subject yet
+  slug: string;
+  title: string;
+  overview: string | null;
+  brief: string | null; // who the learner is; every draft in the subject follows it
+  chapters: AuthorChapter[];
 }

@@ -3,6 +3,9 @@ doc: prd
 status: approved
 ---
 
+
+> **Naming since slice 9 (Oct 21):** the structure is **subject → chapter → lesson → module**. A subject is usually a book; a chapter is one of its chapters, or a single article; a lesson is about a section; a module is one screen (a short reading and at most one check). What this document calls a **course** is now a **chapter**, everywhere in the app and code. The learner brief lives on the subject.
+
 # acu-primer — Product Requirements
 
 A course-authoring tool and the lesson player that runs what it makes. A course author (a lecturer, for Oct 9 Isaac) turns a textbook section into short, interactive lessons. The lessons adapt to the wrong answer a student gives, keep working offline, and show whether a person has checked them.

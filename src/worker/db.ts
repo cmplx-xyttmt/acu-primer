@@ -1,10 +1,10 @@
 // Small helpers around D1 queries.
 
-import type { AuthorCourse, AuthorLesson, CourseResponse, Lesson, LessonStatus } from "../shared/lesson.ts";
+import type { AuthorChapter, AuthorLesson, AuthorSubject, ChapterCard, ChapterResponse, Lesson, LessonStatus, SubjectCard } from "../shared/lesson.ts";
 import { reviewState, stepContent, type Suggestion } from "../shared/review.ts";
 import type { StudentEvent, StudentSummary } from "../shared/events.ts";
 
-interface CourseRow {
+interface ChapterRow {
   id: string;
   slug: string;
   title: string;
@@ -18,27 +18,31 @@ interface LessonRow {
   content: string;
 }
 
-// The course and every lesson a student may see, in full. Unreviewed lessons are included
+// The chapter and every lesson a student may see, in full. Unreviewed lessons are included
 // only when the owner has switched that on.
-export async function getVisibleCourse(db: D1Database, slug: string): Promise<CourseResponse | null> {
-  const course = await db
-    .prepare("SELECT id, slug, title, show_unreviewed FROM courses WHERE slug = ?")
+export async function getVisibleChapter(db: D1Database, slug: string): Promise<ChapterResponse | null> {
+  const chapter = await db
+    .prepare(
+      `SELECT c.id, c.slug, c.title, c.overview, c.show_unreviewed, s.slug AS subject_slug, s.title AS subject_title
+       FROM chapters c LEFT JOIN subjects s ON s.id = c.subject_id WHERE c.slug = ?`,
+    )
     .bind(slug)
-    .first<CourseRow>();
-  if (!course) return null;
+    .first<ChapterRow & { overview: string | null; subject_slug: string | null; subject_title: string | null }>();
+  if (!chapter) return null;
 
-  const showUnreviewed = course.show_unreviewed === 1;
+  const showUnreviewed = chapter.show_unreviewed === 1;
   const { results } = await db
     .prepare(
       `SELECT id, position, status, content FROM lessons
-       WHERE course_id = ? AND (status = 'reviewed' OR ?)
+       WHERE chapter_id = ? AND (status = 'reviewed' OR ?)
        ORDER BY position`,
     )
-    .bind(course.id, showUnreviewed ? 1 : 0)
+    .bind(chapter.id, showUnreviewed ? 1 : 0)
     .all<LessonRow>();
 
   return {
-    course: { slug: course.slug, title: course.title, showUnreviewed },
+    chapter: { slug: chapter.slug, title: chapter.title, overview: chapter.overview, showUnreviewed },
+    subject: chapter.subject_slug ? { slug: chapter.subject_slug, title: chapter.subject_title ?? "" } : null,
     lessons: results.map((row) => ({
       id: row.id,
       position: row.position,
@@ -50,7 +54,7 @@ export async function getVisibleCourse(db: D1Database, slug: string): Promise<Co
 
 interface AuthorLessonRow {
   id: string;
-  course_id: string;
+  chapter_id: string;
   position: number;
   title: string;
   status: LessonStatus;
@@ -60,7 +64,7 @@ interface AuthorLessonRow {
 
 const lessonSummary = (row: AuthorLessonRow) => ({
   id: row.id,
-  courseId: row.course_id,
+  chapterId: row.chapter_id,
   position: row.position,
   title: row.title,
   status: row.status,
@@ -68,23 +72,116 @@ const lessonSummary = (row: AuthorLessonRow) => ({
   signedOffAt: row.signed_off_at,
 });
 
-// Every course with its lessons and their marks, for the author's home screen.
-export async function authorCourses(db: D1Database): Promise<AuthorCourse[]> {
-  const [courses, lessons] = await db.batch([
-    db.prepare("SELECT id, slug, title, show_unreviewed, brief FROM courses ORDER BY title"),
-    db.prepare(
-      "SELECT id, course_id, position, title, status, updated_at, signed_off_at FROM lessons ORDER BY position",
-    ),
+// Every subject with its chapters, their lessons and marks, for the author's home screen.
+// Chapters without a subject come last, in a group with an empty id.
+export async function authorSubjects(db: D1Database): Promise<AuthorSubject[]> {
+  const [subjects, chapters, lessons] = await db.batch([
+    db.prepare("SELECT id, slug, title, overview, brief FROM subjects ORDER BY position, title"),
+    db.prepare("SELECT id, slug, title, overview, subject_id, show_unreviewed FROM chapters ORDER BY position, title"),
+    db.prepare("SELECT id, chapter_id, position, title, status, updated_at, signed_off_at FROM lessons ORDER BY position"),
   ]);
   const lessonRows = lessons.results as unknown as AuthorLessonRow[];
-  return (courses.results as unknown as (CourseRow & { brief: string | null })[]).map((c) => ({
+  const chapterRows = chapters.results as unknown as (ChapterRow & { overview: string | null; subject_id: string | null })[];
+  const toChapter = (c: (typeof chapterRows)[number]): AuthorChapter => ({
     id: c.id,
     slug: c.slug,
     title: c.title,
+    overview: c.overview,
+    subjectId: c.subject_id,
     showUnreviewed: c.show_unreviewed === 1,
-    brief: c.brief,
-    lessons: lessonRows.filter((l) => l.course_id === c.id).map(lessonSummary),
-  }));
+    lessons: lessonRows.filter((l) => l.chapter_id === c.id).map(lessonSummary),
+  });
+  const result: AuthorSubject[] = (subjects.results as unknown as { id: string; slug: string; title: string; overview: string | null; brief: string | null }[]).map(
+    (s) => ({ ...s, chapters: chapterRows.filter((c) => c.subject_id === s.id).map(toChapter) }),
+  );
+  const loose = chapterRows.filter((c) => !c.subject_id || !result.some((s) => s.id === c.subject_id));
+  if (loose.length > 0) result.push({ id: "", slug: "", title: "Chapters without a subject", overview: null, brief: null, chapters: loose.map(toChapter) });
+  return result;
+}
+
+// --- The student side: subjects and their chapters ----------------------------------------
+
+// Chapters a student can see: those with at least one visible lesson (reviewed, or any when
+// the chapter shows unreviewed lessons). Each card carries its lessons' module ids for progress.
+async function visibleChapterCards(db: D1Database, subjectId: string | null): Promise<(ChapterCard & { subjectId: string | null })[]> {
+  const { results } = await db
+    .prepare(
+      `SELECT c.slug, c.title, c.overview, c.subject_id, c.position AS cpos, l.id AS lesson_id, l.title AS lesson_title, l.content, l.position AS lpos
+       FROM chapters c JOIN lessons l ON l.chapter_id = c.id
+       WHERE (l.status = 'reviewed' OR c.show_unreviewed = 1) ${subjectId === null ? "" : "AND c.subject_id = ?"}
+       ORDER BY c.position, c.title, l.position`,
+    )
+    .bind(...(subjectId === null ? [] : [subjectId]))
+    .all<{ slug: string; title: string; overview: string | null; subject_id: string | null; lesson_id: string; lesson_title: string; content: string }>();
+  const cards = new Map<string, ChapterCard & { subjectId: string | null }>();
+  for (const r of results) {
+    if (!cards.has(r.slug)) cards.set(r.slug, { slug: r.slug, title: r.title, overview: r.overview, subjectId: r.subject_id, lessons: [] });
+    const modules = (JSON.parse(r.content) as Lesson).modules.map((m) => m.id);
+    cards.get(r.slug)!.lessons.push({ id: r.lesson_id, title: r.lesson_title, moduleIds: modules });
+  }
+  return [...cards.values()];
+}
+
+/** The home page: every subject with at least one visible chapter. */
+export async function publicSubjects(db: D1Database): Promise<SubjectCard[]> {
+  const [subjects, cards] = await Promise.all([
+    db.prepare("SELECT id, slug, title, overview FROM subjects ORDER BY position, title").all<{ id: string; slug: string; title: string; overview: string | null }>(),
+    visibleChapterCards(db, null),
+  ]);
+  return subjects.results
+    .map((s) => ({ slug: s.slug, title: s.title, overview: s.overview, chapters: cards.filter((c) => c.subjectId === s.id).map(({ subjectId: _, ...c }) => c) }))
+    .filter((s) => s.chapters.length > 0);
+}
+
+/** A subject's page: its overview and its visible chapters. */
+export async function publicSubject(db: D1Database, slug: string): Promise<SubjectCard | null> {
+  const s = await db.prepare("SELECT id, slug, title, overview FROM subjects WHERE slug = ?").bind(slug).first<{ id: string; slug: string; title: string; overview: string | null }>();
+  if (!s) return null;
+  const cards = await visibleChapterCards(db, s.id);
+  return { slug: s.slug, title: s.title, overview: s.overview, chapters: cards.map(({ subjectId: _, ...c }) => c) };
+}
+
+// --- Creating and editing subjects and chapters (author side) ------------------------------
+
+const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "untitled";
+
+// A slug not yet used in the table: "ostep", then "ostep-2", "ostep-3", ...
+async function freeSlug(db: D1Database, table: "subjects" | "chapters", base: string): Promise<string> {
+  const { results } = await db.prepare(`SELECT slug FROM ${table} WHERE slug = ? OR slug LIKE ?`).bind(base, `${base}-%`).all<{ slug: string }>();
+  const taken = new Set(results.map((r) => r.slug));
+  if (!taken.has(base)) return base;
+  for (let i = 2; ; i++) if (!taken.has(`${base}-${i}`)) return `${base}-${i}`;
+}
+
+export async function createSubject(db: D1Database, s: { title: string; overview: string | null; brief: string | null }) {
+  const slug = await freeSlug(db, "subjects", slugify(s.title));
+  const pos = await db.prepare("SELECT COALESCE(MAX(position), 0) + 1 AS next FROM subjects").first<{ next: number }>();
+  await db
+    .prepare("INSERT INTO subjects (id, slug, title, overview, brief, position, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)")
+    .bind(slug, slug, s.title, s.overview, s.brief, pos?.next ?? 1, new Date().toISOString())
+    .run();
+  return { id: slug, slug };
+}
+
+export async function updateSubject(db: D1Database, id: string, change: { title?: string; overview?: string | null; brief?: string | null }): Promise<boolean> {
+  const sets: string[] = [];
+  const values: (string | null)[] = [];
+  for (const [k, v] of Object.entries(change)) if (v !== undefined) sets.push(`${k} = ?`), values.push(v);
+  if (sets.length === 0) return false;
+  const r = await db.prepare(`UPDATE subjects SET ${sets.join(", ")} WHERE id = ?`).bind(...values, id).run();
+  return r.meta.changes > 0;
+}
+
+export async function createChapter(db: D1Database, subjectId: string, c: { title: string; overview: string | null }) {
+  const subject = await db.prepare("SELECT id FROM subjects WHERE id = ?").bind(subjectId).first();
+  if (!subject) return null;
+  const slug = await freeSlug(db, "chapters", slugify(c.title));
+  const pos = await db.prepare("SELECT COALESCE(MAX(position), 0) + 1 AS next FROM chapters WHERE subject_id = ?").bind(subjectId).first<{ next: number }>();
+  await db
+    .prepare("INSERT INTO chapters (id, slug, title, overview, subject_id, position, show_unreviewed) VALUES (?, ?, ?, ?, ?, ?, 0)")
+    .bind(slug, slug, c.title, c.overview, subjectId, pos?.next ?? 1)
+    .run();
+  return { id: slug, slug };
 }
 
 async function sha256(value: unknown): Promise<string> {
@@ -138,7 +235,7 @@ async function reviewFor(db: D1Database, lessonId: string, content: Lesson) {
 export async function authorLesson(db: D1Database, lessonId: string): Promise<AuthorLesson | null> {
   const row = await db
     .prepare(
-      "SELECT id, course_id, position, title, status, updated_at, signed_off_at, content FROM lessons WHERE id = ?",
+      "SELECT id, chapter_id, position, title, status, updated_at, signed_off_at, content FROM lessons WHERE id = ?",
     )
     .bind(lessonId)
     .first<AuthorLessonRow & { content: string }>();
@@ -224,40 +321,40 @@ export async function withdrawSuggestion(db: D1Database, suggestionId: string): 
 
 // Save a batch of student events, ignoring ids already saved (a batch can arrive twice).
 // Returns how many were accepted (already-saved ids among them are ignored by the database)
-// and how many named a course that doesn't exist (those are skipped).
-export async function saveEvents(db: D1Database, events: StudentEvent[]): Promise<{ accepted: number; unknownCourse: number }> {
-  const slugs = [...new Set(events.map((e) => e.courseSlug))];
+// and how many named a chapter that doesn't exist (those are skipped).
+export async function saveEvents(db: D1Database, events: StudentEvent[]): Promise<{ accepted: number; unknownChapter: number }> {
+  const slugs = [...new Set(events.map((e) => e.chapterSlug))];
   const known = await db
-    .prepare(`SELECT id, slug FROM courses WHERE slug IN (${slugs.map(() => "?").join(",")})`)
+    .prepare(`SELECT id, slug FROM chapters WHERE slug IN (${slugs.map(() => "?").join(",")})`)
     .bind(...slugs)
     .all<{ id: string; slug: string }>();
-  const courseIds = new Map(known.results.map((c) => [c.slug, c.id]));
+  const chapterIds = new Map(known.results.map((c) => [c.slug, c.id]));
   const now = new Date().toISOString();
   const statements = events
-    .filter((e) => courseIds.has(e.courseSlug))
+    .filter((e) => chapterIds.has(e.chapterSlug))
     .map((e) =>
       db
         .prepare(
-          `INSERT OR IGNORE INTO events (id, course_id, lesson_id, student_name, device_id, type, payload, client_time, received_at)
+          `INSERT OR IGNORE INTO events (id, chapter_id, lesson_id, student_name, device_id, type, payload, client_time, received_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
-        .bind(e.id, courseIds.get(e.courseSlug)!, e.lessonId, e.studentName, e.deviceId, e.type, JSON.stringify(e.payload), e.clientTime, now),
+        .bind(e.id, chapterIds.get(e.chapterSlug)!, e.lessonId, e.studentName, e.deviceId, e.type, JSON.stringify(e.payload), e.clientTime, now),
     );
   if (statements.length > 0) await db.batch(statements);
-  return { accepted: statements.length, unknownCourse: events.length - statements.length };
+  return { accepted: statements.length, unknownChapter: events.length - statements.length };
 }
 
-// Students who have opened a course: one row per name (ignoring case) and device.
-export async function courseStudents(db: D1Database, courseId: string): Promise<StudentSummary[]> {
+// Students who have opened a chapter: one row per name (ignoring case) and device.
+export async function chapterStudents(db: D1Database, chapterId: string): Promise<StudentSummary[]> {
   const { results } = await db
     .prepare(
       `SELECT MAX(student_name) AS name, device_id, MAX(client_time) AS last_seen,
               COUNT(DISTINCT lesson_id) AS lessons, COUNT(*) AS events
-       FROM events WHERE course_id = ?
+       FROM events WHERE chapter_id = ?
        GROUP BY LOWER(TRIM(student_name)), device_id
        ORDER BY last_seen DESC`,
     )
-    .bind(courseId)
+    .bind(chapterId)
     .all<{ name: string; device_id: string; last_seen: string; lessons: number; events: number }>();
   return results.map((r) => ({ name: r.name, deviceId: r.device_id, lastSeen: r.last_seen, lessons: r.lessons, events: r.events }));
 }
@@ -272,14 +369,14 @@ export interface LoggedEvent {
 
 // One student's events in the order they happened on their device (not the order they arrived,
 // which differs for events sent after being offline).
-export async function studentEvents(db: D1Database, courseId: string, name: string, deviceId: string): Promise<LoggedEvent[]> {
+export async function studentEvents(db: D1Database, chapterId: string, name: string, deviceId: string): Promise<LoggedEvent[]> {
   const { results } = await db
     .prepare(
       `SELECT id, lesson_id, type, payload, client_time FROM events
-       WHERE course_id = ? AND LOWER(TRIM(student_name)) = LOWER(TRIM(?)) AND device_id = ?
+       WHERE chapter_id = ? AND LOWER(TRIM(student_name)) = LOWER(TRIM(?)) AND device_id = ?
        ORDER BY client_time, received_at`,
     )
-    .bind(courseId, name, deviceId)
+    .bind(chapterId, name, deviceId)
     .all<{ id: string; lesson_id: string | null; type: string; payload: string; client_time: string }>();
   return results.map((r) => ({ id: r.id, lessonId: r.lesson_id, type: r.type, payload: JSON.parse(r.payload), clientTime: r.client_time }));
 }
@@ -306,45 +403,50 @@ export async function recordSpend(
     .run();
 }
 
-export async function courseForDrafting(db: D1Database, courseId: string) {
-  return db.prepare("SELECT id, slug, title, brief FROM courses WHERE id = ?").bind(courseId).first<{ id: string; slug: string; title: string; brief: string | null }>();
+export async function chapterForDrafting(db: D1Database, chapterId: string) {
+  // The brief lives on the chapter's subject (slice 9).
+  return db
+    .prepare("SELECT c.id, c.slug, c.title, s.brief FROM chapters c LEFT JOIN subjects s ON s.id = c.subject_id WHERE c.id = ?")
+    .bind(chapterId)
+    .first<{ id: string; slug: string; title: string; brief: string | null }>();
 }
 
-export async function updateCourse(db: D1Database, courseId: string, change: { showUnreviewed?: boolean; brief?: string | null }): Promise<boolean> {
+export async function updateChapter(db: D1Database, chapterId: string, change: { showUnreviewed?: boolean; title?: string; overview?: string | null }): Promise<boolean> {
   const sets: string[] = [];
   const values: (string | number | null)[] = [];
   if (change.showUnreviewed !== undefined) sets.push("show_unreviewed = ?"), values.push(change.showUnreviewed ? 1 : 0);
-  if (change.brief !== undefined) sets.push("brief = ?"), values.push(change.brief);
+  if (change.title !== undefined) sets.push("title = ?"), values.push(change.title);
+  if (change.overview !== undefined) sets.push("overview = ?"), values.push(change.overview);
   if (sets.length === 0) return false;
-  const result = await db.prepare(`UPDATE courses SET ${sets.join(", ")} WHERE id = ?`).bind(...values, courseId).run();
+  const result = await db.prepare(`UPDATE chapters SET ${sets.join(", ")} WHERE id = ?`).bind(...values, chapterId).run();
   return result.meta.changes > 0;
 }
 
-export async function saveSource(db: D1Database, s: { courseId: string; title: string; pages: string; fileId: string }): Promise<string> {
+export async function saveSource(db: D1Database, s: { chapterId: string; title: string; pages: string; fileId: string }): Promise<string> {
   const id = crypto.randomUUID();
   await db
-    .prepare("INSERT INTO sources (id, course_id, title, pages, anthropic_file_id, created_at) VALUES (?, ?, ?, ?, ?, ?)")
-    .bind(id, s.courseId, s.title, s.pages, s.fileId, new Date().toISOString())
+    .prepare("INSERT INTO sources (id, chapter_id, title, pages, anthropic_file_id, created_at) VALUES (?, ?, ?, ?, ?, ?)")
+    .bind(id, s.chapterId, s.title, s.pages, s.fileId, new Date().toISOString())
     .run();
   return id;
 }
 
 export async function getSource(db: D1Database, sourceId: string) {
   return db
-    .prepare("SELECT id, course_id, title, pages, anthropic_file_id FROM sources WHERE id = ?")
+    .prepare("SELECT id, chapter_id, title, pages, anthropic_file_id FROM sources WHERE id = ?")
     .bind(sourceId)
-    .first<{ id: string; course_id: string; title: string; pages: string; anthropic_file_id: string }>();
+    .first<{ id: string; chapter_id: string; title: string; pages: string; anthropic_file_id: string }>();
 }
 
-// A new draft goes at the end of its course, unreviewed.
-export async function insertDraft(db: D1Database, courseId: string, sourceId: string, lesson: Lesson) {
-  const pos = await db.prepare("SELECT COALESCE(MAX(position), 0) + 1 AS next FROM lessons WHERE course_id = ?").bind(courseId).first<{ next: number }>();
+// A new draft goes at the end of its chapter, unreviewed.
+export async function insertDraft(db: D1Database, chapterId: string, sourceId: string, lesson: Lesson) {
+  const pos = await db.prepare("SELECT COALESCE(MAX(position), 0) + 1 AS next FROM lessons WHERE chapter_id = ?").bind(chapterId).first<{ next: number }>();
   await db
     .prepare(
-      `INSERT INTO lessons (id, course_id, source_id, position, title, status, content, updated_at, signed_off_at)
+      `INSERT INTO lessons (id, chapter_id, source_id, position, title, status, content, updated_at, signed_off_at)
        VALUES (?, ?, ?, ?, ?, 'unreviewed', ?, ?, NULL)`,
     )
-    .bind(lesson.id, courseId, sourceId, pos?.next ?? 1, lesson.title, JSON.stringify(lesson), new Date().toISOString())
+    .bind(lesson.id, chapterId, sourceId, pos?.next ?? 1, lesson.title, JSON.stringify(lesson), new Date().toISOString())
     .run();
 }
 

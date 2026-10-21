@@ -1,6 +1,8 @@
 <script lang="ts">
   import { route } from "./router.svelte.ts";
   import Player from "./player/Player.svelte";
+  import Home from "./player/Home.svelte";
+  import SubjectPage from "./player/SubjectPage.svelte";
   import AuthorGate from "./author/AuthorGate.svelte";
   import AuthorHome from "./author/AuthorHome.svelte";
   import Review from "./author/Review.svelte";
@@ -8,12 +10,14 @@
   import StudentLog from "./author/StudentLog.svelte";
   import Session from "./author/Session.svelte";
 
-  const courseMatch = $derived(route.path.match(/^\/c\/([a-z0-9-]+)\/?$/));
+  // Students: / (subjects) → /s/<subject> (chapters) → /s/<subject>/<chapter> (the player).
+  const chapterMatch = $derived(route.path.match(/^\/s\/([a-z0-9-]+)\/([a-z0-9-]+)\/?$/));
+  const subjectMatch = $derived(route.path.match(/^\/s\/([a-z0-9-]+)\/?$/));
   const reviewMatch = $derived(route.path.match(/^\/author\/lessons\/([a-z0-9-]+)\/?$/));
   const authorHome = $derived(/^\/author\/?$/.test(route.path));
-  const studentsMatch = $derived(route.path.match(/^\/author\/courses\/([a-z0-9-]+)\/students\/?$/));
-  const draftMatch = $derived(route.path.match(/^\/author\/courses\/([a-z0-9-]+)\/draft\/?$/));
-  const logMatch = $derived(route.path.match(/^\/author\/courses\/([a-z0-9-]+)\/log\/?$/));
+  const studentsMatch = $derived(route.path.match(/^\/author\/chapters\/([a-z0-9-]+)\/students\/?$/));
+  const draftMatch = $derived(route.path.match(/^\/author\/chapters\/([a-z0-9-]+)\/draft\/?$/));
+  const logMatch = $derived(route.path.match(/^\/author\/chapters\/([a-z0-9-]+)\/log\/?$/));
   const logParams = $derived(logMatch ? new URLSearchParams(route.search) : null);
 </script>
 
@@ -21,7 +25,7 @@
   <AuthorGate>
     {#snippet children({ onLocked })}
       {#key draftMatch[1]}
-        <Session courseId={draftMatch[1]} {onLocked} />
+        <Session chapterId={draftMatch[1]} {onLocked} />
       {/key}
     {/snippet}
   </AuthorGate>
@@ -29,7 +33,7 @@
   <AuthorGate>
     {#snippet children({ onLocked })}
       {#key studentsMatch[1]}
-        <Students courseId={studentsMatch[1]} {onLocked} />
+        <Students chapterId={studentsMatch[1]} {onLocked} />
       {/key}
     {/snippet}
   </AuthorGate>
@@ -38,7 +42,7 @@
     {#snippet children({ onLocked })}
       {#key route.search}
         <StudentLog
-          courseId={logMatch[1]}
+          chapterId={logMatch[1]}
           name={logParams.get("name") ?? ""}
           device={logParams.get("device") ?? ""}
           {onLocked}
@@ -60,15 +64,14 @@
       <AuthorHome {onLocked} />
     {/snippet}
   </AuthorGate>
-{:else if courseMatch}
-  {#key courseMatch[1]}
-    <Player slug={courseMatch[1]} />
+{:else if chapterMatch}
+  {#key chapterMatch[2]}
+    <Player subjectSlug={chapterMatch[1]} slug={chapterMatch[2]} />
+  {/key}
+{:else if subjectMatch}
+  {#key subjectMatch[1]}
+    <SubjectPage slug={subjectMatch[1]} />
   {/key}
 {:else}
-  <main class="page">
-    <h1>acu-primer</h1>
-    <p class="muted">Short, interactive lessons that change course when you get something wrong.</p>
-    <p><a href="/c/openintro-sampling">Open the sampling distributions course</a></p>
-    <p class="muted">Writing or reviewing lessons? <a href="/author">Go to the author side</a> (asks for the passphrase).</p>
-  </main>
+  <Home />
 {/if}

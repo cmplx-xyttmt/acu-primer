@@ -1,6 +1,6 @@
 // Fetch helpers for /api/*.
 
-import type { AuthorCourse, AuthorLesson, CourseResponse } from "../../shared/lesson.ts";
+import type { AuthorLesson, AuthorSubject, ChapterResponse, SubjectCard } from "../../shared/lesson.ts";
 import type { StudentSummary } from "../../shared/events.ts";
 
 export interface LoggedEvent {
@@ -35,8 +35,16 @@ async function request<T>(url: string, init: RequestInit = {}): Promise<T> {
   return body as T;
 }
 
-export function fetchCourse(slug: string) {
-  return request<CourseResponse>(`/api/courses/${slug}`);
+export function fetchSubjects() {
+  return request<{ subjects: SubjectCard[] }>("/api/subjects").then((r) => r.subjects);
+}
+
+export function fetchSubject(slug: string) {
+  return request<SubjectCard>(`/api/subjects/${slug}`);
+}
+
+export function fetchChapter(slug: string) {
+  return request<ChapterResponse>(`/api/chapters/${slug}`);
 }
 
 // The author passphrase, typed once and kept in this browser (spec.md > Components > Author
@@ -68,7 +76,15 @@ function author<T>(url: string, init: RequestInit = {}) {
 }
 
 export const authorApi = {
-  courses: () => author<{ courses: AuthorCourse[] }>("/api/author/courses").then((r) => r.courses),
+  subjects: () => author<{ subjects: AuthorSubject[] }>("/api/author/subjects").then((r) => r.subjects),
+  createSubject: (s: { title: string; overview: string; brief: string }) =>
+    author<{ id: string; slug: string }>("/api/author/subjects", { method: "POST", body: JSON.stringify(s) }),
+  updateSubject: (id: string, change: { title?: string; overview?: string; brief?: string }) =>
+    author(`/api/author/subjects/${id}`, { method: "PUT", body: JSON.stringify(change) }),
+  createChapter: (subjectId: string, c: { title: string; overview: string }) =>
+    author<{ id: string; slug: string }>(`/api/author/subjects/${subjectId}/chapters`, { method: "POST", body: JSON.stringify(c) }),
+  updateChapter: (id: string, change: { title?: string; overview?: string }) =>
+    author(`/api/author/chapters/${id}`, { method: "PUT", body: JSON.stringify(change) }),
   lesson: (id: string) => author<AuthorLesson>(`/api/author/lessons/${id}`),
   signOff: (id: string) => author<AuthorLesson>(`/api/author/lessons/${id}/signoff`, { method: "POST" }),
   approve: (id: string, stepId: string) =>
@@ -77,18 +93,16 @@ export const authorApi = {
     author<AuthorLesson>(`/api/author/lessons/${id}/steps/${stepId}/approval`, { method: "DELETE" }),
   suggest: (id: string, s: { stepId: string; part: string; partLabel: string; text: string }) =>
     author<AuthorLesson>(`/api/author/lessons/${id}/suggestions`, { method: "POST", body: JSON.stringify(s) }),
-  students: (courseId: string) =>
-    author<{ students: StudentSummary[] }>(`/api/author/courses/${courseId}/students`).then((r) => r.students),
-  studentLog: (courseId: string, name: string, device: string) =>
+  students: (chapterId: string) =>
+    author<{ students: StudentSummary[] }>(`/api/author/chapters/${chapterId}/students`).then((r) => r.students),
+  studentLog: (chapterId: string, name: string, device: string) =>
     author<{ events: LoggedEvent[] }>(
-      `/api/author/courses/${courseId}/student-events?name=${encodeURIComponent(name)}&device=${encodeURIComponent(device)}`,
+      `/api/author/chapters/${chapterId}/student-events?name=${encodeURIComponent(name)}&device=${encodeURIComponent(device)}`,
     ).then((r) => r.events),
   budget: () => author<{ spentUsd: number; budgetUsd: number; model: string; hasKey: boolean }>("/api/author/budget"),
-  setBrief: (courseId: string, brief: string) =>
-    author(`/api/author/courses/${courseId}`, { method: "PUT", body: JSON.stringify({ brief }) }),
-  uploadSource: (courseId: string, title: string, pages: string, pdf: Uint8Array) =>
+  uploadSource: (chapterId: string, title: string, pages: string, pdf: Uint8Array) =>
     request<{ sourceId: string; kb: number }>(
-      `/api/author/sources?courseId=${encodeURIComponent(courseId)}&title=${encodeURIComponent(title)}&pages=${encodeURIComponent(pages)}`,
+      `/api/author/sources?chapterId=${encodeURIComponent(chapterId)}&title=${encodeURIComponent(title)}&pages=${encodeURIComponent(pages)}`,
       { method: "POST", headers: { "x-author-passphrase": savedPassphrase(), "content-type": "application/pdf" }, body: pdf as BufferSource },
     ),
   revise: (id: string, stepId: string) =>
@@ -99,8 +113,8 @@ export const authorApi = {
     author<AuthorLesson>(`/api/author/lessons/${id}/edits`, { method: "POST", body: JSON.stringify({ kind: "switch", moduleId, which, part, enabled }) }),
   withdraw: (suggestionId: string) =>
     author<AuthorLesson>(`/api/author/suggestions/${suggestionId}/withdraw`, { method: "POST" }),
-  setShowUnreviewed: (courseId: string, showUnreviewed: boolean) =>
-    author(`/api/author/courses/${courseId}`, { method: "PUT", body: JSON.stringify({ showUnreviewed }) }),
+  setShowUnreviewed: (chapterId: string, showUnreviewed: boolean) =>
+    author(`/api/author/chapters/${chapterId}`, { method: "PUT", body: JSON.stringify({ showUnreviewed }) }),
 };
 
 export type DraftEvent =

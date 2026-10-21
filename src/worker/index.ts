@@ -3,11 +3,12 @@
 
 import { authorGate } from "./auth.ts";
 import { json } from "./http.ts";
-import { getCourse } from "./routes/courses.ts";
+import { getChapter } from "./routes/chapters.ts";
+import { getSubject, getSubjects } from "./routes/subjects.ts";
 import { postEvents } from "./routes/events.ts";
-import { getBudget, putCourse, postSource, postDraft, postRevise, postEdit } from "./routes/drafting.ts";
+import { getBudget, putChapter, postSource, postDraft, postRevise, postEdit, postSubject, putSubject, postChapter } from "./routes/drafting.ts";
 import {
-  listCourses,
+  listSubjects,
   getLesson,
   signOff,
     approve,
@@ -29,12 +30,17 @@ type Handler = (ctx: Ctx, ...params: string[]) => Promise<Response>;
 const id = "([a-z0-9-]+)";
 const stepId = "([a-z0-9_-]+)"; // module ids, or "_outcomes"
 const routes: [method: string, pattern: RegExp, handler: Handler][] = [
-  ["GET", new RegExp(`^/api/courses/${id}$`), getCourse],
+  ["GET", new RegExp(`^/api/chapters/${id}$`), getChapter],
+  ["GET", /^\/api\/subjects$/, getSubjects],
+  ["GET", new RegExp(`^/api/subjects/${id}$`), getSubject],
   ["POST", /^\/api\/events$/, postEvents],
-  ["GET", /^\/api\/author\/courses$/, listCourses],
+  ["GET", /^\/api\/author\/subjects$/, listSubjects],
+  ["POST", /^\/api\/author\/subjects$/, postSubject],
+  ["PUT", new RegExp(`^/api/author/subjects/${id}$`), putSubject],
+  ["POST", new RegExp(`^/api/author/subjects/${id}/chapters$`), postChapter],
   ["GET", new RegExp(`^/api/author/lessons/${id}$`), getLesson],
   ["POST", new RegExp(`^/api/author/lessons/${id}/signoff$`), signOff],
-  ["PUT", new RegExp(`^/api/author/courses/${id}$`), putCourse],
+  ["PUT", new RegExp(`^/api/author/chapters/${id}$`), putChapter],
   ["GET", /^\/api\/author\/budget$/, getBudget],
   ["POST", /^\/api\/author\/sources$/, postSource],
   ["POST", /^\/api\/author\/drafts$/, postDraft],
@@ -44,8 +50,8 @@ const routes: [method: string, pattern: RegExp, handler: Handler][] = [
   ["DELETE", new RegExp(`^/api/author/lessons/${id}/steps/${stepId}/approval$`), unapprove],
   ["POST", new RegExp(`^/api/author/lessons/${id}/suggestions$`), suggest],
   ["POST", new RegExp(`^/api/author/suggestions/${id}/withdraw$`), withdraw],
-  ["GET", new RegExp(`^/api/author/courses/${id}/students$`), students],
-  ["GET", new RegExp(`^/api/author/courses/${id}/student-events$`), studentLog],
+  ["GET", new RegExp(`^/api/author/chapters/${id}/students$`), students],
+  ["GET", new RegExp(`^/api/author/chapters/${id}/student-events$`), studentLog],
 ];
 
 export default {

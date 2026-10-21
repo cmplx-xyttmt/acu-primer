@@ -20,7 +20,7 @@ this session is the tool; later the review screen will call Claude for the same 
    or `_outcomes`) and the part, as a path into that module: `reading`, `check`,
    `check.explanation`, `check.wrongAnswers.<n>` (zero-based), `check.generalFallback`,
    `check.alternatives`, or `outcomes`.
-3. **Edit only those parts** of the lesson file in `content/<course>/`. Follow `DRAFT_RULES` in
+3. **Edit only those parts** of the lesson file in `content/<chapter>/`. Follow `DRAFT_RULES` in
    `src/worker/claude.ts`, just as when drafting. Keep everything else byte-for-byte the same: an
    approval is tied to its module's exact content, so touching an unrelated module throws away
    the author's approval of it. If a suggestion needs a change elsewhere (a symbol renamed in two
@@ -29,13 +29,13 @@ this session is the tool; later the review screen will call Claude for the same 
    open and tell Isaac what you need.
 5. **Check:** `npx tsx scripts/check-lesson.ts <file>`. Fix what it reports.
 6. **Import** to the same database the suggestions came from:
-   `npm run import:local -- content/<course>` or `npm run import:remote -- content/<course>`.
+   `npm run import:local -- content/<chapter>` or `npm run import:remote -- content/<chapter>`.
    Changed content sets the lesson back to unreviewed, and only the changed modules lose their
    approval.
 7. **Resolve each one you applied** with a short note on what changed, which the author sees under
    the suggestion: `npx tsx scripts/suggestions.ts resolve [--local|--remote] <id> "<what changed>"`.
 8. **Report** in a few lines: what changed for each suggestion, any left open and why, and the link
-   to look again (`/author/lessons/<id>`, the remote or local address).
+   to look again (`/author/lessons/<id>`, the remote or local address). Lessons belong to chapters, and chapters to subjects.
 
 ## Don'ts
 

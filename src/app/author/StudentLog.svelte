@@ -1,5 +1,5 @@
 <script lang="ts">
-  // One student's path through the course, in the order it happened on their device: modules
+  // One student's path through the chapter, in the order it happened on their device: modules
   // entered, each answer (right or wrong, which misconception), the hints shown, the material
   // suggestion, skips, and the time since the previous step.
   import { authorApi, ApiError, type LoggedEvent } from "../lib/api.ts";
@@ -7,14 +7,14 @@
   import { navigate } from "../router.svelte.ts";
   import ThemeSwitch from "../player/ThemeSwitch.svelte";
 
-  let { courseId, name, device, onLocked }: { courseId: string; name: string; device: string; onLocked: () => void } =
+  let { chapterId, name, device, onLocked }: { chapterId: string; name: string; device: string; onLocked: () => void } =
     $props();
 
   let events = $state<LoggedEvent[] | null>(null);
   let error = $state("");
 
   // svelte-ignore state_referenced_locally (App.svelte re-creates this per student)
-  authorApi.studentLog(courseId, name, device).then(
+  authorApi.studentLog(chapterId, name, device).then(
     (e) => (events = e),
     (err) => (err instanceof ApiError && err.status === 401 ? onLocked() : (error = err.message)),
   );
@@ -39,7 +39,7 @@
 </script>
 
 <div class="top">
-  <a href="/author/courses/{courseId}/students" onclick={(e) => go(e, `/author/courses/${courseId}/students`)}>All students</a>
+  <a href="/author/chapters/{chapterId}/students" onclick={(e) => go(e, `/author/chapters/${chapterId}/students`)}>All students</a>
   <ThemeSwitch />
 </div>
 <main class="page wide">

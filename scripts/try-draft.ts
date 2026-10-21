@@ -61,7 +61,7 @@ if (args.includes("--probe")) {
         {
           role: "user",
           content:
-            'Write a very short lesson (2 modules, 1 check, 1 wrong answer, no alternatives) on adding two fractions with the same denominator. Lesson id "probe", source {"book": "probe", "pages": "none"}. There is no course brief and no misconception catalogue.',
+            'Write a very short lesson (2 modules, 1 check, 1 wrong answer, no alternatives) on adding two fractions with the same denominator. Lesson id "probe", source {"book": "probe", "pages": "none"}. There is no chapter brief and no misconception catalogue.',
         },
       ],
     })

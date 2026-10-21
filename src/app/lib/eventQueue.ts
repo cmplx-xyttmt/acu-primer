@@ -40,17 +40,17 @@ export function deviceId(): string {
   }
 }
 
-let student: { courseSlug: string; name: string } | null = null;
+let student: { chapterSlug: string; name: string } | null = null;
 
-export function setStudent(courseSlug: string, name: string) {
-  student = { courseSlug, name: name.trim() };
+export function setStudent(chapterSlug: string, name: string) {
+  student = { chapterSlug, name: name.trim() };
 }
 
 export function record(type: EventType, lessonId: string | null, payload: object) {
   if (!student) return;
   const event: StudentEvent = {
     id: crypto.randomUUID(),
-    courseSlug: student.courseSlug,
+    chapterSlug: student.chapterSlug,
     lessonId,
     studentName: student.name,
     deviceId: deviceId(),

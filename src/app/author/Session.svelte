@@ -2,14 +2,15 @@
   // The authoring session (slice 3b): pick the book PDF and a page range, and Claude drafts a
   // lesson from just those pages. The PDF stays on this laptop; only the cut pages are sent.
   // The draft is saved unreviewed and then goes through the step-by-step review.
-  import type { AuthorCourse } from "../../shared/lesson.ts";
+  import type { AuthorChapter, AuthorSubject } from "../../shared/lesson.ts";
   import { authorApi, streamDraft, ApiError } from "../lib/api.ts";
   import { navigate } from "../router.svelte.ts";
   import ThemeSwitch from "../player/ThemeSwitch.svelte";
 
-  let { courseId, onLocked }: { courseId: string; onLocked: () => void } = $props();
+  let { chapterId, onLocked }: { chapterId: string; onLocked: () => void } = $props();
 
-  let course = $state<AuthorCourse | null>(null);
+  let chapter = $state<AuthorChapter | null>(null);
+  let subject = $state<AuthorSubject | null>(null);
   let budget = $state<{ spentUsd: number; budgetUsd: number; model: string; hasKey: boolean } | null>(null);
   let file = $state<File | null>(null);
   let book = $state("");
@@ -31,8 +32,11 @@
     clearInterval(timer);
   }
 
-  // svelte-ignore state_referenced_locally (App.svelte re-creates this per course)
-  authorApi.courses().then((cs) => (course = cs.find((c) => c.id === courseId) ?? null), fail);
+  // svelte-ignore state_referenced_locally (App.svelte re-creates this per chapter)
+  authorApi.subjects().then((subjects) => {
+    subject = subjects.find((s) => s.chapters.some((c) => c.id === chapterId)) ?? null;
+    chapter = subject?.chapters.find((c) => c.id === chapterId) ?? null;
+  }, fail);
   const loadBudget = () => authorApi.budget().then((b) => (budget = b), fail);
   loadBudget();
 
@@ -50,7 +54,7 @@
       const { cutPages } = await import("../lib/pdfPages.ts"); // only loaded here, never for students
       const cut = await cutPages(await file.arrayBuffer(), pages);
       phase = "uploading";
-      const { sourceId } = await authorApi.uploadSource(courseId, book.trim(), `pp. ${pages.trim()}`, cut);
+      const { sourceId } = await authorApi.uploadSource(chapterId, book.trim(), `pp. ${pages.trim()}`, cut);
       phase = "drafting";
       const started = Date.now();
       timer = setInterval(() => (seconds = Math.round((Date.now() - started) / 1000)), 1000);
@@ -90,7 +94,12 @@
 
 <main class="page wide">
   <h1>Draft a lesson</h1>
-  <p class="muted">{course ? course.title : "…"}</p>
+  <p class="muted">{subject?.title ? `${subject.title} · ` : ""}{chapter ? chapter.title : "…"}</p>
+  {#if subject}
+    <p class="muted brief-note">
+      {subject.brief ? `Drafts follow the subject's learner brief: "${subject.brief.slice(0, 140)}${subject.brief.length > 140 ? "…" : ""}"` : "This subject has no learner brief yet, so drafts assume first-year university students. Add one on the author home."}
+    </p>
+  {/if}
 
   {#if budget}
     <p class="budget" class:low={left < 2}>
@@ -165,6 +174,9 @@
   }
   a {
     color: var(--accent);
+  }
+  .brief-note {
+    font-size: 0.88rem;
   }
   .budget {
     padding: 0.6rem 0.9rem;

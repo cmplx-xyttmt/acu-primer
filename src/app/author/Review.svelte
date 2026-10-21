@@ -319,7 +319,7 @@
       <section class="signoff">
         <h2>Sign off</h2>
         {#if lesson.status === "reviewed"}
-          <p>This lesson is signed off. Students see it in the course.</p>
+          <p>This lesson is signed off. Students see it in the chapter.</p>
         {:else if !rs.canSignOff}
           <p>Not ready to sign off yet: {rs.blockers.join(", ")}.</p>
           {#if rs.open > 0}
@@ -336,7 +336,7 @@
             {/each}
           </ul>
         {:else if confirming}
-          <p>Every step is approved. Sign off this lesson? Students will see it in the course.</p>
+          <p>Every step is approved. Sign off this lesson? Students will see it in the chapter.</p>
           <div class="buttons">
             <button class="btn" disabled={busy} onclick={() => run(() => authorApi.signOff(lessonId)).then(() => (confirming = false))}>
               {busy ? "Signing off…" : "Yes, sign off"}

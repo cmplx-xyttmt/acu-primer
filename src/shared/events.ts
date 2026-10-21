@@ -15,7 +15,7 @@ export const EVENT_TYPES = [
 
 export const StudentEvent = z.strictObject({
   id: z.string().min(8).max(64), // made in the browser, so sending one twice saves it once
-  courseSlug: z.string().min(1).max(100),
+  chapterSlug: z.string().min(1).max(100),
   lessonId: z.string().min(1).max(200).nullable(),
   studentName: z.string().min(1).max(100),
   deviceId: z.string().min(8).max(64),
@@ -54,7 +54,7 @@ export interface ModulePayload {
   index: number;
 }
 
-// The author's view of the students in a course.
+// The author's view of the students in a chapter.
 export interface StudentSummary {
   name: string;
   deviceId: string;

@@ -26,13 +26,13 @@ function d1(sql: string): Record<string, unknown>[] {
 
 const q = (v: string) => `'${v.replaceAll("'", "''")}'`;
 
-// Lesson id → its file under content/, from every course.json.
+// Lesson id → its file under content/, from every chapter.json.
 function lessonFiles(): Map<string, string> {
   const files = new Map<string, string>();
   for (const dir of readdirSync("content", { withFileTypes: true })) {
-    const coursePath = join("content", dir.name, "course.json");
-    if (!dir.isDirectory() || !existsSync(coursePath)) continue;
-    for (const entry of JSON.parse(readFileSync(coursePath, "utf8")).lessons as { file: string }[]) {
+    const chapterPath = join("content", dir.name, "chapter.json");
+    if (!dir.isDirectory() || !existsSync(chapterPath)) continue;
+    for (const entry of JSON.parse(readFileSync(chapterPath, "utf8")).lessons as { file: string }[]) {
       const path = join("content", dir.name, entry.file);
       if (existsSync(path)) files.set(JSON.parse(readFileSync(path, "utf8")).id, path);
     }

@@ -119,6 +119,36 @@ Build mode: learn (chosen Sep 25, 2026)
   Learner check: Open the course on the deployed link, then turn your wifi off. Reload, play to the end with at least one wrong answer, and turn wifi back on. Open the student view and find the events you made offline. (This is the check you asked about in `4-spec`.)
   Commit: `Offline play with queued events`
 
+- [ ] **9. Subjects above chapters, and authors can start them**
+  Becomes usable: The structure is subject → chapter → lesson → module, with "course" renamed to "chapter" everywhere (database, API, code, links). The home page shows a card per subject (plus Continue for a returning student); a subject's page shows its overview and a card per chapter with progress; chapters play at `/s/<subject>/<chapter>`. The author home groups chapters under subjects, with **New subject** (title, overview, learner brief from one of 8 presets or written) and **New chapter** (title, overview) buttons. The learner brief lives on the subject only; drafting reads it from there.
+  Why now: Isaac's verification (Oct 21): there was no way to add a course, OSTEP was missing from the home page, and a whole book didn't fit. The grill settled the structure; the restyle and the video both need it first.
+  PRD ref: `prd.md > Screens and Layout`, `prd.md > Course overview and progress`, `prd.md > Authoring session`
+  Spec ref: `spec.md > Data Model`, `spec.md > Components > Worker API`, `spec.md > Components > Player`, `spec.md > File Structure`
+  Build: Migration 0004 (subjects table with slug, title, overview, brief; courses renamed to chapters with subject_id and overview; course_id columns renamed chapter_id; the brief moved from chapters to subjects); the rename through types, routes, API paths and UI words; public `GET /api/subjects` and `GET /api/subjects/:slug`; author routes to create subjects and chapters; home, subject and author-home screens with cards; brief presets; import script and content folders updated (OpenIntro Statistics and Operating Systems: Three Easy Pieces).
+  Verify (mechanical): tests and type checks pass; the migration runs on a copy of the local database with all data kept (lessons, events, approvals, suggestions, spend); curl the new routes; in the browser, create a subject from a preset and a chapter under it, see both on the home and subject pages, and play an existing chapter at its new address.
+  Learner check: Create a subject from a preset and a chapter under it. Open the home page as a student and find both subjects; open one and its chapters. Say whether the structure matches how you think of a book.
+  Commit: `Subjects above chapters, with new subject and chapter buttons`
+
+- [ ] **10. The app looks warmer and clearer**
+  Becomes usable: Real buttons (primary, secondary, quiet) with hover, focus and pressed states; status badges that can't be mistaken for buttons; warm paper background with blue (light) and amber (dark) accents; Bright steps' playful buttons and banners; hints styled as margin notes; Lucide icons; the Detour logo recoloured blue and amber; small motion (a shake on a wrong answer, a tick on a right one, short transitions), off under reduced motion.
+  Why now: Isaac's verification: everything clickable was text, the badge and Review button looked alike, the home page had no identity. Picked in the grill: Bright steps' playfulness plus Primer paper's warmth and margin notes, keeping blue and amber.
+  PRD ref: `prd.md > Look and Feel`
+  Spec ref: `spec.md > Look and Feel`
+  Build: Component styles in `theme.css`, a small button and badge set, Lucide (`@lucide/svelte`, ISC), the logo SVG and favicon, restyled player and author screens; mocks in `devpost/ux/mocks/` as reference.
+  Verify (mechanical): type checks and build pass; screenshots of every screen in both looks at desktop and phone width with no overflow; reduced motion turns animation off.
+  Learner check: Walk through the student and author sides in light and dark. Say whether it now looks the way you want, and what still feels off.
+  Commit: `Warmer, clearer look with buttons, badges, icons and the logo`
+
+- [ ] **11. Review a lesson by playing it**
+  Becomes usable: The review screen opens in an interactive review mode (clearly framed): each module plays as the student sees it, a coach line walks the author through the right answer, then each anticipated wrong answer and its hint, then "any other answer"; a checklist ticks the paths tried; suggestions pin to parts from the margin; approving before every path is tried asks once. The all-branches view stays as a toggle.
+  Why now: Isaac's verification: the review was wordy and easy to glaze over; he wants the student experience while reviewing, with light animation.
+  PRD ref: `prd.md > Review and sign-off`
+  Spec ref: `spec.md > Components > Lesson review and sign-off`
+  Build: A review-mode player built on the existing check and fallback components, path tracking per module, the coach line, the margin suggestion buttons, the "approve anyway?" prompt, and the toggle; `devpost/ux/mocks/review-mode.html` as reference.
+  Verify (mechanical): tests for path tracking; in the browser, review a module by trying the right answer and each wrong answer, approve, and try approving early (asked once); the toggle shows the all-branches view.
+  Learner check: Review a lesson in review mode. Say whether it keeps your attention better than the old page, and whether anything feels slow.
+  Commit: `Review a lesson by playing it`
+
 - [ ] **8. Sorting and predict-then-simulate checks**
   Becomes usable: The player can show and grade "sort into categories" and "predict, then run the simulation." In the simulation check the student commits to a prediction, then draws many samples of size n and sees the p̂ values plotted. The tool can propose both types in a draft.
   Why now: These make the stats lesson feel like more than a quiz, but the loop is proven without them, so they come after the kernel and offline. They'd be the first thing to cut if time runs short.
@@ -193,3 +223,4 @@ Activity mode: [live app and editor, explicit static fallback, focused alternati
 - Slice 6 built on the review screen, not in a separate session screen (my call: the author already reads and suggests there, so applying, swapping and switching sit next to the parts they change). Any edit voids a sign-off and needs the step approved again; switches survive a revision and a swap. Verified: switch off and on, swap and swap back, a paid revise of the API draft's module 2 reading ($0.092, 32 s, only the reading changed, suggestion resolved with the cost in its note).
 - Total Claude spend in this session: about $1.44 (two schema probes $0.02, one tiny probe $0.045, one draft $1.28, one revise $0.09). In-app spend log (local): $1.37.
 - In-app drafts live in the database only, not in `content/` files: the local test draft (`openintro-sampling-5-1-point-estimates-and-sampling-variabi-394a13`) exists only in local D1, and drafts made on the live site live in the live database. An export to a content file is a possible later step if Isaac wants drafts in git.
+- Added slices 9 (subjects above chapters, "course" renamed "chapter" everywhere, New subject and New chapter, cards), 10 (warmer, clearer look) and 11 (review by playing) from Isaac's verification feedback and the Oct 21 grill. Order: 9, 10, 11, then video assets, then slice 8 (first to cut before Oct 26). Decided in the grill: the learner brief lives on the subject only; 8 brief presets fill an editable box; subjects and chapters get a student-facing overview; links `/s/<subject>/<chapter>` without redirects (nothing shared yet); the look is Bright steps' playfulness plus Primer paper's warm paper and margin notes, keeping blue and amber; the Detour logo; small motion; interactive review as the default with the all-branches view as a toggle; approving early asks once. My calls: no fourth font; review mode framed in its own colour (violet, per the research); suggestion buttons in each part's margin; a slim author top bar with the logo; Lucide icons.

@@ -20,10 +20,11 @@
 </script>
 
 <ul class="cards">
-  {#each chapters as c (c.slug)}
+  {#each chapters as c, i (c.slug)}
     {@const p = progress(c)}
     <li>
-      <a class="card" href="/s/{subjectSlug}/{c.slug}">
+      <a class="card chapter" href="/s/{subjectSlug}/{c.slug}">
+        <span class="label">Chapter {i + 1}</span>
         <span class="title">{c.title}</span>
         {#if c.overview}<span class="overview">{c.overview}</span>{/if}
         <span class="meta num">
@@ -39,31 +40,25 @@
   .cards {
     list-style: none;
     padding: 0;
-    margin: 1rem 0;
+    margin: 0.6rem 0 1rem;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
-    gap: 0.9rem;
+    gap: 1rem;
   }
-  .card {
+  .chapter {
     display: grid;
     gap: 0.4rem;
     height: 100%;
-    padding: 1rem 1.1rem;
-    background: var(--surface);
-    border: 2px solid transparent;
-    border-radius: var(--radius);
-    color: var(--text);
-    text-decoration: none;
-  }
-  .card:hover {
-    border-color: var(--hover-border);
+    padding: 1rem 1.1rem 1.1rem;
+    border-top: 4px solid var(--accent);
   }
   .title {
     font-weight: 700;
+    font-size: 1.05rem;
   }
   .overview {
     color: var(--text-2);
-    font-size: 0.92rem;
+    font-size: 0.9rem;
   }
   .meta {
     color: var(--text-2);
@@ -71,9 +66,9 @@
     margin-top: auto;
   }
   .bar {
-    height: 4px;
-    border-radius: 2px;
-    background: var(--border);
+    height: 5px;
+    border-radius: 3px;
+    background: var(--surface);
     overflow: hidden;
   }
   .bar span {

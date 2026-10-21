@@ -8,6 +8,8 @@
   import type { FallbackStep } from "../../shared/flow.ts";
   import { renderInline, renderReading } from "../lib/math.ts";
   import Select from "./checks/Select.svelte";
+  import Lightbulb from "@lucide/svelte/icons/lightbulb";
+  import Undo2 from "@lucide/svelte/icons/undo-2";
   import NumberInput from "./checks/NumberInput.svelte";
 
   let {
@@ -34,7 +36,8 @@
 </script>
 
 {#if !collapsed}
-  <aside class="fallback" in:fly={rise} out:slide={fold} use:arrive>
+  <aside class="fallback margin-note" in:fly={rise} out:slide={fold} use:arrive>
+    <span class="label hint"><Lightbulb size={14} aria-hidden="true" />Hint</span>
     <p class="lead">
       Not quite.
       {#if step.reason === "unplanned"}
@@ -59,16 +62,17 @@
         {/if}
       </div>
     {:else}
-      <button class="btn" onclick={onRetry}>Try the question again</button>
+      <button class="btn-secondary" onclick={onRetry}><Undo2 size={16} aria-hidden="true" />Try the question again</button>
     {/if}
   </aside>
 {:else}
   <div class="folded">
-    <button class="btn-quiet" onclick={() => (reopened = !reopened)} aria-expanded={reopened}>
+    <button class="btn-quiet btn-sm" onclick={() => (reopened = !reopened)} aria-expanded={reopened}>
+      <Lightbulb size={15} aria-hidden="true" />
       {reopened ? "Hide the hint" : "Show the hint again"}
     </button>
     {#if reopened}
-      <div class="fallback quiet" transition:slide={fold}>
+      <div class="fallback margin-note quiet" transition:slide={fold}>
         {#if step.reExplanation}
           <div class="text">{@html renderReading(step.reExplanation)}</div>
         {/if}
@@ -85,10 +89,13 @@
 <style>
   .fallback {
     margin-top: 1.25rem;
-    padding: 1rem 1.1rem 1.1rem;
-    background: var(--fallback-bg);
-    border-left: 3px solid var(--fallback-edge);
-    border-radius: var(--radius);
+    padding: 0.9rem 1.1rem 1.1rem;
+  }
+  .hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--fallback-edge);
   }
   .quiet {
     margin-top: 0.5rem;
@@ -111,7 +118,7 @@
   .simpler {
     margin-top: 0.75rem;
   }
-  .btn {
+  .btn-secondary {
     margin-top: 1rem;
   }
   .folded {

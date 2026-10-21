@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    .box { fill: #ffffff; stroke: #2563eb; }
+    .path { stroke: #2563eb; }
+    .goal { fill: #facc15; stroke: #2563eb; }
+    @media (prefers-color-scheme: dark) {
+      .box { fill: #1e1f23; stroke: #f2b84b; }
+      .path { stroke: #f2b84b; }
+      .goal { stroke: #f2b84b; fill: #f2b84b; }
+    }
+  </style>
+  <rect class="box" x="5" y="5" width="54" height="54" rx="16" stroke-width="4"/>
+  <path class="path" d="M13 42h38" stroke-width="6" stroke-linecap="round"/>
+  <path d="M21 42c2-15 19-15 21 0" fill="none" stroke="#e4a72e" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 7"/>
+  <circle class="goal" cx="51" cy="42" r="6" stroke-width="3"/>
+</svg>

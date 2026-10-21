@@ -6,8 +6,14 @@
   import { BRIEF_PRESETS } from "../../shared/briefPresets.ts";
   import { authorApi, ApiError } from "../lib/api.ts";
   import { navigate } from "../router.svelte.ts";
-  import ThemeSwitch from "../player/ThemeSwitch.svelte";
   import Mark from "./Mark.svelte";
+  import AuthorBar from "./AuthorBar.svelte";
+  import Plus from "@lucide/svelte/icons/plus";
+  import WandSparkles from "@lucide/svelte/icons/wand-sparkles";
+  import Users from "@lucide/svelte/icons/users";
+  import Eye from "@lucide/svelte/icons/eye";
+  import PenLine from "@lucide/svelte/icons/pen-line";
+  import BookOpen from "@lucide/svelte/icons/book-open";
 
   let { onLocked }: { onLocked: () => void } = $props();
 
@@ -85,20 +91,23 @@
   }
 </script>
 
+<AuthorBar />
 <main class="page wide">
   <div class="head">
-    <h1>Author</h1>
-    <ThemeSwitch />
+    <h1>Your subjects</h1>
+    {#if !newSubject}
+      <button class="btn" onclick={() => (newSubject = { title: "", overview: "", preset: "", brief: "" })}><Plus size={18} aria-hidden="true" />New subject</button>
+    {/if}
   </div>
   {#if budget}
     <p class="muted budget">
-      Claude this month: <span class="num">${budget.spentUsd.toFixed(2)}</span> of <span class="num">${budget.budgetUsd}</span> ({budget.model}){budget.hasKey ? "" : ", no API key on this server"}.
+      <WandSparkles size={14} aria-hidden="true" /> Claude this month: <span class="num">${budget.spentUsd.toFixed(2)}</span> of <span class="num">${budget.budgetUsd}</span> ({budget.model}){budget.hasKey ? "" : ", no API key on this server"}
     </p>
   {/if}
   {#if error}<p class="error">{error}</p>{/if}
 
   {#if newSubject}
-    <section class="form">
+    <section class="form card">
       <h2>New subject</h2>
       <p class="muted">A subject is usually a book; its chapters are its chapters, or single articles.</p>
       <label>Title <input type="text" bind:value={newSubject.title} placeholder="Operating Systems: Three Easy Pieces" /></label>
@@ -118,8 +127,6 @@
         <button class="btn-quiet" onclick={() => (newSubject = null)}>Cancel</button>
       </div>
     </section>
-  {:else}
-    <button class="btn new" onclick={() => (newSubject = { title: "", overview: "", preset: "", brief: "" })}>New subject</button>
   {/if}
 
   {#if !subjects}
@@ -128,10 +135,10 @@
     <p class="muted">No subjects yet. Start one with New subject.</p>
   {:else}
     {#each subjects as s (s.id || "loose")}
-      <section class="subject">
+      <section class="subject card">
         <div class="subject-head">
-          <h2>{s.title}</h2>
-          {#if s.id && !editing[s.id]}<button class="btn-quiet" onclick={() => startEdit(s)}>Edit overview and brief</button>{/if}
+          <h2><BookOpen size={20} aria-hidden="true" />{s.title}</h2>
+          {#if s.id && !editing[s.id]}<button class="btn-quiet btn-sm" onclick={() => startEdit(s)}><PenLine size={15} aria-hidden="true" />Edit overview and brief</button>{/if}
         </div>
 
         {#if s.id && editing[s.id]}
@@ -164,9 +171,9 @@
             <div class="chapter-head">
               <h3>{c.title}</h3>
               <span class="links">
-                <a href="/author/chapters/{c.id}/draft" onclick={(e) => go(e, `/author/chapters/${c.id}/draft`)}>Draft a lesson</a>
-                <a href="/author/chapters/{c.id}/students" onclick={(e) => go(e, `/author/chapters/${c.id}/students`)}>Students</a>
-                {#if s.slug}<a href="/s/{s.slug}/{c.slug}">Open as a student</a>{/if}
+                <a class="btn-secondary btn-sm" href="/author/chapters/{c.id}/draft" onclick={(e) => go(e, `/author/chapters/${c.id}/draft`)}><WandSparkles size={15} aria-hidden="true" />Draft a lesson</a>
+                <a class="btn-quiet btn-sm" href="/author/chapters/{c.id}/students" onclick={(e) => go(e, `/author/chapters/${c.id}/students`)}><Users size={15} aria-hidden="true" />Students</a>
+                {#if s.slug}<a class="btn-quiet btn-sm" href="/s/{s.slug}/{c.slug}"><Eye size={15} aria-hidden="true" />As a student</a>{/if}
               </span>
             </div>
             {#if c.overview}<p class="muted small">{c.overview}</p>{/if}
@@ -176,14 +183,18 @@
             </label>
             <ul>
               {#each c.lessons as lesson (lesson.id)}
-                <li>
-                  <a href="/author/lessons/{lesson.id}" onclick={(e) => go(e, `/author/lessons/${lesson.id}`)}>{lesson.title}</a>
-                  <span class="right-side">
-                    <Mark status={lesson.status} />
-                    <a class="review" href="/author/lessons/{lesson.id}" onclick={(e) => go(e, `/author/lessons/${lesson.id}`)}>
-                      {lesson.status === "reviewed" ? "View" : "Review"}
-                    </a>
+                <li class="lesson">
+                  <span class="lesson-title">
+                    <span>{lesson.title}</span>
+                    <Mark status={lesson.status} short />
                   </span>
+                  <a
+                    class={lesson.status === "reviewed" ? "btn-secondary btn-sm" : "btn btn-sm"}
+                    href="/author/lessons/{lesson.id}"
+                    onclick={(e) => go(e, `/author/lessons/${lesson.id}`)}
+                  >
+                    {lesson.status === "reviewed" ? "View" : "Review"}
+                  </a>
                 </li>
               {:else}
                 <li class="muted">No lessons yet: use Draft a lesson.</li>
@@ -204,7 +215,7 @@
               </div>
             </div>
           {:else}
-            <button class="btn-quiet add" onclick={() => (newChapter[s.id] = { title: "", overview: "" })}>+ New chapter</button>
+            <button class="btn-secondary btn-sm add" onclick={() => (newChapter[s.id] = { title: "", overview: "" })}><Plus size={15} aria-hidden="true" />New chapter</button>
           {/if}
         {/if}
       </section>
@@ -221,94 +232,94 @@
   .chapter-head {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
-    gap: 1rem;
+    align-items: center;
+    gap: 0.75rem;
     flex-wrap: wrap;
   }
-  .budget {
-    margin: 0.25rem 0 0;
-    font-size: 0.9rem;
+  .head h1 {
+    margin: 0.4rem 0;
   }
-  .new {
-    margin: 1rem 0 0.5rem;
+  .budget {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0.1rem 0 0;
+    font-size: 0.86rem;
   }
   .subject {
-    margin-top: 1.5rem;
-    padding: 1.1rem 1.2rem;
-    background: var(--surface);
-    border-radius: var(--radius);
+    margin-top: 1.4rem;
+    padding: 1.2rem 1.25rem 1.3rem;
   }
   h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     margin: 0;
     font-size: 1.2rem;
+  }
+  h2 :global(svg) {
+    color: var(--accent);
   }
   h3 {
     margin: 0;
     font-size: 1rem;
   }
   .brief {
-    font-size: 0.88rem;
+    font-size: 0.86rem;
     color: var(--text-2);
+    margin: 0.5rem 0 0;
   }
-  .label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+  .brief .label {
     margin-right: 0.35rem;
   }
   .chapter {
     margin-top: 1rem;
-    padding: 0.9rem 1rem;
+    padding: 0.95rem 1rem;
     background: var(--bg);
+    border: 1px solid var(--border);
     border-radius: var(--radius);
   }
   .small {
     font-size: 0.9rem;
-    margin: 0.3rem 0 0;
+    margin: 0.35rem 0 0;
   }
   .links {
     display: flex;
-    gap: 1rem;
+    gap: 0.35rem;
     flex-wrap: wrap;
-    font-size: 0.92rem;
-  }
-  a {
-    color: var(--accent);
   }
   .switch {
     display: flex;
     gap: 0.5rem;
     align-items: center;
-    margin: 0.6rem 0;
-    font-size: 0.9rem;
+    margin: 0.7rem 0 0.6rem;
+    font-size: 0.88rem;
+    font-weight: 400;
+    color: var(--text-2);
   }
   ul {
     list-style: none;
     padding: 0;
     margin: 0;
     display: grid;
-    gap: 0.5rem;
+    gap: 0.4rem;
   }
-  li {
+  .lesson {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 0.75rem;
-    flex-wrap: wrap;
+    padding: 0.55rem 0.7rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
   }
-  .right-side {
+  .lesson-title {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.75rem;
-  }
-  .review {
-    font-weight: 600;
-    font-size: 0.9rem;
-    padding: 0.2rem 0.7rem;
-    border: 1px solid var(--accent);
-    border-radius: var(--radius);
-    text-decoration: none;
+    gap: 0.25rem 0.6rem;
+    min-width: 0;
   }
   .add {
     margin-top: 0.9rem;
@@ -317,33 +328,21 @@
     display: grid;
     gap: 0.8rem;
     margin: 1rem 0;
-    padding: 1rem 1.1rem;
-    background: var(--surface);
-    border-radius: var(--radius);
+    padding: 1.1rem 1.2rem;
+  }
+  .form h2 {
+    font-size: 1.1rem;
   }
   .form.inner {
     background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
   }
   label {
     display: grid;
     gap: 0.3rem;
     font-weight: 600;
     font-size: 0.9rem;
-  }
-  .switch {
-    display: flex;
-    font-weight: 400;
-  }
-  textarea,
-  input[type="text"] {
-    font: inherit;
-    font-weight: 400;
-    color: var(--text);
-    background: var(--bg);
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    padding: 0.5rem 0.7rem;
-    width: 100%;
   }
   fieldset {
     border: 0;
@@ -364,22 +363,25 @@
   }
   .preset {
     font-size: 0.82rem;
-    padding: 0.25rem 0.7rem;
+    padding: 0.3rem 0.75rem;
     border-radius: 999px;
-    border: 1px solid var(--border);
-    background: var(--bg);
+    border: 1px solid var(--border-strong);
+    background: var(--card);
+    transition: border-color 120ms ease, background-color 120ms ease;
   }
   .preset:hover {
     border-color: var(--hover-border);
+    background: var(--accent-soft);
   }
   .preset.on {
     border-color: var(--accent);
+    background: var(--accent-soft);
     color: var(--accent);
     font-weight: 600;
   }
   .row {
     display: flex;
-    gap: 1rem;
+    gap: 0.6rem;
     align-items: center;
   }
   .error {

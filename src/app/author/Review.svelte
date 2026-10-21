@@ -7,8 +7,7 @@
   import { OUTCOMES_STEP, canApprove, reviewState, type Suggestion } from "../../shared/review.ts";
   import { authorApi, ApiError } from "../lib/api.ts";
   import { renderInline, renderReading } from "../lib/math.ts";
-  import { navigate } from "../router.svelte.ts";
-  import ThemeSwitch from "../player/ThemeSwitch.svelte";
+  import AuthorBar from "./AuthorBar.svelte";
   import Mark from "./Mark.svelte";
   import Part from "./Part.svelte";
 
@@ -96,10 +95,6 @@
   const setPart = (moduleId: string, which: number | "general", part: "reExplanation" | "simplerQuestion", enabled: boolean) =>
     run(() => authorApi.setPart(lessonId, moduleId, which, part, enabled));
 
-  function back(e: MouseEvent) {
-    e.preventDefault();
-    navigate("/author");
-  }
 
   const answerText = (c: Check | AlternativeCheck | SimpleCheck) =>
     c.type === "select"
@@ -171,10 +166,7 @@
   {/each}
 {/snippet}
 
-<div class="top">
-  <a href="/author" onclick={back}>All lessons</a>
-  <ThemeSwitch />
-</div>
+<AuthorBar back={{ href: "/author", label: "Your subjects" }} />
 
 <main class="page wide">
   {#if !lesson || !rs}
@@ -353,19 +345,8 @@
 </main>
 
 <style>
-  .top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 52rem;
-    margin: 0 auto;
-    padding: 0.9rem 16px 0;
-  }
   .wide {
     max-width: 52rem;
-  }
-  a {
-    color: var(--accent);
   }
   header h1 {
     margin-bottom: 0.35rem;

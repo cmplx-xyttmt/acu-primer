@@ -5,7 +5,9 @@
   import type { AuthorChapter, AuthorSubject } from "../../shared/lesson.ts";
   import { authorApi, streamDraft, ApiError } from "../lib/api.ts";
   import { navigate } from "../router.svelte.ts";
-  import ThemeSwitch from "../player/ThemeSwitch.svelte";
+  import AuthorBar from "./AuthorBar.svelte";
+  import FileUp from "@lucide/svelte/icons/file-up";
+  import WandSparkles from "@lucide/svelte/icons/wand-sparkles";
 
   let { chapterId, onLocked }: { chapterId: string; onLocked: () => void } = $props();
 
@@ -87,10 +89,7 @@
   };
 </script>
 
-<div class="top">
-  <a href="/author" onclick={(e) => go(e, "/author")}>All lessons</a>
-  <ThemeSwitch />
-</div>
+<AuthorBar back={{ href: "/author", label: "Your subjects" }} />
 
 <main class="page wide">
   <h1>Draft a lesson</h1>
@@ -127,7 +126,11 @@
     >
       <label>
         Book or reading (PDF, stays on this laptop)
-        <input type="file" accept="application/pdf" onchange={(e) => (file = (e.currentTarget as HTMLInputElement).files?.[0] ?? null)} />
+        <span class="picker">
+          <span class="btn-secondary btn-sm"><FileUp size={15} aria-hidden="true" />Choose PDF</span>
+          <span class="muted">{file ? `${file.name} (${Math.round(file.size / 1024)} KB)` : "No file chosen"}</span>
+          <input type="file" accept="application/pdf" onchange={(e) => (file = (e.currentTarget as HTMLInputElement).files?.[0] ?? null)} />
+        </span>
       </label>
       <label>
         Book title, as students should see it
@@ -141,7 +144,7 @@
         Section
         <input type="text" bind:value={section} placeholder="5.1 Point estimates and sampling variability" />
       </label>
-      <button class="btn" type="submit" disabled={!ready || (budget ? left <= 0 || !budget.hasKey : true)}>Draft</button>
+      <button class="btn" type="submit" disabled={!ready || (budget ? left <= 0 || !budget.hasKey : true)}><WandSparkles size={17} aria-hidden="true" />Draft</button>
     </form>
 
     {#if phase === "cutting"}<p class="muted">Cutting the pages…</p>{/if}
@@ -161,14 +164,6 @@
 </main>
 
 <style>
-  .top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 52rem;
-    margin: 0 auto;
-    padding: 0.9rem 16px 0;
-  }
   .wide {
     max-width: 52rem;
   }
@@ -198,9 +193,22 @@
     font-weight: 600;
     font-size: 0.92rem;
   }
-  input[type="file"] {
-    font: inherit;
+  .picker {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
     font-weight: 400;
+  }
+  .picker input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .picker:focus-within .btn-secondary {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
   .btn {
     justify-self: start;

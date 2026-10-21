@@ -67,6 +67,9 @@ To check early in the build (not verified in planning):
 - **Budget guard:** set a $20 monthly spend limit in the Anthropic Console before the first call.
 
 ## Look and Feel
+
+**Since slice 10 (Oct 22):** light mode is warm paper (`#fbf8f1`) with the blue accent, dark mode keeps Night desk's amber with the same warmth. Components in `src/app/theme.css`: `.btn` (primary, a Bright steps button that presses down), `.btn-secondary`, `.btn-quiet`, `.btn-sm`; `.badge` with `-draft`, `-done`, `-review` (tinted, never a pointer, so a status can't look like a button); `.card` (hover lift for links); `.banner` (a soft colour band heading each page); `.margin-note` (hints, with a dashed amber edge and a "Hint" label); `.label`; focus rings; disabled buttons flat grey. Icons from Lucide (`@lucide/svelte`, ISC), imported one by one. The logo is the Detour mark (`src/app/Logo.svelte`, `public/favicon.svg`), coloured by the theme. Motion: a shake on a wrong pick, a pop on a right one, plus the existing slides, all off under reduced motion. Authors get a slim top bar (`AuthorBar.svelte`). On phones (≤480px) top bars drop text labels for icons, so nothing scrolls sideways.
+
 From `prd.md > Look and Feel`. The mode follows the device setting (`prefers-color-scheme`) unless the student picks Light or Dark with the switch (`ThemeSwitch.svelte`, `src/app/lib/theme.ts`). The choice is saved in `localStorage` as `acu:theme` and sets `data-theme` on `<html>` before the first render.
 
 **Light mode, "Clean study"**

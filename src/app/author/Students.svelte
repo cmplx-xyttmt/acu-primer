@@ -3,7 +3,7 @@
   import type { StudentSummary } from "../../shared/events.ts";
   import { authorApi, ApiError } from "../lib/api.ts";
   import { navigate } from "../router.svelte.ts";
-  import ThemeSwitch from "../player/ThemeSwitch.svelte";
+  import AuthorBar from "./AuthorBar.svelte";
 
   let { chapterId, onLocked }: { chapterId: string; onLocked: () => void } = $props();
 
@@ -25,10 +25,7 @@
   const when = (iso: string) => new Date(iso).toLocaleString();
 </script>
 
-<div class="top">
-  <a href="/author" onclick={(e) => go(e, "/author")}>All lessons</a>
-  <ThemeSwitch />
-</div>
+<AuthorBar back={{ href: "/author", label: "Your subjects" }} />
 <main class="page wide">
   <h1>Students</h1>
   <p class="muted">Everyone who has opened this chapter, by the name they typed. The same name on two devices shows twice.</p>
@@ -56,14 +53,6 @@
 </main>
 
 <style>
-  .top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 52rem;
-    margin: 0 auto;
-    padding: 0.9rem 16px 0;
-  }
   .wide {
     max-width: 52rem;
   }

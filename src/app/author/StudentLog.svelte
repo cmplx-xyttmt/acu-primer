@@ -5,7 +5,7 @@
   import { authorApi, ApiError, type LoggedEvent } from "../lib/api.ts";
   import { renderInline } from "../lib/math.ts";
   import { navigate } from "../router.svelte.ts";
-  import ThemeSwitch from "../player/ThemeSwitch.svelte";
+  import AuthorBar from "./AuthorBar.svelte";
 
   let { chapterId, name, device, onLocked }: { chapterId: string; name: string; device: string; onLocked: () => void } =
     $props();
@@ -38,10 +38,7 @@
     p.level === "retry" ? " (second try)" : p.level === "simpler" ? " (simpler question)" : "";
 </script>
 
-<div class="top">
-  <a href="/author/chapters/{chapterId}/students" onclick={(e) => go(e, `/author/chapters/${chapterId}/students`)}>All students</a>
-  <ThemeSwitch />
-</div>
+<AuthorBar back={{ href: `/author/chapters/${chapterId}/students`, label: "All students" }} />
 <main class="page wide">
   <h1>{name}</h1>
   <p class="muted">Device <span class="num">{device.slice(0, 8)}</span>. Times are from the student's device.</p>
@@ -86,19 +83,8 @@
 </main>
 
 <style>
-  .top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 52rem;
-    margin: 0 auto;
-    padding: 0.9rem 16px 0;
-  }
   .wide {
     max-width: 52rem;
-  }
-  a {
-    color: var(--accent);
   }
   .log {
     list-style: none;

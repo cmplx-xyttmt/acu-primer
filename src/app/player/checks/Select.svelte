@@ -2,6 +2,8 @@
   import type { Answer } from "../../../shared/grading.ts";
   import type { Check, SimpleCheck } from "../../../shared/lesson.ts";
   import { renderInline } from "../../lib/math.ts";
+  import CircleCheck from "@lucide/svelte/icons/circle-check";
+  import CircleX from "@lucide/svelte/icons/circle-x";
 
   type SelectCheck = Extract<Check | SimpleCheck, { type: "select" }>;
   let {
@@ -25,12 +27,15 @@
       class:picked={picked === option.id}
       class:right={picked === option.id && mark === "right"}
       class:wrong={picked === option.id && mark === "wrong"}
+      class:shake={picked === option.id && mark === "wrong"}
       role="radio"
       aria-checked={picked === option.id}
       disabled={locked}
       onclick={() => (picked = option.id)}
     >
-      {@html renderInline(option.text)}
+      <span class="text">{@html renderInline(option.text)}</span>
+      {#if picked === option.id && mark === "right"}<span class="icon pop"><CircleCheck size={20} aria-hidden="true" /></span>{/if}
+      {#if picked === option.id && mark === "wrong"}<span class="icon"><CircleX size={20} aria-hidden="true" /></span>{/if}
     </button>
   {/each}
 </div>
@@ -50,17 +55,38 @@
     margin: 1rem 0 1.25rem;
   }
   .option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
     text-align: left;
-    background: var(--surface);
+    background: var(--card);
     border: 2px solid var(--border);
     border-radius: var(--radius);
-    padding: 0.75rem 1rem;
+    padding: 0.8rem 1rem;
+    box-shadow: 0 2px 0 var(--border);
+    transition: border-color 120ms ease, background-color 120ms ease, transform 80ms ease;
   }
   .option:hover:not(:disabled) {
     border-color: var(--hover-border);
+    background: var(--accent-soft);
+  }
+  .option:active:not(:disabled) {
+    transform: translateY(1px);
   }
   .option.picked {
     border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .icon {
+    display: inline-flex;
+    flex: none;
+  }
+  .option.right .icon {
+    color: var(--right);
+  }
+  .option.wrong .icon {
+    color: var(--wrong);
   }
   .option:disabled {
     cursor: default;

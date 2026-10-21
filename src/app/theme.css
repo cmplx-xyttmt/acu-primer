@@ -1,49 +1,86 @@
-/* Colors, fonts and motion for both modes (spec.md > Look and Feel).
-   Every component uses these names. The mode follows the device setting. */
+/* Colors, fonts, components and motion for both modes (spec.md > Look and Feel).
+   Every component uses these names. The mode follows the device setting unless the student
+   picks one with the switch (data-theme on <html>, set by src/app/lib/theme.ts).
+   Slice 10 (Oct 22): warm paper with blue in light mode, Night desk with amber in dark;
+   Bright steps' pressable buttons and banners; hints as margin notes; a small set of motion. */
 
 :root {
-  /* Light: "Clean study" */
-  --bg: #ffffff;
-  --surface: #f3f4f6;
-  --border: #e5e7eb;
-  --text: #111827;
-  --text-2: #6b7280;
+  /* Light: "Clean study" on warm paper (slice 10). */
+  --bg: #fbf8f1;
+  --card: #ffffff;
+  --surface: #f3efe4;
+  --border: #e7e0cf;
+  --border-strong: #d8cfb8;
+  --text: #1f2430;
+  --text-2: #6d6a62;
   --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-press: #1e40af;
   --accent-text: #ffffff;
+  --accent-soft: #e9f0fe;
   --hover-border: #93b4f5;
-  --fallback-bg: #eff4ff;
-  --fallback-edge: transparent;
+  --sun: #facc15;
+  --banner: linear-gradient(135deg, #e9f0fe 0%, #fdf3d7 100%);
+  --fallback-bg: #fffaf0;
+  --fallback-edge: #e4a72e;
   --right: #15803d;
   --right-bg: #ecfdf3;
   --wrong: #b91c1c;
   --wrong-bg: #fef2f2;
-  --radius: 12px;
+  --draft: #92400e;
+  --draft-bg: #fef3c7;
+  --done: #166534;
+  --done-bg: #dcfce7;
+  --review: #6d28d9;
+  --review-bg: #f5f3ff;
+  --review-edge: #8b5cf6;
+  --shadow: 0 1px 2px rgb(60 50 30 / 0.06), 0 4px 14px -6px rgb(60 50 30 / 0.14);
+  --shadow-lift: 0 2px 4px rgb(60 50 30 / 0.06), 0 14px 30px -12px rgb(60 50 30 / 0.26);
+  --radius: 14px;
+  --radius-sm: 9px;
   --font: "Plus Jakarta Sans", system-ui, sans-serif;
   --font-num: "Plus Jakarta Sans", system-ui, sans-serif;
   --move: 180ms;
   --rise: 200ms;
 }
 
-/* Dark: "Night desk". Applies when the device is dark and the student hasn't picked light,
-   or when the student picked dark (data-theme is set by src/app/lib/theme.ts). The two blocks
-   hold the same values; CSS can't share one block between a media query and a selector. */
+/* The two dark blocks hold the same values; CSS can't share one block between a media query
+   and a selector. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #14161a;
-    --surface: #1c1f24;
-    --border: #33373e;
-    --text: #e6e3dc;
-    --text-2: #9b978f;
+    /* Dark: "Night desk", amber, with the same warmth (slice 10). */
+    --bg: #151517;
+    --card: #1e1f23;
+    --surface: #24252a;
+    --border: #35363c;
+    --border-strong: #4a4b52;
+    --text: #e8e4dc;
+    --text-2: #a09b92;
     --accent: #f2b84b;
-    --accent-text: #14161a;
+    --accent-hover: #f6c76d;
+    --accent-press: #d99a2b;
+    --accent-text: #17150f;
+    --accent-soft: #2c2617;
     --hover-border: #f2b84b;
-    --fallback-bg: #221e14;
+    --sun: #f2b84b;
+    --banner: linear-gradient(135deg, #2c2617 0%, #1e1f23 100%);
+    --fallback-bg: #211d14;
     --fallback-edge: #f2b84b;
     --right: #7fc28e;
     --right-bg: #18261c;
     --wrong: #f0a39b;
     --wrong-bg: #2b1a18;
-    --radius: 6px;
+    --draft: #f3b98f;
+    --draft-bg: #2f2016;
+    --done: #8fd3a0;
+    --done-bg: #183020;
+    --review: #c4b5fd;
+    --review-bg: #221d33;
+    --review-edge: #a78bfa;
+    --shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 6px 18px -10px rgb(0 0 0 / 0.7);
+    --shadow-lift: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 14px 30px -12px rgb(0 0 0 / 0.85);
+    --radius: 9px;
+    --radius-sm: 6px;
     --font: "IBM Plex Sans", system-ui, sans-serif;
     --font-num: "IBM Plex Mono", ui-monospace, monospace;
     color-scheme: dark;
@@ -51,21 +88,39 @@
 }
 
 :root[data-theme="dark"] {
-  --bg: #14161a;
-  --surface: #1c1f24;
-  --border: #33373e;
-  --text: #e6e3dc;
-  --text-2: #9b978f;
+  /* Dark: "Night desk", amber, with the same warmth (slice 10). */
+  --bg: #151517;
+  --card: #1e1f23;
+  --surface: #24252a;
+  --border: #35363c;
+  --border-strong: #4a4b52;
+  --text: #e8e4dc;
+  --text-2: #a09b92;
   --accent: #f2b84b;
-  --accent-text: #14161a;
+  --accent-hover: #f6c76d;
+  --accent-press: #d99a2b;
+  --accent-text: #17150f;
+  --accent-soft: #2c2617;
   --hover-border: #f2b84b;
-  --fallback-bg: #221e14;
+  --sun: #f2b84b;
+  --banner: linear-gradient(135deg, #2c2617 0%, #1e1f23 100%);
+  --fallback-bg: #211d14;
   --fallback-edge: #f2b84b;
   --right: #7fc28e;
   --right-bg: #18261c;
   --wrong: #f0a39b;
   --wrong-bg: #2b1a18;
-  --radius: 6px;
+  --draft: #f3b98f;
+  --draft-bg: #2f2016;
+  --done: #8fd3a0;
+  --done-bg: #183020;
+  --review: #c4b5fd;
+  --review-bg: #221d33;
+  --review-edge: #a78bfa;
+  --shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 6px 18px -10px rgb(0 0 0 / 0.7);
+  --shadow-lift: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 14px 30px -12px rgb(0 0 0 / 0.85);
+  --radius: 9px;
+  --radius-sm: 6px;
   --font: "IBM Plex Sans", system-ui, sans-serif;
   --font-num: "IBM Plex Mono", ui-monospace, monospace;
   color-scheme: dark;
@@ -79,6 +134,12 @@
   :root {
     --move: 0ms;
     --rise: 0ms;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
@@ -104,6 +165,12 @@ h2,
 h3 {
   line-height: 1.25;
   font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 3px;
 }
 
 .num {
@@ -117,49 +184,197 @@ button {
   cursor: pointer;
 }
 
-.btn {
-  display: inline-block;
-  background: var(--accent);
-  color: var(--accent-text);
-  border: 0;
-  border-radius: var(--radius);
-  padding: 0.7rem 1.4rem;
-  font-weight: 600;
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
-.btn:disabled {
-  opacity: 0.45;
-  cursor: default;
+/* --- Buttons: primary (pressable), secondary, quiet. Links styled as buttons share them. --- */
+
+.btn,
+.btn-secondary,
+.btn-quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.2;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 80ms ease, color 120ms ease;
+}
+
+/* Primary: Bright steps' chunky button that presses down. */
+.btn {
+  background: var(--accent);
+  color: var(--accent-text);
+  padding: 0.7rem 1.3rem;
+  box-shadow: 0 3px 0 var(--accent-press);
+  margin-bottom: 3px;
+}
+.btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 0 0 var(--accent-press);
+}
+
+.btn-secondary {
+  background: var(--card);
+  color: var(--text);
+  border-color: var(--border-strong);
+  padding: 0.6rem 1.05rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+}
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--hover-border);
+  background: var(--accent-soft);
+}
+.btn-secondary:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .btn-quiet {
-  background: none;
-  border: 0;
+  background: transparent;
   color: var(--text-2);
-  padding: 0;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  padding: 0.45rem 0.6rem;
+}
+.btn-quiet:hover:not(:disabled) {
+  background: var(--surface);
+  color: var(--text);
 }
 
-input[type="text"] {
+.btn-sm {
+  font-size: 0.86rem;
+  padding: 0.38rem 0.75rem;
+  border-radius: var(--radius-sm);
+}
+.btn.btn-sm {
+  box-shadow: 0 2px 0 var(--accent-press);
+  margin-bottom: 2px;
+}
+
+/* Disabled: grey, flat, and clearly not clickable (never a muddy accent). */
+.btn:disabled,
+.btn-secondary:disabled,
+.btn-quiet:disabled {
+  background: var(--surface);
+  color: var(--text-2);
+  border-color: var(--border);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* --- Badges: small, tinted, never underlined, never a pointer. Can't be mistaken for a button. --- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  cursor: default;
+  user-select: none;
+  background: var(--surface);
+  color: var(--text-2);
+}
+.badge-draft {
+  background: var(--draft-bg);
+  color: var(--draft);
+}
+.badge-done {
+  background: var(--done-bg);
+  color: var(--done);
+}
+.badge-review {
+  background: var(--review-bg);
+  color: var(--review);
+}
+
+/* --- Cards and banners --- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+a.card {
+  color: var(--text);
+  text-decoration: none;
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+a.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift);
+  border-color: var(--hover-border);
+}
+
+/* Bright steps' banner: a soft colour band at the top of a page. */
+.banner {
+  background: var(--banner);
+  border-radius: var(--radius);
+  padding: 1.3rem 1.4rem;
+  margin: 1rem 0 1.25rem;
+}
+.banner h1 {
+  margin: 0.2rem 0 0.3rem;
+}
+
+/* Small uppercase labels ("LESSON 2 OF 4"). */
+.label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+/* Primer paper's margin note: hints look like a note pencilled beside the page. */
+.margin-note {
+  background: var(--fallback-bg);
+  border-left: 3px dashed var(--fallback-edge);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+/* --- Forms --- */
+
+input[type="text"],
+input[type="password"],
+textarea {
   font: inherit;
   color: var(--text);
-  background: var(--surface);
+  background: var(--card);
   border: 2px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.65rem 0.9rem;
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.85rem;
   width: 100%;
+  transition: border-color 120ms ease;
 }
-
-input[type="text"]:focus {
+input[type="text"]:focus,
+input[type="password"]:focus,
+textarea:focus {
   outline: none;
   border-color: var(--accent);
 }
 
+/* --- Layout --- */
+
 .page {
   max-width: 40rem;
   margin: 0 auto;
-  padding: 2rem 16px 4rem;
+  padding: 1.5rem 16px 4rem;
 }
 
 .muted {
@@ -168,4 +383,24 @@ input[type="text"]:focus {
 
 .katex {
   font-size: 1.05em;
+}
+
+/* --- Motion (the small set): a shake for a wrong pick, a pop for a right one. --- */
+
+@keyframes acu-shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(3px); }
+  30%, 50%, 70% { transform: translateX(-5px); }
+  40%, 60% { transform: translateX(5px); }
+}
+@keyframes acu-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.12); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.shake {
+  animation: acu-shake 320ms ease-in-out;
+}
+.pop {
+  animation: acu-pop 260ms ease-out;
 }

@@ -10,6 +10,12 @@
   import NumberInput from "./checks/NumberInput.svelte";
   import ThemeSwitch from "./ThemeSwitch.svelte";
   import Fallback from "./Fallback.svelte";
+  import ArrowLeft from "@lucide/svelte/icons/arrow-left";
+  import ArrowRight from "@lucide/svelte/icons/arrow-right";
+  import List from "@lucide/svelte/icons/list";
+  import X from "@lucide/svelte/icons/x";
+  import CircleCheck from "@lucide/svelte/icons/circle-check";
+  import Undo2 from "@lucide/svelte/icons/undo-2";
   import LessonOutline from "./LessonOutline.svelte";
   import { record } from "../lib/eventQueue.ts";
   import type { AnsweredPayload, FallbackPayload } from "../../shared/events.ts";
@@ -155,11 +161,11 @@
 
 <div class="top">
   <span class="left-side">
-    <button class="btn-quiet" onclick={onExit}>Overview</button>
-    <button class="btn-quiet" onclick={() => contents?.showModal()}>Contents</button>
+    <button class="btn-quiet btn-sm" aria-label="Overview" onclick={onExit}><ArrowLeft size={16} aria-hidden="true" /><span class="wide-only">Overview</span></button>
+    <button class="btn-quiet btn-sm" aria-label="Contents" onclick={() => contents?.showModal()}><List size={16} aria-hidden="true" /><span class="wide-only">Contents</span></button>
   </span>
   <span class="right-side">
-    <span class="num count">{index + 1} / {total}</span>
+    <span class="num count"><span class="wide-only">Module </span>{index + 1}<span class="wide-only"> of </span><span class="narrow-only"> / </span>{total}</span>
     <ThemeSwitch />
   </span>
 </div>
@@ -173,7 +179,7 @@
 >
   <div class="contents-head">
     <strong>{lesson.title}</strong>
-    <button class="btn-quiet" onclick={() => contents?.close()}>Close</button>
+    <button class="btn-quiet btn-sm" onclick={() => contents?.close()}><X size={16} aria-hidden="true" />Close</button>
   </div>
   <LessonOutline
     {lesson}
@@ -212,19 +218,19 @@
                   : "Now try the original question again."}
             </p>
           {:else if end === "right"}
-            <p class="feedback right">Right.</p>
+            <p class="feedback right"><span class="pop"><CircleCheck size={22} aria-hidden="true" /></span>Right.</p>
             <div class="explanation">{@html renderReading(mod.check.explanation)}</div>
           {:else if end === "saved"}
-            <p class="feedback muted">You've already done this one.</p>
+            <p class="feedback muted"><CircleCheck size={20} aria-hidden="true" />You've already done this one.</p>
             <div class="explanation">{@html renderReading(mod.check.explanation)}</div>
           {:else if end === "material"}
-            <div class="material">
+            <div class="material card">
               <p>
                 Still not quite, and that was the last hint for this question. It's worth going back through
                 the material more carefully (Back takes you to earlier modules). Then try again, or skip it
                 for now and come back to it later.
               </p>
-              <button class="btn" onclick={retryAfterLastHint}>Try again</button>
+              <button class="btn-secondary" onclick={retryAfterLastHint}><Undo2 size={16} aria-hidden="true" />Try again</button>
             </div>
           {/if}
 
@@ -240,11 +246,11 @@
       {/if}
 
       <div class="moves">
-        <button class="btn-quiet" onclick={onBack}>Back</button>
+        <button class="btn-quiet" onclick={onBack}><ArrowLeft size={16} aria-hidden="true" />Back</button>
         {#if canMoveOn}
-          <button class="btn" onclick={onNext}>{index + 1 >= total ? "Finish lesson" : "Continue"}</button>
+          <button class="btn" onclick={onNext}>{index + 1 >= total ? "Finish lesson" : "Continue"}<ArrowRight size={17} aria-hidden="true" /></button>
         {:else if end === "material"}
-          <button class="btn-quiet" onclick={onSkip}>Skip for now</button>
+          <button class="btn-secondary" onclick={onSkip}>Skip for now<ArrowRight size={16} aria-hidden="true" /></button>
         {/if}
       </div>
     </article>
@@ -260,13 +266,24 @@
     margin: 0 auto;
     padding: 0.9rem 16px 0.5rem;
   }
+  .narrow-only {
+    display: none;
+  }
+  @media (max-width: 480px) {
+    .wide-only {
+      display: none;
+    }
+    .narrow-only {
+      display: inline;
+    }
+  }
   .count {
     color: var(--text-2);
     font-size: 0.9rem;
   }
   .bar {
-    height: 3px;
-    background: var(--border);
+    height: 6px;
+    background: var(--surface);
   }
   .bar span {
     display: block;
@@ -285,8 +302,14 @@
     margin-top: 2rem;
   }
   .feedback {
-    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-weight: 700;
     margin: 1rem 0 0;
+  }
+  .feedback .pop {
+    display: inline-flex;
   }
   .right {
     color: var(--right);
@@ -299,9 +322,7 @@
   }
   .material {
     margin: 1.25rem 0 0;
-    padding: 0.9rem 1.1rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+    padding: 1rem 1.1rem;
     color: var(--text-2);
   }
   .moves {

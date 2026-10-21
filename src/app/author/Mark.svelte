@@ -1,26 +1,14 @@
 <script lang="ts">
-  // The review mark every lesson carries on the author side.
+  // The review mark every lesson carries on the author side: a badge (tinted, not pressable),
+  // never styled like the Review button next to it.
+  import BadgeCheck from "@lucide/svelte/icons/badge-check";
+  import CircleDashed from "@lucide/svelte/icons/circle-dashed";
   import type { LessonStatus } from "../../shared/lesson.ts";
-  let { status }: { status: LessonStatus } = $props();
+  let { status, short = false }: { status: LessonStatus; short?: boolean } = $props();
 </script>
 
-<span class="mark" class:reviewed={status === "reviewed"}>
-  {status === "reviewed" ? "Reviewed by a person" : "Written by the model, not yet reviewed"}
-</span>
-
-<style>
-  .mark {
-    display: inline-block;
-    font-size: 0.78rem;
-    font-weight: 600;
-    padding: 0.1rem 0.55rem;
-    border-radius: 999px;
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    white-space: nowrap;
-  }
-  .mark.reviewed {
-    border-color: var(--right);
-    color: var(--right);
-  }
-</style>
+{#if status === "reviewed"}
+  <span class="badge badge-done"><BadgeCheck size={14} aria-hidden="true" />{short ? "Reviewed" : "Reviewed by a person"}</span>
+{:else}
+  <span class="badge badge-draft"><CircleDashed size={14} aria-hidden="true" />{short ? "Draft" : "Written by the model, not yet reviewed"}</span>
+{/if}

@@ -1,9 +1,15 @@
 <script lang="ts">
-  // The home page: a card per subject, and Continue for whatever this browser played last.
+  // The home page: who acu-primer is, Continue for whatever this browser played last, and a
+  // card per subject.
   import type { SubjectCard } from "../../shared/lesson.ts";
   import { fetchSubjects } from "../lib/api.ts";
   import { lastPlayed } from "../lib/lastPlayed.ts";
+  import Logo from "../Logo.svelte";
   import ThemeSwitch from "./ThemeSwitch.svelte";
+  import BookOpen from "@lucide/svelte/icons/book-open";
+  import Play from "@lucide/svelte/icons/play";
+  import ChevronRight from "@lucide/svelte/icons/chevron-right";
+  import PenLine from "@lucide/svelte/icons/pen-line";
 
   let subjects = $state<SubjectCard[] | null>(null);
   let error = $state("");
@@ -11,18 +17,32 @@
   const last = lastPlayed();
 </script>
 
-<div class="corner"><ThemeSwitch /></div>
+<div class="topbar">
+  <Logo size={26} />
+  <ThemeSwitch />
+</div>
+
 <main class="page wide">
-  <h1>acu-primer</h1>
-  <p class="muted lede">Short, interactive lessons that change course when you get something wrong, written with a person checking every one.</p>
+  <section class="hero banner">
+    <Logo size={64} wordmark={false} />
+    <div>
+      <h1>Lessons that help when you get it wrong</h1>
+      <p class="muted">Short, interactive lessons from real books. A wrong answer gets a hint aimed at the mistake, not a red X, and a person checks every lesson before you see it.</p>
+    </div>
+  </section>
 
   {#if last}
-    <a class="continue" href="/s/{last.subjectSlug}/{last.chapterSlug}">
-      <span class="muted">Continue</span>
-      <strong>{last.chapterTitle}</strong>
+    <a class="continue card" href="/s/{last.subjectSlug}/{last.chapterSlug}">
+      <span class="play"><Play size={18} aria-hidden="true" /></span>
+      <span>
+        <span class="label">Continue</span>
+        <strong>{last.chapterTitle}</strong>
+      </span>
+      <ChevronRight size={20} aria-hidden="true" />
     </a>
   {/if}
 
+  <h2>Subjects</h2>
   {#if error}<p class="muted">{error}</p>{/if}
   {#if subjects}
     {#if subjects.length === 0}
@@ -31,10 +51,13 @@
       <ul class="cards">
         {#each subjects as s (s.slug)}
           <li>
-            <a class="card" href="/s/{s.slug}">
-              <span class="title">{s.title}</span>
-              {#if s.overview}<span class="overview">{s.overview}</span>{/if}
-              <span class="meta">{s.chapters.length} chapter{s.chapters.length === 1 ? "" : "s"}</span>
+            <a class="card subject" href="/s/{s.slug}">
+              <span class="band"><BookOpen size={22} aria-hidden="true" /></span>
+              <span class="body">
+                <span class="title">{s.title}</span>
+                {#if s.overview}<span class="overview">{s.overview}</span>{/if}
+                <span class="badge">{s.chapters.length} chapter{s.chapters.length === 1 ? "" : "s"}</span>
+              </span>
             </a>
           </li>
         {/each}
@@ -42,74 +65,103 @@
     {/if}
   {/if}
 
-  <p class="muted author">Writing or reviewing lessons? <a href="/author">Author side</a></p>
+  <p class="author"><a class="btn-quiet btn-sm" href="/author"><PenLine size={15} aria-hidden="true" />Writing or reviewing lessons? Author side</a></p>
 </main>
 
 <style>
-  .corner {
-    display: flex;
-    justify-content: flex-end;
+  .topbar {
     max-width: 52rem;
     margin: 0 auto;
-    padding: 0.9rem 16px 0;
+    padding: 0.8rem 16px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
   .wide {
     max-width: 52rem;
   }
-  .lede {
+  .hero {
+    display: flex;
+    gap: 1.2rem;
+    align-items: center;
+    padding: 1.6rem 1.5rem;
+  }
+  .hero h1 {
+    margin: 0 0 0.4rem;
+    font-size: 1.6rem;
+  }
+  .hero p {
+    margin: 0;
     max-width: 34rem;
   }
   .continue {
     display: grid;
-    gap: 0.15rem;
-    margin: 1.25rem 0 0.5rem;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.9rem;
     padding: 0.9rem 1.1rem;
-    border-radius: var(--radius);
-    background: var(--fallback-bg);
-    border-left: 4px solid var(--accent);
-    color: var(--text);
-    text-decoration: none;
+    margin-bottom: 1.5rem;
+  }
+  .continue span {
+    display: grid;
+  }
+  .play {
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--accent-text);
+  }
+  h2 {
+    font-size: 1.15rem;
+    margin: 1.4rem 0 0.6rem;
   }
   .cards {
     list-style: none;
     padding: 0;
-    margin: 1.25rem 0;
+    margin: 0;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
-    gap: 0.9rem;
+    gap: 1rem;
   }
-  .card {
+  .subject {
     display: grid;
-    gap: 0.4rem;
     height: 100%;
-    padding: 1.1rem 1.2rem;
-    background: var(--surface);
-    border: 2px solid transparent;
-    border-radius: var(--radius);
-    color: var(--text);
-    text-decoration: none;
+    overflow: hidden;
   }
-  .card:hover {
-    border-color: var(--hover-border);
+  .band {
+    display: flex;
+    align-items: center;
+    padding: 0.9rem 1.1rem;
+    background: var(--banner);
+    color: var(--accent);
+  }
+  .body {
+    display: grid;
+    align-content: start;
+    gap: 0.45rem;
+    padding: 0.9rem 1.1rem 1.1rem;
   }
   .title {
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.08rem;
   }
   .overview {
     color: var(--text-2);
-    font-size: 0.92rem;
+    font-size: 0.9rem;
   }
-  .meta {
-    color: var(--text-2);
-    font-size: 0.82rem;
-    margin-top: auto;
+  .body .badge {
+    justify-self: start;
   }
   .author {
     margin-top: 2.5rem;
-    font-size: 0.9rem;
   }
-  a {
-    color: var(--accent);
+  @media (max-width: 560px) {
+    .hero {
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
 </style>

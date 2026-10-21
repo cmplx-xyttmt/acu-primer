@@ -4,6 +4,7 @@
   import type { SubjectCard } from "../../shared/lesson.ts";
   import { fetchSubjects } from "../lib/api.ts";
   import { lastPlayed } from "../lib/lastPlayed.ts";
+  import { lastName } from "../lib/progress.ts";
   import Logo from "../Logo.svelte";
   import ThemeSwitch from "./ThemeSwitch.svelte";
   import BookOpen from "@lucide/svelte/icons/book-open";
@@ -15,6 +16,7 @@
   let error = $state("");
   fetchSubjects().then((s) => (subjects = s), (e) => (error = e.message));
   const last = lastPlayed();
+  const who = lastName();
 </script>
 
 <div class="topbar">
@@ -26,8 +28,8 @@
   <section class="hero banner">
     <Logo size={64} wordmark={false} />
     <div>
-      <h1>Lessons that help when you get it wrong</h1>
-      <p class="muted">Short, interactive lessons from real books. A wrong answer gets a hint aimed at the mistake, not a red X, and a person checks every lesson before you see it.</p>
+      <h1>acu-primer</h1>
+      <p class="muted">Short lessons made from real books. A wrong answer gets a hint aimed at the mistake, and a person checks every lesson before students see it.</p>
     </div>
   </section>
 
@@ -35,7 +37,7 @@
     <a class="continue card" href="/s/{last.subjectSlug}/{last.chapterSlug}">
       <span class="play"><Play size={18} aria-hidden="true" /></span>
       <span>
-        <span class="label">Continue</span>
+        <span class="label">Continue{who ? ` as ${who}` : ""}</span>
         <strong>{last.chapterTitle}</strong>
       </span>
       <ChevronRight size={20} aria-hidden="true" />

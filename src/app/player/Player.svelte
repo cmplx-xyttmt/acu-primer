@@ -16,6 +16,7 @@
     isComplete,
     resumeIndex,
     rememberName,
+    lastName,
     type ChapterProgress,
     type LessonProgress,
   } from "../lib/progress.ts";
@@ -41,7 +42,13 @@
 
   // svelte-ignore state_referenced_locally (App.svelte re-creates Player when the slug changes)
   fetchChapter(slug).then(
-    (chapter) => (data = chapter),
+    (chapter) => {
+      data = chapter;
+      // A name typed on this device before: go straight in. The name screen is only for a
+      // first visit, or after "Not you?" on the overview.
+      const saved = lastName();
+      if (saved) start(saved);
+    },
     (err) =>
       (loadError =
         err instanceof ApiError && err.status === OFFLINE

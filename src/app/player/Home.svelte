@@ -54,7 +54,7 @@
     <Logo size={64} wordmark={false} />
     <div>
       <h1>acu-primer</h1>
-      <p class="muted">Short, interactive lessons designed to help you grasp concepts faster. Study subjects curated by instructors, or create your own.</p>
+      <p class="muted">Short, interactive lessons designed to help you grasp concepts faster. Study subjects curated by instructors, or create your own interactive courses quickly using AI.</p>
     </div>
   </section>
 

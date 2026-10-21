@@ -4,7 +4,7 @@
   import type { SubjectCard } from "../../shared/lesson.ts";
   import { fetchSubjects } from "../lib/api.ts";
   import { lastPlayed } from "../lib/lastPlayed.ts";
-  import { lastName } from "../lib/progress.ts";
+  import { lastName, rememberName } from "../lib/progress.ts";
   import Logo from "../Logo.svelte";
   import ThemeSwitch from "./ThemeSwitch.svelte";
   import BookOpen from "@lucide/svelte/icons/book-open";
@@ -16,20 +16,45 @@
   let error = $state("");
   fetchSubjects().then((s) => (subjects = s), (e) => (error = e.message));
   const last = lastPlayed();
-  const who = lastName();
+  let who = $state(lastName());
+  let editing = $state(false);
+  let draftName = $state("");
+
+  function saveName(e: SubmitEvent) {
+    e.preventDefault();
+    if (!draftName.trim()) return;
+    rememberName(draftName);
+    who = lastName();
+    editing = false;
+  }
 </script>
 
 <div class="topbar">
   <Logo size={26} />
-  <ThemeSwitch />
+  <span class="who">
+    {#if who && !editing}
+      <span class="muted">{who}</span>
+      <button class="btn-quiet btn-sm" onclick={() => ((draftName = who), (editing = true))}>Not you?</button>
+    {/if}
+    <ThemeSwitch />
+  </span>
 </div>
 
 <main class="page wide">
+  {#if editing}
+    <form class="rename card" onsubmit={saveName}>
+      <label for="rename">Your name</label>
+      <!-- svelte-ignore a11y_autofocus (opened by pressing "Not you?") -->
+      <input id="rename" type="text" bind:value={draftName} autocomplete="name" autofocus />
+      <button class="btn btn-sm" type="submit" disabled={!draftName.trim()}>Save</button>
+      <button class="btn-quiet btn-sm" type="button" onclick={() => (editing = false)}>Cancel</button>
+    </form>
+  {/if}
   <section class="hero banner">
     <Logo size={64} wordmark={false} />
     <div>
       <h1>acu-primer</h1>
-      <p class="muted">Short lessons made from real books. A wrong answer gets a hint aimed at the mistake, and a person checks every lesson before students see it.</p>
+      <p class="muted">Short, interactive lessons designed to help you grasp concepts faster. Study subjects curated by instructors, or create your own.</p>
     </div>
   </section>
 
@@ -78,6 +103,26 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+  }
+  .who {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .rename {
+    margin-top: 0.8rem;
+    padding: 0.8rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .rename label {
+    font-weight: 600;
+  }
+  .rename input {
+    flex: 1 1 10rem;
+    min-width: 0;
   }
   .wide {
     max-width: 52rem;
@@ -130,6 +175,7 @@
   }
   .subject {
     display: grid;
+    grid-template-rows: auto 1fr;
     height: 100%;
     overflow: hidden;
   }

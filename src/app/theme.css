@@ -63,7 +63,7 @@
     --accent-soft: #2c2617;
     --hover-border: #f2b84b;
     --sun: #f2b84b;
-    --banner: linear-gradient(135deg, #2c2617 0%, #1e1f23 100%);
+    --banner: linear-gradient(135deg, #3d3016 0%, #2a2a31 100%);
     --fallback-bg: #211d14;
     --fallback-edge: #f2b84b;
     --right: #7fc28e;
@@ -103,7 +103,7 @@
   --accent-soft: #2c2617;
   --hover-border: #f2b84b;
   --sun: #f2b84b;
-  --banner: linear-gradient(135deg, #2c2617 0%, #1e1f23 100%);
+  --banner: linear-gradient(135deg, #3d3016 0%, #2a2a31 100%);
   --fallback-bg: #211d14;
   --fallback-edge: #f2b84b;
   --right: #7fc28e;

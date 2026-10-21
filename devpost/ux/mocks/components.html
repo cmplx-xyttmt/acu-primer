@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Component vocabulary</title>
+<link rel="stylesheet" href="app.css">
+<script src="icons.js"></script>
+<style>
+  body { margin: 0; }
+  .cols { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+  @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
+  .col { padding: 32px 28px 56px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; }
+  h2 { font-size: 1.05rem; margin: 32px 0 6px; }
+  p.note { color: var(--text-2); font-size: 0.9rem; margin: 0 0 14px; max-width: 34rem; }
+  .states { display: grid; grid-template-columns: 90px repeat(5, auto); gap: 12px 10px; align-items: center; justify-content: start; overflow-x: auto; padding: 4px; }
+  .states .h { font-size: 0.75rem; color: var(--text-2); font-weight: 600; }
+  @media (max-width: 520px) { .states { grid-template-columns: 70px repeat(5, auto); overflow-x: auto; } }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .lesson { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-top: 1px solid var(--border); }
+  .lesson:first-child { border-top: 0; }
+  .lesson .t { font-weight: 600; flex: 1; min-width: 0; }
+  .lesson .meta { display: block; font-weight: 400; font-size: 0.8rem; color: var(--text-2); }
+  .before .lesson .t { color: var(--accent); text-decoration: underline; font-weight: 400; }
+  .old-mark { font-size: 0.75rem; font-weight: 600; padding: 0.1rem 0.55rem; border-radius: 999px; border: 1px solid var(--accent); color: var(--accent); white-space: nowrap; }
+  .old-btn { font-weight: 600; font-size: 0.85rem; padding: 0.2rem 0.7rem; border: 1px solid var(--accent); border-radius: var(--radius); color: var(--accent); }
+  .label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); margin: 18px 0 6px; }
+  .icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+  .icons div { display: grid; justify-items: center; gap: 4px; padding: 10px 4px; border-radius: var(--radius-sm); background: var(--surface); font-size: 0.7rem; color: var(--text-2); }
+  .icons .i { width: 22px; height: 22px; color: var(--text); }
+  .card.pad { padding: 16px 18px; }
+  .rule { font-size: 0.9rem; margin: 6px 0; }
+  .rule b { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="cols">
+  <section class="col look-light" id="light"></section>
+  <section class="col look-dark" id="dark"></section>
+</div>
+<template id="t">
+  <h1><span data-mark="30"></span> Component vocabulary <span class="badge badge-muted no-dot lookname"></span></h1>
+  <p class="note">Buttons are verbs, badges are adjectives. A button always has a fill or a border and changes on hover. A badge is tinted, square-cornered, has no border, and never changes under the pointer.</p>
+
+  <h2>Buttons, three levels</h2>
+  <p class="note">Primary: one per screen, the next step. Secondary: other real actions. Quiet: navigation and small actions, still with a hover background so it reads as clickable without an underline.</p>
+  <div class="states">
+    <span></span><span class="h">Default</span><span class="h">Hover</span><span class="h">Focus</span><span class="h">Pressed</span><span class="h">Disabled</span>
+    <span class="h">Primary</span>
+    <button class="b b-primary">Continue</button>
+    <button class="b b-primary is-hover">Continue</button>
+    <button class="b b-primary is-focus">Continue</button>
+    <button class="b b-primary is-press">Continue</button>
+    <button class="b b-primary" disabled>Continue</button>
+    <span class="h">Secondary</span>
+    <button class="b b-secondary"><svg class="i" data-i="pen"></svg>Draft</button>
+    <button class="b b-secondary is-hover"><svg class="i" data-i="pen"></svg>Draft</button>
+    <button class="b b-secondary is-focus"><svg class="i" data-i="pen"></svg>Draft</button>
+    <button class="b b-secondary is-hover is-press" style="transform:translateY(1px)"><svg class="i" data-i="pen"></svg>Draft</button>
+    <button class="b b-secondary" disabled><svg class="i" data-i="pen"></svg>Draft</button>
+    <span class="h">Quiet</span>
+    <button class="b b-quiet"><svg class="i" data-i="list"></svg>Contents</button>
+    <button class="b b-quiet is-hover"><svg class="i" data-i="list"></svg>Contents</button>
+    <button class="b b-quiet is-focus"><svg class="i" data-i="list"></svg>Contents</button>
+    <button class="b b-quiet is-hover" style="transform:translateY(1px)"><svg class="i" data-i="list"></svg>Contents</button>
+    <button class="b b-quiet" disabled><svg class="i" data-i="list"></svg>Contents</button>
+  </div>
+  <p class="note" style="margin-top:12px">Disabled no longer means "the accent at 45% opacity" (which turns amber into brown in Night desk). It becomes a grey surface with grey text, and the button says why nearby ("Pick an answer first").</p>
+
+  <h2>Status badges</h2>
+  <div class="row">
+    <span class="badge badge-draft">Draft, not reviewed</span>
+    <span class="badge badge-ok">Reviewed</span>
+    <span class="badge badge-info">2 suggestions</span>
+    <span class="badge badge-review">Review mode</span>
+    <span class="badge badge-muted">Model's guess</span>
+    <span class="badge badge-ok no-dot"><svg class="i i-sm" data-i="book"></svg>Catalogue</span>
+  </div>
+
+  <h2>The author home row, before and after</h2>
+  <div class="label">Now</div>
+  <div class="card flat before">
+    <div class="lesson"><span class="t">4.4-4.5 Process states and the process list</span><span class="old-mark">Written by the model, not yet reviewed</span><span class="old-btn">Review</span></div>
+    <div class="lesson"><span class="t">4.1-4.3 What a process is</span><span class="old-mark" style="color:var(--right);border-color:var(--right)">Reviewed by a person</span><span class="old-btn">View</span></div>
+  </div>
+  <div class="label">Proposed</div>
+  <div class="card">
+    <div class="lesson"><span class="t">4.4-4.5 Process states and the process list<span class="meta">OSTEP pp. 34-41 · 9 modules · drafted Oct 14</span></span><span class="badge badge-draft">Draft</span><button class="b b-primary b-sm">Review<svg class="i i-sm" data-i="arrow-right"></svg></button></div>
+    <div class="lesson"><span class="t">4.1-4.3 What a process is<span class="meta">OSTEP pp. 25-33 · 7 modules · signed off Oct 12</span></span><span class="badge badge-ok">Reviewed</span><button class="b b-quiet b-sm"><svg class="i i-sm" data-i="eye"></svg>View</button></div>
+  </div>
+  <p class="note" style="margin-top:10px">The badge says what the lesson is; the button says what you can do. The long sentence "Written by the model, not yet reviewed" moves to a tooltip and the review screen header.</p>
+
+  <h2>Cards</h2>
+  <div class="row" style="align-items:stretch">
+    <div class="card pad" style="flex:1;min-width:200px">
+      <div class="label" style="margin-top:0">Static card</div>
+      Holds content. Border plus a soft shadow in Clean study, a lighter surface in Night desk.
+    </div>
+    <a class="card pad" href="#" style="flex:1;min-width:200px" onclick="return false">
+      <div class="label" style="margin-top:0">Clickable card</div>
+      Lifts 1px and its border turns accent on hover. The whole card is the target.
+    </a>
+  </div>
+
+  <h2>Answer options with an icon, not colour alone</h2>
+  <div style="display:grid;gap:8px;max-width:26rem">
+    <button class="option right">A point estimate p̂<svg class="i mark" data-i="circle-check" style="color:var(--right)"></svg></button>
+    <button class="option wrong">The parameter p<svg class="i mark" data-i="circle-x" style="color:var(--wrong)"></svg></button>
+  </div>
+
+  <h2>Icons (Lucide, ISC license)</h2>
+  <div class="icons">
+    <div><svg class="i" data-i="arrow-right"></svg>arrow-right</div>
+    <div><svg class="i" data-i="list"></svg>list</div>
+    <div><svg class="i" data-i="pen"></svg>pen-line</div>
+    <div><svg class="i" data-i="eye"></svg>eye</div>
+    <div><svg class="i" data-i="users"></svg>users</div>
+    <div><svg class="i" data-i="message-plus"></svg>message-plus</div>
+    <div><svg class="i" data-i="circle-check"></svg>circle-check</div>
+    <div><svg class="i" data-i="circle-x"></svg>circle-x</div>
+    <div><svg class="i" data-i="lightbulb"></svg>lightbulb</div>
+    <div><svg class="i" data-i="lock"></svg>lock</div>
+    <div><svg class="i" data-i="book"></svg>book-open</div>
+    <div><svg class="i" data-i="file-up"></svg>file-up</div>
+    <div><svg class="i" data-i="plus"></svg>plus</div>
+    <div><svg class="i" data-i="flag"></svg>flag</div>
+    <div><svg class="i" data-i="sun"></svg>sun</div>
+    <div><svg class="i" data-i="moon"></svg>moon</div>
+  </div>
+  <p class="note" style="margin-top:10px">About 16 icons cover the whole app. Bundled with the app, so they work offline like the fonts.</p>
+</template>
+<script>
+  for (const [id, name] of [["light", "Clean study"], ["dark", "Night desk"]]) {
+    const el = document.getElementById(id);
+    el.append(document.getElementById("t").content.cloneNode(true));
+    el.querySelector(".lookname").textContent = name;
+  }
+</script>
+</body>
+</html>

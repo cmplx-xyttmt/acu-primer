@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Author home and new course</title>
+<link rel="stylesheet" href="app.css">
+<script src="icons.js"></script>
+<style>
+  body { margin: 0; }
+  [hidden] { display: none !important; }
+  .page { max-width: 54rem; margin: 0 auto; padding: 16px 16px 64px; }
+  .topbar { display: flex; align-items: center; gap: 10px; padding: 4px 0 18px; }
+  .topbar .sp { flex: 1; }
+  .topbar .where { color: var(--text-2); font-size: 0.9rem; padding-left: 10px; border-left: 1px solid var(--border); }
+  .head { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin: 6px 0 18px; }
+  .head h1 { margin: 0; font-size: 1.7rem; flex: 1; min-width: 12rem; }
+  .spend { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: var(--text-2); margin: -6px 0 22px; }
+  .spend .meter { width: 120px; height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
+  .spend .meter span { display: block; height: 100%; width: 9%; background: var(--right); }
+  .course { margin: 0 0 18px; overflow: hidden; }
+  .course-head { padding: 16px 18px 12px; display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+  .course-head .ttl { flex: 1; min-width: 14rem; }
+  .course-head h2 { margin: 0; font-size: 1.15rem; line-height: 1.3; }
+  .course-head .meta { font-size: 0.82rem; color: var(--text-2); margin-top: 3px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .brief { margin: 0 18px 12px; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--surface); font-size: 0.88rem; display: flex; gap: 10px; align-items: flex-start; }
+  .brief .i { color: var(--text-2); margin-top: 2px; }
+  .brief p { margin: 0; flex: 1; }
+  .brief .none { color: var(--text-2); }
+  .switch { display: flex; align-items: center; gap: 10px; margin: 0 18px 12px; font-size: 0.88rem; color: var(--text-2); }
+  .switch input { appearance: none; width: 34px; height: 20px; border-radius: 999px; background: var(--border-strong); position: relative; cursor: pointer; transition: background-color 120ms ease; margin: 0; flex: none; }
+  .switch input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform 140ms ease; }
+  .switch input:checked { background: var(--accent); }
+  .switch input:checked::after { transform: translateX(14px); }
+  .switch input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .lessons { border-top: 1px solid var(--border); }
+  .lesson { display: flex; align-items: center; gap: 12px; padding: 11px 18px; border-top: 1px solid var(--border); }
+  .lesson:first-child { border-top: 0; }
+  .lesson:hover { background: color-mix(in srgb, var(--surface) 60%, transparent); }
+  .lesson .t { flex: 1; min-width: 0; font-weight: 600; }
+  .lesson .t small { display: block; font-weight: 400; font-size: 0.8rem; color: var(--text-2); }
+  @media (max-width: 560px) {
+    .lesson { flex-wrap: wrap; row-gap: 6px; }
+    .lesson .t { flex-basis: 100%; }
+    .lesson .b { margin-left: auto; }
+  }
+
+  /* New course */
+  .flow { margin-top: 40px; padding: 20px 18px 22px; }
+  .flow h2 { margin: 0 0 4px; font-size: 1.25rem; }
+  .steps { display: flex; gap: 6px; margin: 10px 0 18px; flex-wrap: wrap; }
+  .steps span { font-size: 0.8rem; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: var(--surface); color: var(--text-2); }
+  .steps span.on { background: var(--accent-soft); color: var(--accent); }
+  .look-light .steps span.on { color: #1d4ed8; }
+  .field { display: grid; gap: 6px; margin-bottom: 14px; font-size: 0.9rem; font-weight: 600; }
+  .field input, .field textarea { font: inherit; font-weight: 400; color: var(--text); background: var(--bg); border: 2px solid var(--border); border-radius: var(--radius); padding: 0.55rem 0.8rem; }
+  .field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
+  .field .hint { font-weight: 400; font-size: 0.8rem; color: var(--text-2); }
+  .presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; margin: 6px 0 14px; }
+  .preset { display: flex; gap: 10px; align-items: flex-start; text-align: left; padding: 10px 12px; font-size: 0.85rem; line-height: 1.35; border-radius: var(--radius); border: 2px solid var(--border); background: var(--card); color: var(--text); font-family: inherit; cursor: pointer; transition: border-color 120ms ease, background-color 120ms ease; }
+  .preset:hover { border-color: var(--hover-border); }
+  .preset[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .preset .i { color: var(--accent); margin-top: 1px; }
+  .preset b { display: block; font-size: 0.9rem; }
+  .preset span span { color: var(--text-2); }
+  .flow-foot { display: flex; gap: 8px; justify-content: space-between; flex-wrap: wrap; margin-top: 6px; }
+  .tools { position: fixed; right: 12px; bottom: 12px; }
+  @media (max-width: 600px) { .tools { display: none; } }
+  .tools button { font: inherit; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text-2); cursor: pointer; }
+</style>
+</head>
+<body class="look-light">
+<div class="page">
+  <div class="topbar">
+    <a class="wordmark" href="#"><span data-mark="26"></span><span>acu<span class="dot">·</span>primer</span></a>
+    <span class="where">Author</span>
+    <span class="sp"></span>
+    <button class="b b-quiet b-sm" aria-label="Theme"><svg class="i" data-i="sun"></svg></button>
+  </div>
+
+  <div class="head">
+    <h1>Your courses</h1>
+    <a class="b b-primary" href="#new"><svg class="i" data-i="plus"></svg>New course</a>
+  </div>
+  <div class="spend"><span class="meter"><span></span></span><span>Claude this month: <span class="num">$1.37</span> of <span class="num">$15</span></span></div>
+
+  <section class="card course">
+    <div class="course-head">
+      <div class="ttl">
+        <h2>Processes and limited direct execution</h2>
+        <div class="meta">OSTEP · 4 lessons <span class="badge badge-draft">3 to review</span></div>
+      </div>
+      <div class="actions">
+        <button class="b b-secondary b-sm"><svg class="i i-sm" data-i="pen"></svg>Draft a lesson</button>
+        <button class="b b-quiet b-sm"><svg class="i i-sm" data-i="users"></svg>Students</button>
+        <button class="b b-quiet b-sm"><svg class="i i-sm" data-i="eye"></svg>Open as a student</button>
+      </div>
+    </div>
+    <div class="brief"><svg class="i" data-i="user"></svg><p>A software engineer learning on their own. Learns by doing: give commands to run, code to read, numbers to compute.</p><button class="b b-quiet b-sm">Edit</button></div>
+    <label class="switch"><input type="checkbox" checked> Students can see lessons that aren't reviewed yet</label>
+    <div class="lessons">
+      <div class="lesson"><span class="t">4.1-4.3 What a process is<small>pp. 25-33 · 7 modules · signed off Oct 12</small></span><span class="badge badge-ok">Reviewed</span><button class="b b-quiet b-sm"><svg class="i i-sm" data-i="eye"></svg>View</button></div>
+      <div class="lesson"><span class="t">4.4-4.5 Process states and the process list<small>pp. 34-41 · 9 modules · 1 of 10 approved</small></span><span class="badge badge-draft">Draft</span><button class="b b-primary b-sm">Review<svg class="i i-sm" data-i="arrow-right"></svg></button></div>
+      <div class="lesson"><span class="t">6.1-6.2 Direct execution, user mode and system calls<small>pp. 63-70 · 8 modules · not started</small></span><span class="badge badge-draft">Draft</span><button class="b b-primary b-sm">Review<svg class="i i-sm" data-i="arrow-right"></svg></button></div>
+    </div>
+  </section>
+
+  <section class="card course">
+    <div class="course-head">
+      <div class="ttl">
+        <h2>Sampling distributions</h2>
+        <div class="meta">OpenIntro Statistics · 3 lessons <span class="badge badge-draft">2 to review</span></div>
+      </div>
+      <div class="actions">
+        <button class="b b-secondary b-sm"><svg class="i i-sm" data-i="pen"></svg>Draft a lesson</button>
+        <button class="b b-quiet b-sm"><svg class="i i-sm" data-i="users"></svg>Students</button>
+        <button class="b b-quiet b-sm"><svg class="i i-sm" data-i="eye"></svg>Open as a student</button>
+      </div>
+    </div>
+    <div class="brief"><svg class="i" data-i="user"></svg><p class="none">No brief yet. Drafts follow a general reader until you add one.</p><button class="b b-secondary b-sm">Add a brief</button></div>
+    <label class="switch"><input type="checkbox"> Students can see lessons that aren't reviewed yet</label>
+    <div class="lessons">
+      <div class="lesson"><span class="t">5.1 Point estimates (hand-written)<small>pp. 170-180 · 7 modules · signed off Oct 2</small></span><span class="badge badge-ok">Reviewed</span><button class="b b-quiet b-sm"><svg class="i i-sm" data-i="eye"></svg>View</button></div>
+      <div class="lesson"><span class="t">5.1 Point estimates and sampling variability<small>pp. 170-180 · 10 modules · drafted Oct 11 in Claude Code</small></span><span class="badge badge-draft">Draft</span><button class="b b-primary b-sm">Review<svg class="i i-sm" data-i="arrow-right"></svg></button></div>
+    </div>
+  </section>
+
+  <section class="card flow" id="new">
+    <h2>New course</h2>
+    <p style="margin:0;color:var(--text-2);font-size:0.9rem">Opens from the New course button. Three short steps, then you're on the draft screen.</p>
+    <div class="steps"><span class="on">1. Name it</span><span class="on">2. Who it's for</span><span>3. First lesson</span></div>
+
+    <label class="field">Course title<input type="text" value="Concurrency" ></label>
+    <label class="field">Book or source<input type="text" value="Operating Systems: Three Easy Pieces"></label>
+    <label class="field">Link students will use<input type="text" value="concurrency" class="num"><span class="hint">acu-primer.workers.dev/c/concurrency</span></label>
+
+    <div class="field" style="margin-bottom:4px">Who it's for<span class="hint">Pick the closest learner, then change any words. Every draft for this course follows the brief.</span></div>
+    <div class="presets" id="presets"></div>
+    <label class="field">Course brief<textarea id="brief" rows="4"></textarea><span class="hint">You can change it later from the course card.</span></label>
+
+    <div class="flow-foot">
+      <button class="b b-quiet">Cancel</button>
+      <button class="b b-primary">Create and draft the first lesson<svg class="i" data-i="arrow-right"></svg></button>
+    </div>
+  </section>
+</div>
+<div class="tools"><button id="look">Night desk</button></div>
+<script>
+const PRESETS = [
+  ["school", "First-year university student", "Taking it for credit", "A first-year university student taking this for credit. Comfortable with school algebra, new to this subject's notation. Wants worked examples, every symbol defined the first time it appears, and checks that look like exam questions."],
+  ["graduation-cap", "High-school student", "15 to 18, no calculus", "A high-school student aged 15 to 18. Short readings with everyday examples (sport, phones, school life) and no calculus. Define every new word. Short sentences and an encouraging tone."],
+  ["book", "Adult self-learner", "Spare time, rusty maths", "An adult learning in spare time, in sittings of 15 to 20 minutes. Rusty on maths. Wants the idea and a real example before any formula, and a one-line recap at the start of each lesson."],
+  ["briefcase", "Learning for work", "Needs it on the job soon", "Someone who needs this for their job soon. Skip proofs and history. Use workplace examples (reports, dashboards, decisions) and end each lesson with one way to use it at work."],
+  ["timer", "Exam crammer", "Exam in a week or two", "A student with an exam in one or two weeks who has seen the material once. Lean on exam-style checks and the common traps. Keep readings short and restate the key formulas often."],
+  ["terminal", "Hands-on technical learner", "Learns by doing", "A software engineer learning on their own. Learns by doing: give commands to run, code to read and numbers to compute. Precise language is welcome; skip motivational framing."],
+  ["refresh", "Returning learner", "Back after years away", "Someone coming back to study after years away. Refresh each prerequisite briefly before using it. Small steps, a slow pace, and a check after almost every idea."],
+  ["presentation", "Future teacher or tutor", "Will teach this", "Someone who will teach this topic. Name the common misconceptions and where they come from, point to the catalogue entry when there is one, and suggest how to explain each idea."],
+];
+const box = document.getElementById("presets"), brief = document.getElementById("brief");
+PRESETS.forEach(([icon, name, line, text], i) => {
+  const b = document.createElement("button");
+  b.className = "preset"; b.type = "button"; b.setAttribute("aria-pressed", i === 5 ? "true" : "false");
+  b.innerHTML = `<svg class="i" data-i="${icon}"></svg><span><b>${name}</b><span>${line}</span></span>`;
+  b.onclick = () => { box.querySelectorAll(".preset").forEach((x) => x.setAttribute("aria-pressed", "false")); b.setAttribute("aria-pressed", "true"); brief.value = text; };
+  box.append(b);
+});
+const own = document.createElement("button");
+own.className = "preset"; own.type = "button"; own.setAttribute("aria-pressed", "false");
+own.innerHTML = `<svg class="i" data-i="pen"></svg><span><b>Write my own</b><span>Start from a blank brief</span></span>`;
+own.onclick = () => { box.querySelectorAll(".preset").forEach((x) => x.setAttribute("aria-pressed", "false")); own.setAttribute("aria-pressed", "true"); brief.value = ""; brief.focus(); };
+box.append(own);
+brief.value = PRESETS[5][3];
+document.getElementById("look").onclick = (e) => { const d = document.body.classList.toggle("look-dark"); document.body.classList.toggle("look-light", !d); e.target.textContent = d ? "Clean study" : "Night desk"; };
+</script>
+</body>
+</html>

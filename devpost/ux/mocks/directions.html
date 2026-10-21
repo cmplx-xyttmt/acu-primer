@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Three visual directions</title>
+<link rel="stylesheet" href="app.css">
+<script src="icons.js"></script>
+<style>
+  body { margin: 0; background: #e9eaee; font-family: "Plus Jakarta Sans", system-ui, sans-serif; color: #111827; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 28px 16px 64px; }
+  .dir { margin: 0 0 56px; }
+  .dir > h2 { font-size: 1.35rem; margin: 0 0 4px; }
+  .dir > p { margin: 0 0 16px; max-width: 46rem; color: #4b5563; }
+  .frames { display: flex; gap: 18px; flex-wrap: wrap; }
+  .frame { width: 292px; max-width: 100%; }
+  .frame .cap { font-size: 0.78rem; font-weight: 600; color: #6b7280; margin: 0 0 6px; }
+
+  .phone { position: relative; height: 640px; overflow: hidden; border-radius: 22px; box-shadow: 0 18px 40px -20px rgb(0 0 0 / 0.45); padding: 14px 18px 18px; }
+  .top { display: flex; justify-content: space-between; align-items: center; }
+  .wordmark { font-size: 1.05rem; }
+  .hero { margin: 26px 0 16px; }
+  .hi { margin: 0; color: var(--text-2); font-size: 0.9rem; }
+  .hero h1 { margin: 2px 0 0; font-size: 1.55rem; line-height: 1.2; }
+  .src { margin: 2px 0 0; color: var(--text-2); font-size: 0.85rem; }
+  .course { padding: 14px 16px; margin: 0 0 10px; }
+  .ctitle { font-weight: 600; line-height: 1.3; }
+  .cmeta { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-2); margin: 6px 0 8px; }
+  .prog { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
+  .prog span { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+  .locked { opacity: 0.6; }
+  .wide { width: 100%; margin-top: 8px; }
+  .mtop { display: flex; justify-content: space-between; align-items: center; margin: 0 -6px; }
+  .bar { height: 4px; background: var(--border); margin: 8px -18px 0; }
+  .bar span { display: block; height: 100%; width: 43%; background: var(--accent); }
+  .dots { display: none; }
+  .kicker { margin: 18px 0 0; font-size: 0.75rem; font-weight: 600; color: var(--text-2); }
+  h3 { margin: 2px 0 8px; font-size: 1.25rem; }
+  .reading { margin: 0 0 12px; font-size: 0.93rem; }
+  .q { font-weight: 600; font-size: 0.93rem; margin: 0 0 10px; }
+  .opts { display: grid; gap: 7px; }
+  .option { font-size: 0.88rem; padding: 0.55rem 0.8rem; }
+  .verdict { margin-top: 12px; padding: 12px 14px; border-radius: var(--radius); background: var(--fallback-bg); border-left: 3px solid var(--fallback-edge); font-size: 0.88rem; }
+  .verdict .lead { display: flex; align-items: center; gap: 6px; font-weight: 700; margin: 0 0 4px; color: var(--wrong); }
+  .verdict p { margin: 0 0 10px; }
+  mark { background: none; color: inherit; font-weight: 700; }
+
+  /* ---------- A: Clean study, finished ---------- */
+  .dir-a .look-light .phone, .dir-a .look-light.phone { background: #fff; }
+  .dir-a .hero { padding: 16px; margin: 22px -4px 14px; border-radius: var(--radius); background: var(--accent-soft); }
+  .look-dark.dir-a-phone .hero { background: var(--surface); }
+
+  /* ---------- B: Primer paper ---------- */
+  .dir-b .look-light { --bg: #fbf8f1; --card: #ffffff; --surface: #f3efe4; --border: #e7e0cf; --border-strong: #d8cfb8; --accent: #0f766e; --accent-hover: #0d6560; --accent-press: #0b5650; --accent-soft: #e6f2ef; --hover-border: #7fbcb4; --fallback-bg: #fffaf0; --fallback-edge: #e4a72e; --text: #1f2430; --text-2: #6d6a62; --hl: #fde68a; --label: "IBM Plex Mono"; }
+  .dir-b .look-dark { --bg: #17150f; --card: #1f1c15; --surface: #24211a; --border: #383327; --fallback-bg: #1f1c15; --hl: rgb(242 184 75 / 0.28); }
+  .dir-b .kicker, .dir-b .cmeta, .dir-b .src { font-family: "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.68rem; }
+  .dir-b .hero h1 { font-weight: 700; }
+  .dir-b mark { background: linear-gradient(transparent 55%, var(--hl) 55%); font-weight: 600; }
+  .dir-b .verdict { background: var(--fallback-bg); border: 1px dashed var(--border-strong); border-left: 3px solid var(--fallback-edge); }
+  .dir-b .verdict .lead { color: var(--text); }
+  .dir-b .verdict .lead .i { color: var(--fallback-edge); }
+  .dir-b .course { box-shadow: none; }
+  .dir-b .doodle { display: block; margin: 8px 0 0; }
+  .doodle { display: none; }
+  .dir-b .prog { height: 4px; }
+
+  /* ---------- C: Bright steps ---------- */
+  .dir-c .look-light { --accent: #2563eb; --accent-press: #1e40af; --sun: #facc15; --radius: 14px; }
+  .dir-c .look-dark { --sun: #f2b84b; --radius: 10px; }
+  .dir-c .b-primary { border-bottom: 4px solid var(--accent-press); padding-bottom: calc(0.65rem - 3px); text-transform: none; font-weight: 700; }
+  .dir-c .b-primary:active { border-bottom-width: 1px; transform: translateY(3px); }
+  .dir-c .option { border-bottom-width: 4px; }
+  .dir-c .bar { display: none; }
+  .dir-c .dots { display: flex; gap: 5px; margin: 10px 0 0; }
+  .dir-c .dots span { flex: 1; height: 8px; border-radius: 4px; background: var(--border); }
+  .dir-c .dots span.done { background: var(--right); }
+  .dir-c .dots span.here { background: var(--accent); }
+  .dir-c .hero { margin-top: 18px; padding: 18px 16px; border-radius: var(--radius); background: var(--accent); color: var(--accent-text); }
+  .dir-c .hero .hi, .dir-c .hero .src { color: inherit; opacity: 0.85; }
+  .dir-c .ring { float: right; }
+  .dir-c .course .prog span { background: var(--right); }
+  .dir-c .verdict { position: absolute; left: 0; right: 0; bottom: 0; margin: 0; border-radius: 0; border-left: 0; border-top: 3px solid var(--wrong); background: var(--wrong-bg); padding: 14px 18px 18px; }
+  .dir-c .verdict .lead { font-size: 1.05rem; }
+  .ring { display: none; }
+  .dir-c .ring { display: block; }
+  .shake { animation: shake 320ms ease 1; }
+  @keyframes shake { 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
+  @media (prefers-reduced-motion: reduce) { .shake { animation: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 style="font-size:1.6rem;margin:0 0 6px">Three visual directions</h1>
+  <p style="margin:0 0 30px;max-width:46rem;color:#4b5563">Each keeps one thing on screen at a time and the same fonts. They differ in how much warmth and play they add. Every direction uses the same component vocabulary (components.html) and the same mark: a path that takes a dotted detour and rejoins, which is what a lesson does after a wrong answer.</p>
+
+  <section class="dir dir-a">
+    <h2>A. Clean study, finished</h2>
+    <p>The smallest change. The current colours stay. It adds the wordmark, real buttons and cards with a soft shadow, icons, a tinted panel behind the course title, and an icon on every verdict. Bland goes away mostly because things now look clickable and grouped.</p>
+    <div class="frames" data-dir="a"></div>
+  </section>
+
+  <section class="dir dir-b">
+    <h2>B. Primer paper</h2>
+    <p>Leans on the name. The Primer in The Diamond Age is a book, so this looks like a well-made workbook: a warm paper ground, a deep teal accent in light mode, small monospace labels ("MODULE 3 OF 7"), key terms marked with a highlighter stroke, and hints styled as a dashed margin note. Night desk keeps its amber and gains the same warmth. Room for small line drawings later.</p>
+    <div class="frames" data-dir="b"></div>
+  </section>
+
+  <section class="dir dir-c">
+    <h2>C. Bright steps</h2>
+    <p>The most playful, closer to Duolingo and Brilliant. Chunky buttons with a thick bottom edge that press down, a coloured course banner with a progress ring, a row of module pills instead of a thin bar, and the verdict as a full-width banner at the bottom of the screen. A wrong answer gives the picked option one short shake (off under reduced motion).</p>
+    <div class="frames" data-dir="c"></div>
+  </section>
+</div>
+
+<template id="home">
+  <div class="phone">
+    <div class="top"><span class="wordmark"><span data-mark="24"></span><span>acu<span class="dot">·</span>primer</span></span><button class="b b-quiet b-sm" aria-label="Theme"><svg class="i" data-i="sun"></svg></button></div>
+    <div class="hero">
+      <svg class="ring" width="54" height="54" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="4"/><circle cx="18" cy="18" r="15" fill="none" stroke="var(--sun)" stroke-width="4" stroke-dasharray="40 100" stroke-linecap="round" transform="rotate(-90 18 18)"/></svg>
+      <p class="hi">Hi, Amina</p>
+      <h1>Sampling distributions</h1>
+      <p class="src">OpenIntro Statistics</p>
+    </div>
+    <a class="card course clickable" href="#" onclick="return false">
+      <div class="ctitle">Point estimates and sampling variability</div>
+      <div class="cmeta"><span>Module 3 of 7</span><span class="num">3 / 7</span></div>
+      <div class="prog"><span style="width:43%"></span></div>
+      <svg class="doodle" width="120" height="26" viewBox="0 0 120 26" aria-hidden="true"><path d="M4 20 C 20 4, 30 4, 40 14 S 60 24, 70 12 S 95 2, 116 10" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="2 4"/><circle cx="116" cy="10" r="3" fill="var(--accent)"/></svg>
+    </a>
+    <div class="card course locked">
+      <div class="ctitle"><svg class="i i-sm" data-i="lock"></svg> Confidence intervals</div>
+      <div class="cmeta"><span>Opens after the lesson above</span><span class="num">0 / 8</span></div>
+    </div>
+    <button class="b b-primary wide">Continue where you stopped<svg class="i" data-i="arrow-right"></svg></button>
+  </div>
+</template>
+
+<template id="module">
+  <div class="phone">
+    <div class="mtop"><button class="b b-quiet b-sm"><svg class="i" data-i="list"></svg>Contents</button><span class="num" style="color:var(--text-2);font-size:0.85rem">3 / 7</span></div>
+    <div class="bar"><span></span></div>
+    <div class="dots"><span class="done"></span><span class="done"></span><span class="here"></span><span></span><span></span><span></span><span></span></div>
+    <div class="kicker">Module 3 of 7</div>
+    <h3>Samples vary</h3>
+    <p class="reading">Two careful random samples from the same population almost never give the same estimate. This is <mark>sampling variability</mark>, and it's expected, not a mistake.</p>
+    <p class="q">Two careful polls of one city find 52% and 47% support. What's the likeliest reason they differ?</p>
+    <div class="opts">
+      <button class="option wrong shake" disabled>One of the polls made a mistake<svg class="i mark" data-i="circle-x" style="color:var(--wrong)"></svg></button>
+      <button class="option" disabled>Opinions changed in between</button>
+      <button class="option" disabled>Different random samples give different results</button>
+    </div>
+    <div class="verdict">
+      <p class="lead"><svg class="i" data-i="lightbulb"></svg>Not quite</p>
+      <p>Both polls can be done perfectly and still differ, because each asked different people.</p>
+      <button class="b b-primary b-sm">Try the question again</button>
+    </div>
+  </div>
+</template>
+
+<script>
+  for (const box of document.querySelectorAll(".frames")) {
+    const d = box.dataset.dir;
+    for (const [tpl, look, cap] of [["home", "light", "Home, Clean study"], ["module", "light", "Wrong answer, Clean study"], ["home", "dark", "Home, Night desk"], ["module", "dark", "Wrong answer, Night desk"]]) {
+      const f = document.createElement("div");
+      f.className = "frame";
+      f.innerHTML = `<p class="cap">${cap}</p>`;
+      const p = document.getElementById(tpl).content.cloneNode(true);
+      const phone = p.querySelector(".phone");
+      phone.classList.add(`look-${look}`, `dir-${d}-phone`);
+      f.append(p);
+      box.append(f);
+    }
+  }
+  // Replay the shake when a C frame is clicked, to show the motion.
+  document.querySelectorAll(".dir-c .shake").forEach((el) => el.closest(".phone").addEventListener("click", () => { el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); }));
+</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+These are copies of the app's own fonts from node_modules/@fontsource (Plus Jakarta Sans, IBM Plex Sans, IBM Plex Mono), so the mocks open without the dev setup. All three are under the SIL Open Font License 1.1.

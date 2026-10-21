@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>acu-primer UX audit</title>
+<script>
+  // Follow the device, unless a choice was saved. Matches the Verdant Glass .dark switch.
+  try {
+    const saved = localStorage.getItem("ux-report-theme");
+    if (saved === "dark" || (!saved && matchMedia("(prefers-color-scheme: dark)").matches)) document.documentElement.classList.add("dark");
+  } catch {}
+</script>
+<style>
+  /* Verdant Glass tokens, from cmplx-xyttmt.github.io/assets/custom.css */
+  :root {
+    --color-forest: #17492f; --color-pine: #20603e; --color-emerald: #2e8659; --color-moss: #5b9e5a; --color-leaf: #9ac85a;
+    --color-amber: #e4882e; --color-peach: #f2b15e; --color-clay: #d96e43; --color-teal: #4ca58c;
+    --color-cream: #f4efdd; --color-sage: #dce4c7; --color-ink: #1a281c;
+    --text: #24312a; --heading: var(--color-forest); --link: var(--color-pine);
+    --muted: rgba(26, 40, 28, 0.72); --faint: rgba(26, 40, 28, 0.52);
+    --hr: rgba(23, 73, 47, 0.15); --rule-border: rgba(23, 73, 47, 0.18);
+    --surface: rgba(255, 255, 255, 0.55); --surface-border: rgba(255, 255, 255, 0.78);
+    --surface-shadow: 0 20px 48px -24px rgba(23, 73, 47, 0.45); --surface-shine: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    --glass-blur: blur(18px) saturate(135%);
+    --card-hover-bg: rgba(255, 255, 255, 0.72); --card-hover-border: rgba(23, 73, 47, 0.16);
+    --inline-code-bg: rgba(46, 134, 89, 0.12); --inline-code-text: #20603e;
+    --bg-grad: linear-gradient(165deg, #f5f0de 0%, #e9ebd0 52%, #dce4c7 100%);
+    --gel-green: linear-gradient(135deg, #2e8659 0%, #17492f 100%);
+    --gel-amber: linear-gradient(135deg, #f2b15e 0%, #e4882e 100%);
+    --radius-glass: 1.1rem; --radius-button: 0.75rem; --radius-pill: 999px;
+    --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Palatino LT STD", Georgia, ui-serif, serif;
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  .dark {
+    --text: #d4dae3; --heading: #eef3fa; --link: #5fbf99;
+    --muted: rgba(212, 218, 227, 0.7); --faint: rgba(212, 218, 227, 0.46);
+    --hr: rgba(255, 255, 255, 0.12); --rule-border: rgba(255, 255, 255, 0.12);
+    --surface: rgba(255, 255, 255, 0.05); --surface-border: rgba(255, 255, 255, 0.12);
+    --surface-shadow: 0 20px 48px -24px rgba(0, 0, 0, 0.6); --surface-shine: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    --inline-code-bg: rgba(95, 191, 153, 0.15); --inline-code-text: #83d1b0;
+    --bg-grad: linear-gradient(165deg, #1a2028 0%, #151a21 55%, #11151a 100%);
+    --card-hover-bg: rgba(255, 255, 255, 0.06); --card-hover-border: rgba(255, 255, 255, 0.12);
+  }
+  * { box-sizing: border-box; }
+  html { background: #e9ebd0; }
+  html.dark { background: #151a21; }
+  body { margin: 0; background: var(--bg-grad); background-attachment: fixed; color: var(--text); font-family: var(--font-sans); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { color: var(--link); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  code { background: var(--inline-code-bg); color: var(--inline-code-text); padding: 0.1em 0.4em; border-radius: 0.35em; font-size: 0.85em; font-family: var(--font-mono); }
+  h1, h2, h3 { font-family: var(--font-serif); color: var(--heading); font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
+  .organics { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+  .organics .blob { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.4; }
+  .blob-1 { top: -6%; left: -4%; width: 42vw; height: 42vw; background: radial-gradient(circle at 40% 40%, var(--color-emerald), transparent 68%); }
+  .blob-2 { bottom: -12%; right: -8%; width: 46vw; height: 46vw; background: radial-gradient(circle at 55% 45%, var(--color-teal), transparent 68%); }
+  .blob-3 { top: 34%; right: 22%; width: 26vw; height: 26vw; background: radial-gradient(circle at 50% 50%, var(--color-peach), transparent 70%); opacity: 0.28 !important; }
+  .dark .organics .blob { opacity: 0.22; }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px 80px; }
+  header.top { display: flex; align-items: center; gap: 12px; padding: 18px 0; }
+  header.top .sp { flex: 1; }
+  .tag { display: inline-flex; align-items: center; gap: 0.4rem; background: var(--inline-code-bg); color: var(--color-pine); font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.25rem 0.55rem; border-radius: var(--radius-pill); }
+  .dark .tag { color: var(--heading); }
+  .gel-btn { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--gel-green); color: #fff; font: 600 0.85rem var(--font-sans); padding: 0.5rem 0.95rem; border: none; border-radius: var(--radius-button); cursor: pointer; text-decoration: none; box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 10px 20px -9px rgba(23,73,47,0.7); transition: transform 0.1s ease, filter 0.15s ease; }
+  .gel-btn:hover { filter: brightness(1.06); }
+  .gel-btn:active { transform: scale(0.97); }
+  .gel-btn:focus-visible, .seg button:focus-visible { outline: 2px solid var(--color-emerald); outline-offset: 2px; }
+  .gel-btn--amber { background: var(--gel-amber); color: #3d2400; box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 10px 20px -9px rgba(228,136,46,0.55); }
+  .glass, .gel-card { background: var(--surface); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); border: 1px solid var(--surface-border); border-radius: var(--radius-glass); box-shadow: var(--surface-shadow), var(--surface-shine); }
+  .gel-card { padding: 1.25rem 1.35rem; margin: 1.25rem 0; }
+  .hero { padding: 1.6rem 1.6rem 1.4rem; margin-top: 4px; }
+  .hero h1 { font-size: clamp(1.9rem, 4.5vw, 2.7rem); margin: 0.4rem 0 0.6rem; }
+  .hero p { margin: 0 0 0.6rem; max-width: 46rem; color: var(--muted); }
+  .hero .facts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 0.8rem; }
+  nav.toc { display: flex; gap: 6px; flex-wrap: wrap; margin: 18px 0 8px; position: sticky; top: 0; z-index: 5; padding: 8px; }
+  nav.toc a { font-size: 0.85rem; text-decoration: none; padding: 0.3rem 0.7rem; border-radius: var(--radius-pill); color: var(--text); }
+  nav.toc a:hover { background: var(--card-hover-bg); }
+  section { scroll-margin-top: 70px; }
+  section > h2 { font-size: 1.7rem; margin: 2.6rem 0 0.4rem; }
+  section > p.lede { margin: 0 0 1rem; color: var(--muted); max-width: 46rem; }
+
+  .callout { border-left: 3px solid var(--color-emerald); background: var(--surface); border-radius: 0 var(--radius-button) var(--radius-button) 0; padding: 0.9rem 1.1rem; margin: 1rem 0; }
+  .callout--amber { border-left-color: var(--color-amber); }
+
+  /* Top recommendations */
+  ol.recs { margin: 0; padding: 0; list-style: none; counter-reset: r; display: grid; gap: 8px; }
+  ol.recs li { counter-increment: r; display: flex; gap: 12px; align-items: baseline; }
+  ol.recs li::before { content: counter(r); font-family: var(--font-mono); font-size: 0.8rem; color: #fff; background: var(--gel-green); border-radius: 50%; width: 1.6rem; height: 1.6rem; display: inline-grid; place-items: center; flex: none; }
+
+  /* Screens */
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 0 0 14px; }
+  .seg { display: inline-flex; padding: 3px; border-radius: var(--radius-pill); background: var(--surface); border: 1px solid var(--surface-border); }
+  .seg button { font: 600 0.8rem var(--font-sans); border: 0; background: none; color: var(--muted); padding: 0.35rem 0.85rem; border-radius: var(--radius-pill); cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--gel-green); color: #fff; }
+  .shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+  .shots.phone { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+  .shot { margin: 0; padding: 8px; border-radius: var(--radius-glass); transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease; border: 1px solid transparent; }
+  .shot:hover { background: var(--card-hover-bg); border-color: var(--card-hover-border); transform: translateY(-2px); box-shadow: var(--surface-shadow), var(--surface-shine); }
+  .shot a { display: block; height: 220px; overflow: hidden; border-radius: 0.7rem; border: 1px solid var(--rule-border); background: #fff; }
+  .shots.phone .shot a { height: 300px; }
+  .shot img { width: 100%; display: block; }
+  .shot figcaption { font-size: 0.82rem; margin-top: 6px; display: flex; justify-content: space-between; gap: 6px; }
+  .shot figcaption span { color: var(--faint); font-family: var(--font-mono); font-size: 0.7rem; }
+  .missing { color: var(--muted); font-size: 0.9rem; }
+
+  /* Audit */
+  .audit { display: grid; gap: 12px; }
+  .issue { display: grid; grid-template-columns: 2.2rem minmax(0, 1fr) 170px; gap: 14px; padding: 1rem 1.1rem; align-items: start; }
+  @media (max-width: 680px) { .issue { grid-template-columns: 2rem minmax(0, 1fr); } .issue .thumb { grid-column: 2; } }
+  .issue .n { font-family: var(--font-serif); font-size: 1.6rem; color: var(--color-emerald); line-height: 1; }
+  .issue h3 { margin: 0 0 0.25rem; font-size: 1.12rem; }
+  .issue p { margin: 0 0 0.35rem; font-size: 0.93rem; }
+  .issue .where { font-size: 0.8rem; color: var(--faint); font-family: var(--font-mono); }
+  .issue .h { display: inline-block; margin-right: 6px; }
+  .issue .thumb { display: block; height: 110px; overflow: hidden; border-radius: 0.6rem; border: 1px solid var(--rule-border); background: #fff; }
+  .issue .thumb img { width: 100%; display: block; }
+  .issue.top3 { border-left: 3px solid var(--color-amber); }
+
+  /* Mocks */
+  .mock { padding: 0; overflow: hidden; }
+  .mock .bar { display: flex; align-items: center; gap: 10px; padding: 0.9rem 1.1rem; flex-wrap: wrap; }
+  .mock .bar h3 { margin: 0; font-size: 1.15rem; flex: 1; min-width: 12rem; }
+  .mock .bar p { flex-basis: 100%; margin: 0; font-size: 0.9rem; color: var(--muted); }
+  .mock iframe { display: block; width: 100%; height: 640px; border: 0; border-top: 1px solid var(--rule-border); background: #fff; }
+  @media (max-width: 680px) { .mock iframe { height: 560px; } }
+
+  .refs { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+  .refs .gel-card { margin: 0; }
+  .refs h3 { margin: 0 0 0.4rem; font-size: 1.05rem; }
+  .refs ul { margin: 0; padding-left: 1.1rem; font-size: 0.9rem; }
+  .refs li { margin: 0.25rem 0; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th, td { text-align: left; vertical-align: top; padding: 0.55rem 0.6rem; border-top: 1px solid var(--rule-border); }
+  th { font-family: var(--font-serif); color: var(--heading); font-weight: 600; white-space: nowrap; }
+  .table-wrap { overflow-x: auto; }
+
+  ol.questions { padding-left: 1.4rem; margin: 0; }
+  ol.questions li { margin: 0.45rem 0; }
+  footer { margin-top: 3rem; font-size: 0.85rem; color: var(--faint); }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="organics" aria-hidden="true"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
+<div class="wrap">
+  <header class="top">
+    <span class="tag">acu-primer · UX</span>
+    <span class="sp"></span>
+    <a class="gel-btn gel-btn--amber" href="research.md">research.md</a>
+    <button class="gel-btn" id="theme" type="button">Dark</button>
+  </header>
+
+  <div class="glass hero">
+    <span class="tag">Oct 21, 2026 · research only, no app code changed</span>
+    <h1>Making acu-primer look and feel less bland</h1>
+    <p>Every screen, in both looks, at desktop and phone width. A ranked list of what gets in the way, what other learning and review tools do, and five proposals you can build in a few hours each. The mocks are real HTML in the app's own fonts, so you can click around them.</p>
+    <p>The short version: the player is calm and readable already. Most of the blandness comes from the author side and the home page, where nearly everything is underlined text and status labels look like buttons.</p>
+    <div class="facts"><span class="tag">17 screens</span><span class="tag">68 screenshots</span><span class="tag">12 problems</span><span class="tag">5 mocks</span><span class="tag">$0 API spend</span></div>
+  </div>
+
+  <nav class="toc glass" aria-label="Sections">
+    <a href="#recs">Top recommendations</a><a href="#screens">Screens</a><a href="#audit">Audit</a><a href="#mocks">Mocks</a><a href="#presets">Presets</a><a href="#research">References</a><a href="#decisions">Decisions</a>
+  </nav>
+
+  <section id="recs">
+    <h2>Top recommendations</h2>
+    <p class="lede">In build order. The first one makes every later one cheaper.</p>
+    <div class="gel-card">
+      <ol class="recs">
+        <li>Build a component vocabulary: three button levels with hover, focus and pressed states, a badge that can't be pressed, Lucide icons, and a link colour.</li>
+        <li>Rebuild the author home with it: a "Draft" badge plus a primary Review button per lesson, a meta line under each title, the brief shown as a line, a real switch, no phone overflow.</li>
+        <li>Replace the review step with interactive review mode: play the module as a student inside a violet frame, guided through every path, then approve or suggest.</li>
+        <li>Add New course, with eight learner presets that fill an editable brief.</li>
+        <li>Give <code>/</code> an identity: the mark and wordmark, one plain promise, course cards, and Continue for a returning student.</li>
+        <li>Pair right and wrong with icons and a little motion: a short shake on wrong, a tick that draws on right.</li>
+        <li>Fix disabled buttons (grey with a reason, not dim amber) and the native file picker on the draft screen.</li>
+        <li>Choose a visual direction and apply its colours last.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="screens">
+    <h2>Every screen as it is today</h2>
+    <p class="lede">Click a screenshot for the full size. These files live in <code>devpost/ux/media/</code>, which is gitignored, so this gallery only fills in on Isaac's laptop.</p>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Look"><button data-look="light" aria-pressed="true">Clean study</button><button data-look="dark" aria-pressed="false">Night desk</button></div>
+      <div class="seg" role="group" aria-label="Width"><button data-width="desktop" aria-pressed="true">Desktop 1280px</button><button data-width="phone" aria-pressed="false">Phone 375px</button></div>
+    </div>
+    <div class="shots" id="shots"></div>
+  </section>
+
+  <section id="audit">
+    <h2>The audit, ranked</h2>
+    <p class="lede">Ranked by how much each one gets in the way, weighted toward what Isaac raised. The first three are his own points. Full detail is in research.md.</p>
+    <div class="audit" id="auditList"></div>
+    <div class="callout">What already works: the reading width, the calm one-module-at-a-time player, the fallback panel (the amber edge in Night desk is especially clear), and the module motion with reduced motion respected. The proposals keep all of it.</div>
+  </section>
+
+  <section id="mocks">
+    <h2>Mocks</h2>
+    <p class="lede">The mocks use the app's own looks, not this page's. Each one has a toggle for Clean study and Night desk where it makes sense. Open them full size for the phone layouts.</p>
+
+    <div class="gel-card mock">
+      <div class="bar"><h3>Interactive review mode</h3><a class="gel-btn" href="mocks/review-mode.html">Open full size</a>
+        <p>Play it. Choose the right answer, then each wrong one, then "any other answer". Watch the checklist tick. Hover a part and press the note button to pin a suggestion; Approve turns into Apply with Claude. Approve early and it asks once. A violet border and bar frame the whole window, like Canvas's Student View.</p></div>
+      <iframe src="mocks/review-mode.html" title="Interactive review mode mock" loading="lazy"></iframe>
+    </div>
+
+    <div class="gel-card mock">
+      <div class="bar"><h3>Three visual directions</h3><a class="gel-btn" href="mocks/directions.html">Open full size</a>
+        <p><b>A. Clean study, finished</b>: today's colours with real buttons, cards, icons and the mark. <b>B. Primer paper</b>: a warm workbook look with a teal accent, mono labels, highlighter terms and margin-note hints. <b>C. Bright steps</b>: chunky pressable buttons, a coloured course banner, module pills and a bottom verdict banner.</p></div>
+      <iframe src="mocks/directions.html" title="Visual directions mock" loading="lazy"></iframe>
+    </div>
+
+    <div class="gel-card mock">
+      <div class="bar"><h3>Component vocabulary</h3><a class="gel-btn" href="mocks/components.html">Open full size</a>
+        <p>Buttons are verbs, badges are adjectives. Primary, secondary and quiet buttons in every state; tinted square badges with no border; the author home row before and after; cards; options with icons; the Lucide icons the app needs.</p></div>
+      <iframe src="mocks/components.html" title="Component vocabulary mock" loading="lazy"></iframe>
+    </div>
+
+    <div class="gel-card mock">
+      <div class="bar"><h3>Author home and New course</h3><a class="gel-btn" href="mocks/author-home.html">Open full size</a>
+        <p>Course cards with ranked actions, the brief shown as a line, a real switch, lesson rows with a meta line, a badge and one button. Below, the New course flow with preset learner cards that fill an editable brief.</p></div>
+      <iframe src="mocks/author-home.html" title="Author home and new course mock" loading="lazy"></iframe>
+    </div>
+
+    <div class="gel-card mock">
+      <div class="bar"><h3>Home page</h3><a class="gel-btn" href="mocks/home.html">Open full size</a>
+        <p>A first visit sees what's different and the course list. A returning student on the same device sees one big Continue card. Authors sign in from the footer.</p></div>
+      <iframe src="mocks/home.html" title="Home page mock" loading="lazy"></iframe>
+    </div>
+  </section>
+
+  <section id="presets">
+    <h2>Brief presets</h2>
+    <p class="lede">Picked from the fields other course tools ask about: level, background, prior experience, reading level, goal and time per sitting. Each fills an editable brief.</p>
+    <div class="gel-card table-wrap">
+      <table>
+        <tr><th>First-year university student</th><td>Taking this for credit. Comfortable with school algebra, new to this subject's notation. Worked examples, every symbol defined the first time, checks that look like exam questions.</td></tr>
+        <tr><th>High-school student</th><td>Aged 15 to 18. Short readings, everyday examples (sport, phones, school life), no calculus. Define every new word. Short sentences, encouraging tone.</td></tr>
+        <tr><th>Adult self-learner</th><td>Spare time, 15 to 20 minute sittings, rusty on maths. The idea and a real example before any formula; a one-line recap at the start of each lesson.</td></tr>
+        <tr><th>Learning for work</th><td>Needs it for the job soon. Skip proofs and history. Workplace examples, and end each lesson with one way to use it at work.</td></tr>
+        <tr><th>Exam crammer</th><td>Exam in one or two weeks, has seen it once. Exam-style checks and common traps. Short readings; restate key formulas often.</td></tr>
+        <tr><th>Hands-on technical learner</th><td>A software engineer learning alone. Commands to run, code to read, numbers to compute. Precise language welcome; skip motivational framing.</td></tr>
+        <tr><th>Returning learner</th><td>Back after years away. Refresh each prerequisite before using it. Small steps, slow pace, a check after almost every idea.</td></tr>
+        <tr><th>Future teacher or tutor</th><td>Will teach this. Name misconceptions and where they come from, point to the catalogue entry, suggest how to explain each idea.</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section id="research">
+    <h2>What other tools do</h2>
+    <p class="lede">Only what transfers to acu-primer. Every link loaded or appeared in search results; more detail and links in research.md.</p>
+    <div class="refs">
+      <div class="gel-card"><h3>Learning products</h3><ul>
+        <li><a href="https://brilliant.org/resources/choosing-brilliant/how-brilliant-teaches-math/">Brilliant</a>: try first, then the explanation answers your attempt.</li>
+        <li><a href="https://uxplanet.org/analyzing-duolingo-from-product-design-perspective-after-400-days-of-non-stop-practice-c4d4809bdb37">Duolingo</a>: a coloured verdict banner holding Continue; big celebrations only at the end.</li>
+        <li><a href="https://support.khanacademy.org/hc/fr/community/posts/205301458/comments/206454878">Khan Academy</a>: kids hit Hint when they meant Check, so keep secondary actions quieter and apart.</li>
+        <li><a href="https://www.udacity.com/blog/new-udacity-classroom/">Udacity</a>: 2 to 3 minute pieces, a quiz after each, lesson cards with progress.</li>
+        <li><a href="https://repovive.com/roadmaps/math-fundamentals">repovive</a>: a done/total count per section and node titles that say their type.</li>
+      </ul></div>
+      <div class="gel-card"><h3>Review tools</h3><ul>
+        <li><a href="https://docs.github.com/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/reviewing-proposed-changes-in-a-pull-request">GitHub PR review</a>: "Viewed" per file folds it away and moves a counter; it clears when the file changes.</li>
+        <li><a href="https://linear.app/docs/triage">Linear triage</a>: one key per decision, comment optional.</li>
+        <li><a href="https://help.figma.com/hc/en-us/articles/1500004290941">Figma</a>: comment pins drift with the layout, so pin to part ids.</li>
+        <li><a href="https://www.notion.com/help/comments-mentions-and-reminders">Notion</a>: resolve with a tick, filter to bring resolved back.</li>
+      </ul></div>
+      <div class="gel-card"><h3>Preview as learner</h3><ul>
+        <li><a href="https://www.iit.edu/cli/canvas/managing-your-course/student-view">Canvas Student View</a>: a coloured border round the screen and a banner with Leave and Reset.</li>
+        <li><a href="https://community.articulate.com/kb/user-guides/rise-360-manage-integrated-comments/1152825">Rise 360</a>: comment on the learner view; users complain comments are hard to place.</li>
+        <li><a href="https://telsupport.brookes.ac.uk/articles/how-do-i-switch-my-role-in-moodle/">Moodle</a> and <a href="https://intercom.help/teachableknowledgebase/en/articles/11682499-preview-your-school-and-products">Teachable</a>: switch role or preview as student.</li>
+      </ul></div>
+      <div class="gel-card"><h3>Buttons, badges, icons, motion</h3><ul>
+        <li><a href="https://primer.style/product/components/label/">Primer Label</a>, <a href="https://atlassian.design/components/lozenge/lozenge">Atlassian Lozenge</a>, <a href="https://polaris-react.shopify.com/components/feedback-indicators/badge">Polaris Badge</a>: status markers are small and never pressable.</li>
+        <li><a href="https://m2.material.io/go/design-states">Material states</a>: hover, focus and pressed as layers over the button.</li>
+        <li><a href="https://lucide.dev/guide/basics/stroke-width">Lucide</a>: ISC license, 2px stroke, <code>@lucide/svelte</code> for Svelte 5, bundled so offline still works.</li>
+        <li><a href="https://web.dev/articles/prefers-reduced-motion?hl=es">web.dev</a>: keep a still stand-in when motion carries meaning.</li>
+      </ul></div>
+    </div>
+  </section>
+
+  <section id="decisions">
+    <h2>Decisions for Isaac</h2>
+    <p class="lede">One at a time, in this order.</p>
+    <div class="gel-card">
+      <ol class="questions">
+        <li>Which direction feels most like acu-primer: A (Clean study, finished), B (Primer paper) or C (Bright steps)? Or a mix?</li>
+        <li>Do you like the mark, a path with a dotted detour that rejoins? Or a book, a letter, or just the wordmark?</li>
+        <li>Should light mode keep its blue accent, or move warmer (B's teal or another colour)?</li>
+        <li>Is a fourth font, a serif for headings, worth it, or stay with the three we bundle?</li>
+        <li>How much motion: none new, the small set (shake, tick, pill pop), or a celebration at the end of a lesson too?</li>
+        <li>In review mode, should Approve wait until every path is tried, ask once if you skip some, or never ask?</li>
+        <li>Should review mode replace the all-branches view, or sit beside it with a "Show every branch" toggle?</li>
+        <li>Is violet right for review mode, or another colour, or no border?</li>
+        <li>Suggestion buttons in the margin of each part, or only in the dock with a "which part?" picker?</li>
+        <li>Do the eight presets cover your learners? What would you drop, rename or add?</li>
+        <li>For New course, is "create, then draft the first lesson" enough for now, or do you want a course outline from a table of contents soon?</li>
+        <li>Should <code>/</code> list courses publicly, or should students only get courses by link?</li>
+        <li>Should the author side get its own top bar (wordmark, "Author", your courses)?</li>
+      </ol>
+    </div>
+  </section>
+
+  <footer>Made Oct 21, 2026 from a local build with a throwaway passphrase. A test student's 24 events were deleted afterwards; no approvals, suggestions or Claude calls were made. This page uses the Verdant Glass tokens; the mocks use the app's own looks.</footer>
+</div>
+
+<script>
+const SCREENS = [
+  ["01-home", "Home /"], ["02-name-entry", "Name entry"], ["03-overview", "Course overview"], ["04-lesson-intro", "Lesson intro"],
+  ["05-module", "A module"], ["06-wrong-fallback", "Wrong answer and fallback"], ["07-right-explanation", "Right answer and explanation"],
+  ["08-contents", "Contents"], ["09-author-gate", "Author gate"], ["10-author-home", "Author home"], ["10b-author-home-briefs-open", "Author home, briefs open"],
+  ["11-draft", "Draft screen"], ["12-review-module", "Step-by-step review"], ["12b-review-suggest-box", "Review, suggestion box"],
+  ["13-signoff", "Sign-off step"], ["14-students", "Students"], ["15-student-log", "Student log"],
+];
+const AUDIT = [
+  ["Status badges look like buttons", "Author home, review header", "\"Written by the model, not yet reviewed\" and the Review button are both accent outlines; only the corner radius differs. In Night desk they're two amber outlines. Affordance: a status should look read-only.", "10-author-home-light-desktop"],
+  ["Almost every action is underlined text", "Everywhere", "Draft a lesson, Students, Suggest a change (7 per review step), Contents, Back: all grey or accent underlined text. No button has a hover, focus or pressed style, so nothing responds to the pointer and nothing ranks above anything else.", "10-author-home-dark-desktop"],
+  ["A review step is a long wall of boxes", "Review", "Every branch is open in identical bordered boxes, about 2,000px tall on desktop and 6,000px on a phone, with Approve at the very bottom. The student's experience has to be pieced together in your head.", "12-review-module-light-desktop"],
+  ["The author home overflows on a phone", "Author home at 375px", "The Review button sticks out past the card, and the course links break into two-line columns.", "10-author-home-dark-phone"],
+  ["The home page has no identity", "/", "A heading, a sentence and two links in the browser's default blue (theme.css never styles links). No mark, no course list.", "01-home-light-desktop"],
+  ["Disabled buttons look muddy in Night desk", "Check, Draft", "Opacity 0.45 on amber gives a brown button that looks like another style, with no reason given.", "11-draft-dark-desktop"],
+  ["Right and wrong rely on colour alone", "Player", "Red and green borders with no icon; the verdict is one small word. Hard for colour-blind students and flat for everyone.", "06-wrong-fallback-light-desktop"],
+  ["No way to create a course; the brief is hidden", "Author home", "No New course button. The brief sits in a collapsed grey details line, though it shapes every draft. No presets.", "10b-author-home-briefs-open-light-desktop"],
+  ["Sign-off is a list of links", "Sign-off", "Eleven underlined titles under one sentence, repeating what the step pills already show.", "13-signoff-light-desktop"],
+  ["Lessons with the same name can't be told apart", "Author home", "Three \"Point estimates and sampling variability\" rows with no pages, dates or review progress.", "10-author-home-light-desktop"],
+  ["The draft screen has an unstyled file picker", "Draft", "A native grey Choose File button, and the cost note is a box of prose that's easy to skip.", "11-draft-light-desktop"],
+  ["Small inconsistencies", "Various", "Plex Mono spreads \"$1 . 37\" and \"0 / 7\"; the theme switch is another bordered pill; the student log mixes a date with +1s offsets; \"Locked\" repeated six times.", "15-student-log-light-desktop"],
+];
+let look = "light", width = "desktop";
+function renderShots() {
+  const box = document.getElementById("shots");
+  box.className = "shots" + (width === "phone" ? " phone" : "");
+  box.innerHTML = SCREENS.map(([id, name]) => {
+    const f = `media/${id}-${look}-${width}.png`;
+    return `<figure class="shot"><a href="${f}" target="_blank" rel="noopener"><img src="${f}" alt="${name}, ${look === "light" ? "Clean study" : "Night desk"}, ${width}" loading="lazy" onerror="this.closest('a').outerHTML='<p class=missing>Screenshot not on this machine</p>'"></a><figcaption>${name}<span>${id.slice(0, 3)}</span></figcaption></figure>`;
+  }).join("");
+}
+document.querySelectorAll("[data-look],[data-width]").forEach((b) => b.addEventListener("click", () => {
+  const key = b.dataset.look ? "look" : "width";
+  b.parentElement.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  if (key === "look") look = b.dataset.look; else width = b.dataset.width;
+  renderShots();
+}));
+renderShots();
+document.getElementById("auditList").innerHTML = AUDIT.map(([t, where, why, shot], i) => `
+  <div class="glass issue${i < 3 ? " top3" : ""}"><span class="n">${i + 1}</span>
+    <div><h3>${t}</h3><p>${why}</p><span class="where">${where} · ${shot}</span></div>
+    <a class="thumb" href="media/${shot}.png" target="_blank" rel="noopener"><img src="media/${shot}.png" alt="Screenshot: ${t}" loading="lazy" onerror="this.parentElement.style.display='none'"></a>
+  </div>`).join("");
+const tb = document.getElementById("theme");
+const syncBtn = () => (tb.textContent = document.documentElement.classList.contains("dark") ? "Light" : "Dark");
+syncBtn();
+tb.addEventListener("click", () => {
+  const d = document.documentElement.classList.toggle("dark");
+  try { localStorage.setItem("ux-report-theme", d ? "dark" : "light"); } catch {}
+  syncBtn();
+});
+</script>
+</body>
+</html>

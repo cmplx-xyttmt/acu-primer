@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home page</title>
+<link rel="stylesheet" href="app.css">
+<script src="icons.js"></script>
+<style>
+  body { margin: 0; background: #e9eaee; font-family: "Plus Jakarta Sans", system-ui, sans-serif; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 24px 16px 60px; display: flex; gap: 22px; flex-wrap: wrap; }
+  .cap { font-size: 0.8rem; font-weight: 600; color: #6b7280; margin: 0 0 6px; }
+  .screen { width: 560px; max-width: 100%; min-height: 640px; border-radius: 18px; box-shadow: 0 18px 40px -22px rgb(0 0 0 / 0.45); padding: 18px 22px 22px; display: flex; flex-direction: column; }
+  .top { display: flex; align-items: center; justify-content: space-between; }
+  .wordmark { font-size: 1.1rem; }
+  .hero { margin: 46px 0 24px; }
+  .hero h1 { font-size: 2rem; line-height: 1.15; margin: 0 0 10px; letter-spacing: -0.02em; }
+  .look-dark .hero h1 { letter-spacing: 0; }
+  .hero p { margin: 0; color: var(--text-2); max-width: 30rem; }
+  .how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0 0 26px; }
+  @media (max-width: 520px) { .how { grid-template-columns: 1fr; } }
+  .how div { font-size: 0.82rem; color: var(--text-2); padding: 10px 12px; border-radius: var(--radius); background: var(--surface); }
+  .how b { display: flex; gap: 6px; align-items: center; color: var(--text); font-size: 0.88rem; margin-bottom: 2px; }
+  .how .i { color: var(--accent); }
+  h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-2); margin: 0 0 8px; }
+  .card.course { padding: 14px 16px; margin-bottom: 10px; display: flex; gap: 14px; align-items: center; }
+  .course .t { flex: 1; }
+  .course .t b { display: block; }
+  .course .t span { font-size: 0.82rem; color: var(--text-2); }
+  .prog { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; margin-top: 8px; }
+  .prog span { display: block; height: 100%; background: var(--accent); }
+  .resume { padding: 16px; margin: 30px 0 18px; border-color: var(--hover-border); }
+  .resume .k { font-size: 0.78rem; font-weight: 600; color: var(--accent); }
+  .look-light .resume .k { color: #1d4ed8; }
+  .resume h3 { margin: 2px 0 2px; font-size: 1.15rem; }
+  .resume p { margin: 0 0 12px; color: var(--text-2); font-size: 0.88rem; }
+  .foot { margin-top: auto; padding-top: 18px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; color: var(--text-2); }
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap"></div>
+
+<template id="first">
+  <div class="screen">
+    <div class="top"><span class="wordmark"><span data-mark="28"></span><span>acu<span class="dot">·</span>primer</span></span><button class="b b-quiet b-sm" aria-label="Theme"><svg class="i" data-i="sun"></svg></button></div>
+    <div class="hero">
+      <h1>Short lessons that notice when you're stuck</h1>
+      <p>Read a little, answer a question. Get one wrong and the lesson explains it another way, then gives you a simpler question before you try again.</p>
+    </div>
+    <div class="how">
+      <div><b><svg class="i" data-i="book"></svg>Short</b>One idea per screen, a question every minute or two.</div>
+      <div><b><svg class="i" data-i="lightbulb"></svg>Adapts</b>Each wrong answer has its own hint.</div>
+      <div><b><svg class="i" data-i="circle-check"></svg>Checked</b>A person reviews each lesson. Drafts are marked.</div>
+    </div>
+    <h2>Courses</h2>
+    <a class="card course" href="#" onclick="return false"><span class="t"><b>Sampling distributions</b><span>OpenIntro Statistics · 1 lesson · about 15 min</span></span><svg class="i" data-i="chevron-right"></svg></a>
+    <a class="card course" href="#" onclick="return false"><span class="t"><b>Processes and limited direct execution</b><span>OSTEP · 4 lessons</span></span><svg class="i" data-i="chevron-right"></svg></a>
+    <div class="foot"><span>Works offline once opened.</span><a class="b b-quiet b-sm" href="#"><svg class="i i-sm" data-i="pen"></svg>Author sign-in</a></div>
+  </div>
+</template>
+
+<template id="back">
+  <div class="screen">
+    <div class="top"><span class="wordmark"><span data-mark="28"></span><span>acu<span class="dot">·</span>primer</span></span><button class="b b-quiet b-sm" aria-label="Theme"><svg class="i" data-i="moon"></svg></button></div>
+    <div class="card resume">
+      <div class="k">Welcome back, Amina</div>
+      <h3>Point estimates and sampling variability</h3>
+      <p>Sampling distributions · module 3 of 7</p>
+      <div class="prog"><span style="width:43%"></span></div>
+      <div style="margin-top:14px"><button class="b b-primary">Continue<svg class="i" data-i="arrow-right"></svg></button></div>
+    </div>
+    <h2>Other courses</h2>
+    <a class="card course" href="#" onclick="return false"><span class="t"><b>Processes and limited direct execution</b><span>OSTEP · 4 lessons · not started</span></span><svg class="i" data-i="chevron-right"></svg></a>
+    <div class="foot"><span>Not Amina? <a class="b b-quiet b-sm" href="#">Switch name</a></span><a class="b b-quiet b-sm" href="#"><svg class="i i-sm" data-i="pen"></svg>Author sign-in</a></div>
+  </div>
+</template>
+<script>
+  const wrap = document.getElementById("wrap");
+  for (const [tpl, look, cap] of [["first", "light", "First visit, Clean study"], ["back", "dark", "Returning student on this device, Night desk"]]) {
+    const d = document.createElement("div");
+    d.innerHTML = `<p class="cap">${cap}</p>`;
+    const c = document.getElementById(tpl).content.cloneNode(true);
+    c.querySelector(".screen").classList.add(`look-${look}`);
+    d.append(c); wrap.append(d);
+  }
+</script>
+</body>
+</html>

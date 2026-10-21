@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interactive review mode</title>
+<link rel="stylesheet" href="app.css">
+<script src="icons.js"></script>
+<style>
+  body { margin: 0; min-height: 100vh; }
+  [hidden] { display: none !important; }
+  /* The review frame: a violet edge around the whole window, like Canvas's Student View. */
+  .frame-edge { position: fixed; inset: 0; border: 3px solid var(--review-edge); pointer-events: none; z-index: 50; }
+  .banner { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: 10px; padding: 8px 16px; background: var(--review-bg); color: var(--review); border-bottom: 1px solid color-mix(in srgb, var(--review-edge) 35%, transparent); font-size: 0.88rem; }
+  .banner b { font-weight: 700; }
+  .banner .sp { flex: 1; }
+  .banner .b-quiet { color: var(--review); }
+  .banner .b-quiet:hover { background: color-mix(in srgb, var(--review-edge) 15%, transparent); color: var(--review); }
+  .banner .what { color: var(--text-2); }
+  @media (max-width: 640px) { .banner .what { display: none; } }
+
+  .rail { max-width: 64rem; margin: 0 auto; padding: 12px 16px 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .pill { min-width: 30px; height: 28px; padding: 0 9px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg); color: var(--text-2); font: inherit; font-size: 0.8rem; display: inline-flex; align-items: center; justify-content: center; gap: 3px; cursor: pointer; position: relative; }
+  .pill:hover { border-color: var(--hover-border); }
+  .pill.ok { background: var(--right-bg); color: var(--right); border-color: transparent; }
+  .pill.here { border: 2px solid var(--review-edge); color: var(--text); font-weight: 700; }
+  .pill.note::after { content: ""; position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg); }
+  .pill.pop { animation: pop 260ms ease; }
+  @keyframes pop { 50% { transform: scale(1.18); } }
+  .rail .count { margin-left: auto; font-size: 0.82rem; color: var(--text-2); }
+
+  .layout { max-width: 64rem; margin: 0 auto; padding: 8px 16px 120px; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; }
+  @media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } .side { display: none; } .tools { display: none; } }
+  @media (max-width: 1240px) { .tools { opacity: 0.85; } }
+
+  .student { max-width: 40rem; }
+  .kicker { margin: 14px 0 0; font-size: 0.78rem; font-weight: 600; color: var(--text-2); }
+  h2 { margin: 2px 0 10px; font-size: 1.5rem; line-height: 1.25; }
+
+  .part { position: relative; border-radius: var(--radius); margin: 0 -10px; padding: 2px 10px; transition: background-color 120ms ease; }
+  .part:hover { background: color-mix(in srgb, var(--review-edge) 6%, transparent); }
+  .pin { position: absolute; top: 4px; right: -34px; width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text-2); display: grid; place-items: center; cursor: pointer; opacity: 0.55; transition: opacity 120ms ease, color 120ms ease, border-color 120ms ease; }
+  .part:hover .pin, .pin:focus-visible { opacity: 1; color: var(--review); border-color: var(--review-edge); }
+  @media (max-width: 860px) { .pin { right: 0; top: -4px; opacity: 0.9; } .part { padding-right: 40px; } }
+  .notebox { margin: 6px 0 10px; display: grid; gap: 8px; }
+  .notebox textarea { font: inherit; font-size: 0.92rem; color: var(--text); background: var(--surface); border: 2px solid var(--review-edge); border-radius: var(--radius); padding: 8px 10px; resize: vertical; }
+  .notebox .row { display: flex; gap: 8px; }
+  .note-chip { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0 10px; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--accent-soft); font-size: 0.88rem; }
+  .note-chip .i { color: var(--accent); margin-top: 2px; }
+  .note-chip .x { margin-left: auto; }
+
+  .coach { display: flex; gap: 10px; align-items: flex-start; margin: 22px 0 10px; padding: 10px 12px; border-radius: var(--radius); background: var(--review-bg); color: var(--text); border: 1px dashed var(--review-edge); font-size: 0.92rem; }
+  .coach .i { color: var(--review); margin-top: 2px; }
+  .coach .msg { flex: 1; }
+  .coach .msg b { color: var(--review); }
+  .coach .b { flex: none; }
+  .coach.swap { animation: swap 220ms ease; }
+  @keyframes swap { from { opacity: 0; transform: translateY(-4px); } }
+
+  .q { font-weight: 600; margin: 4px 0 10px; }
+  .opts { display: grid; gap: 8px; margin-bottom: 12px; }
+  .option .seen { margin-left: auto; font-size: 0.72rem; font-weight: 600; color: var(--review); display: inline-flex; align-items: center; gap: 3px; }
+  .option .mark + .seen { margin-left: 8px; }
+  .shake { animation: shake 260ms ease 1; }
+  @keyframes shake { 20%, 60% { transform: translateX(-4px); } 40%, 80% { transform: translateX(4px); } }
+  .rise { animation: rise 220ms ease-out; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+
+  .verdict-right { display: flex; gap: 8px; align-items: center; font-weight: 700; color: var(--right); margin: 12px 0 2px; }
+  .fallback { margin-top: 12px; padding: 12px 14px; background: var(--fallback-bg); border-left: 3px solid var(--fallback-edge); border-radius: var(--radius); }
+  .fallback .lead { font-weight: 700; margin: 0 0 4px; }
+  .author-only { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 0 0 8px; font-size: 0.8rem; color: var(--review); }
+  .fallback .simpler { margin-top: 8px; }
+  .fallback .simpler .option { padding: 0.5rem 0.8rem; font-size: 0.92rem; }
+
+  .side { position: sticky; top: 64px; }
+  .side .card { padding: 14px 16px; }
+  .side h3 { margin: 0 0 2px; font-size: 0.95rem; }
+  .side .sub { margin: 0 0 10px; font-size: 0.82rem; color: var(--text-2); }
+  .tasks { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .tasks li { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; line-height: 1.35; color: var(--text-2); }
+  .tasks li.done { color: var(--text); }
+  .tasks li.next { color: var(--text); font-weight: 600; }
+  .tick { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-strong); display: grid; place-items: center; margin-top: -1px; }
+  .tasks li.next .tick { border-color: var(--review-edge); }
+  .tasks li.done .tick { background: var(--right); border-color: var(--right); }
+  .tick svg { width: 12px; height: 12px; stroke: #fff; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 24; stroke-dashoffset: 24; }
+  .tasks li.done .tick svg { stroke-dashoffset: 0; transition: stroke-dashoffset 300ms ease 60ms; }
+  .side .meter { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-2); margin: 14px 0 6px; }
+  .side .prog { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
+  .side .prog span { display: block; height: 100%; width: 0; background: var(--review-edge); transition: width 300ms ease; }
+
+  .dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); border-top: 1px solid var(--border); }
+  .dock .in { max-width: 64rem; margin: 0 auto; padding: 10px 16px 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .dock .status { flex: 1; min-width: 180px; font-size: 0.85rem; color: var(--text-2); }
+  .dock .status b { color: var(--text); }
+  .confirm { font-size: 0.85rem; color: var(--text-2); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .b-approve .done-check { display: none; }
+  .b-approve.approved { background: var(--right); color: #fff; }
+  .look-dark .b-approve.approved { color: #14161a; }
+  .b-approve.approved .done-check { display: inline; }
+  .b-approve.approved .label-approve { display: none; }
+
+  .tools { position: fixed; left: 14px; bottom: 84px; z-index: 45; flex-direction: column; align-items: flex-start; display: flex; gap: 6px; }
+  .tools button { font: inherit; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text-2); cursor: pointer; }
+  @media (max-width: 860px) { .tools { display: none; } }
+  @media (max-width: 520px) { .coach { flex-wrap: wrap; } .coach .msg { flex-basis: calc(100% - 30px); } .coach .b { margin-left: 26px; } }
+  @media (max-width: 640px) { .dock .in { gap: 8px; padding: 8px 12px 12px; } .dock .status { flex-basis: 100%; font-size: 0.8rem; } .dock .in > .b { flex: 1; padding: 0.55rem 0.5rem; font-size: 0.86rem; } .confirm { flex-basis: 100%; } }
+  body.rm * { animation: none !important; transition: none !important; }
+  @media (prefers-reduced-motion: reduce) { body * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body class="look-light">
+<div class="frame-edge" aria-hidden="true"></div>
+
+<div class="banner" role="region" aria-label="Review mode">
+  <span class="badge badge-review">Review mode</span>
+  <span class="what">You're playing this lesson as a student. Students never see this bar.</span>
+  <span class="sp"></span>
+  <button class="b b-quiet b-sm"><svg class="i i-sm" data-i="log-out"></svg>Exit review</button>
+</div>
+<div class="tools"><button id="look">Night desk</button><button id="rm">Reduced motion: off</button><button id="reset">Start over</button></div>
+
+<nav class="rail" aria-label="Review steps">
+  <button class="pill ok" title="Outcomes, approved"><svg class="i i-sm" data-i="check"></svg>Outcomes</button>
+  <button class="pill ok" title="1. Parameter and point estimate, approved"><svg class="i i-sm" data-i="check"></svg>1</button>
+  <button class="pill here" id="here" aria-current="step">2</button>
+  <button class="pill">3</button><button class="pill">4</button><button class="pill note" title="Has a suggestion">5</button><button class="pill">6</button><button class="pill">7</button><button class="pill">8</button><button class="pill">9</button><button class="pill">10</button>
+  <button class="pill"><svg class="i i-sm" data-i="flag"></svg>Sign off</button>
+  <span class="count num" id="approvedCount">2 of 11 approved</span>
+</nav>
+
+<div class="layout">
+  <main class="student">
+    <div class="kicker">5.1 Point estimates and sampling variability · Module 2 of 10</div>
+    <h2>Two kinds of error</h2>
+
+    <div class="part" data-part="Reading">
+      <button class="pin" aria-label="Suggest a change to the reading"><svg class="i" data-i="message-plus"></svg></button>
+      <p>The <b>error</b> in an estimate is the gap between p̂ and p. It has two parts.</p>
+      <p><b>Sampling error</b> is the luck of the draw: one random sample comes out a bit high, another a bit low. It shrinks as the sample size n grows.</p>
+      <p><b>Bias</b> is a tendency to miss in the same direction every time, for example because of how a question is worded or who gets asked. A bigger sample doesn't fix bias. Careful data collection does.</p>
+    </div>
+
+    <div class="coach" id="coach" aria-live="polite">
+      <svg class="i" data-i="flag"></svg>
+      <div class="msg" id="coachMsg"></div>
+      <button class="b b-quiet b-sm" id="again" hidden><svg class="i i-sm" data-i="rotate-ccw"></svg>Answer again</button>
+    </div>
+
+    <div class="part" data-part="Check">
+      <button class="pin" aria-label="Suggest a change to the question"><svg class="i" data-i="message-plus"></svg></button>
+      <p class="q">A student poll asks: "Do you support your school by supporting funding for the new stadium?" What kind of error is the wording most likely to cause?</p>
+    </div>
+    <div class="opts" id="opts"></div>
+    <button class="b b-primary" id="checkBtn" disabled>Check</button>
+    <div id="after"></div>
+  </main>
+
+  <aside class="side">
+    <div class="card">
+      <h3>Try every path</h3>
+      <p class="sub">Each answer a student can give, and what they'll see.</p>
+      <ul class="tasks" id="tasks"></ul>
+      <div class="meter"><span>Paths seen</span><span class="num" id="pathCount">0 / 4</span></div>
+      <div class="prog"><span id="pathBar"></span></div>
+    </div>
+  </aside>
+</div>
+
+<div class="dock">
+  <div class="in">
+    <div class="status" id="dockStatus"></div>
+    <div class="confirm" id="confirm" hidden>
+      <span id="confirmText"></span>
+      <button class="b b-secondary b-sm" id="confirmYes">Approve anyway</button>
+    </div>
+    <button class="b b-secondary" id="suggestBtn"><svg class="i" data-i="message-plus"></svg>Suggest a change</button>
+    <button class="b b-primary b-approve" id="approve"><span class="label-approve">Approve module</span><span class="done-check">Approved</span><svg class="i" data-i="check"></svg></button>
+  </div>
+</div>
+
+<script>
+const OPTIONS = [
+  { id: "a", text: "Sampling error, which asking more students would fix" },
+  { id: "b", text: "Bias, pushing the estimate up however many students are asked" },
+  { id: "c", text: "No error, as long as the students are picked at random" },
+];
+const RIGHT = "b";
+const PATHS = [
+  { key: "right", label: "Choose the right answer and read the explanation" },
+  { key: "a", label: 'Choose "Sampling error..." and see its hint and simpler question' },
+  { key: "c", label: 'Choose "No error..." and see its hint' },
+  { key: "other", label: "See what any other answer gets" },
+];
+const HINTS = {
+  a: {
+    misconception: "Treats a systematic error from question wording as sampling error that a bigger sample would remove.",
+    source: "Model's guess",
+    text: 'The wording nudges every respondent toward "yes", so the poll overestimates support in every sample. Asking 10,000 students instead of 100 would just give a very precise wrong answer. That\'s bias.',
+    simpler: { q: "If every sample tends to come out too high, will a bigger sample fix it?", opts: ["Yes", "No"], right: 1 },
+  },
+  c: {
+    misconception: "Believes random selection alone guarantees an unbiased estimate, ignoring measurement problems such as leading questions.",
+    source: "Model's guess",
+    text: "Random selection protects against one source of bias: who gets asked. It does nothing about what they're asked. A leading question biases the answers even from a perfectly random sample.",
+  },
+};
+const EXPLANATION = "The wording leans every respondent toward yes, so every sample overestimates support. That's bias. Asking more students the same leading question only makes the wrong answer more precise.";
+const GENERAL = "Ask: does the problem push the answer the same way every time (bias), or does it vary by luck from sample to sample (sampling error)?";
+
+let seen, picked, answered, notes, approved;
+const $ = (id) => document.getElementById(id);
+
+function start() {
+  seen = new Set(); picked = null; answered = null; notes = []; approved = false;
+  $("here").className = "pill here"; $("approvedCount").textContent = "2 of 11 approved";
+  document.querySelectorAll(".note-chip,.notebox").forEach((n) => n.remove());
+  render();
+}
+
+function coachText() {
+  const left = PATHS.filter((p) => !seen.has(p.key));
+  if (approved) return "<b>Approved.</b> Module 3 is next: the sampling distribution.";
+  if (answered === "b") return left.length ? `<b>Right, and that's the explanation students get.</b> Now choose a wrong answer to see its hint. ${left.length} path${left.length > 1 ? "s" : ""} to go.` : "<b>That's every path.</b> Approve the module, or pin a suggestion to the part you'd change.";
+  if (answered === "a" || answered === "c") return left.length ? `<b>That's the hint for this mistake.</b> Try the simpler question too, then answer again. ${left.length} path${left.length > 1 ? "s" : ""} to go.` : "<b>That's every path.</b> Approve the module, or pin a suggestion to the part you'd change.";
+  if (!seen.has("right")) return "<b>Choose the right answer</b> to see the explanation students get.";
+  if (left.some((p) => p.key === "a" || p.key === "c")) return "<b>Now choose a wrong answer</b> to see its hint.";
+  if (!seen.has("other")) return '<b>Last one.</b> A student could give an answer nobody planned for. <button class="b b-secondary b-sm" onclick="showOther()">Show what they see</button>';
+  return "<b>That's every path.</b> Approve the module, or pin a suggestion to the part you'd change.";
+}
+
+function render() {
+  // options
+  const box = $("opts"); box.innerHTML = "";
+  for (const o of OPTIONS) {
+    const b = document.createElement("button");
+    b.className = "option";
+    const isPicked = picked === o.id;
+    if (isPicked) b.classList.add("picked");
+    if (answered === o.id) b.classList.add(o.id === RIGHT ? "right" : "wrong");
+    b.disabled = answered !== null;
+    const tried = (o.id === RIGHT && seen.has("right")) || seen.has(o.id);
+    b.innerHTML = `<span>${o.text}</span>` +
+      (answered === o.id ? `<svg class="i mark" data-i="${o.id === RIGHT ? "circle-check" : "circle-x"}" style="color:var(${o.id === RIGHT ? "--right" : "--wrong"})"></svg>` : "") +
+      (tried && answered !== o.id ? `<span class="seen"><svg class="i i-sm" data-i="check"></svg>tried</span>` : "");
+    b.onclick = () => { picked = o.id; render(); };
+    box.append(b);
+  }
+  $("checkBtn").hidden = answered !== null;
+  $("checkBtn").disabled = !picked;
+  $("again").hidden = answered === null || approved;
+  // coach
+  const msg = $("coachMsg"); const html = coachText();
+  if (msg.innerHTML !== html) { msg.innerHTML = html; const c = $("coach"); c.classList.remove("swap"); void c.offsetWidth; c.classList.add("swap"); }
+  // tasks
+  const t = $("tasks"); t.innerHTML = "";
+  const nextKey = PATHS.find((p) => !seen.has(p.key))?.key;
+  for (const p of PATHS) {
+    const li = document.createElement("li");
+    li.className = seen.has(p.key) ? "done" : p.key === nextKey ? "next" : "";
+    li.innerHTML = `<span class="tick"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>${p.label}</span>`;
+    t.append(li);
+  }
+  $("pathCount").textContent = `${seen.size} / ${PATHS.length}`;
+  $("pathBar").style.width = `${(100 * seen.size) / PATHS.length}%`;
+  // dock
+  const open = notes.length;
+  $("dockStatus").innerHTML = approved ? "<b>Module 2 approved.</b> Going on to module 3." :
+    open ? `<b>${open} suggestion${open > 1 ? "s" : ""} on this module.</b> Apply ${open > 1 ? "them" : "it"} with Claude, then approve.` :
+    `<b>${seen.size} of ${PATHS.length} paths seen.</b> Approve when it reads right.`;
+  const ap = $("approve");
+  ap.disabled = open > 0 && !approved;
+  ap.classList.toggle("approved", approved);
+  $("suggestBtn").innerHTML = open && !approved ? '<svg class="i" data-i="pen"></svg>Apply with Claude' : '<svg class="i" data-i="message-plus"></svg>Suggest a change';
+  fillIcons(document);
+}
+
+function check() {
+  answered = picked;
+  if (answered === RIGHT) seen.add("right"); else seen.add(answered);
+  render();
+  const after = $("after"); after.innerHTML = "";
+  if (answered === RIGHT) {
+    after.innerHTML = `<div class="rise"><p class="verdict-right"><svg class="i" data-i="circle-check"></svg>Right.</p>
+      <div class="part" data-part="Explanation after a right answer"><button class="pin" aria-label="Suggest a change to the explanation"><svg class="i" data-i="message-plus"></svg></button><p style="margin:0 0 6px">${EXPLANATION}</p></div></div>`;
+  } else {
+    const h = HINTS[answered];
+    document.querySelector(".option.wrong")?.classList.add("shake");
+    after.innerHTML = `<div class="fallback rise part" data-part="Hint for: ${OPTIONS.find((o) => o.id === answered).text}">
+      <button class="pin" aria-label="Suggest a change to this hint"><svg class="i" data-i="message-plus"></svg></button>
+      <p class="author-only"><span class="badge badge-review no-dot">Author's view</span>Misconception: ${h.misconception} <span class="badge badge-muted">${h.source}</span></p>
+      <p class="lead">Not quite.</p><p style="margin:0">${h.text}</p>
+      ${h.simpler ? `<div class="simpler"><p class="q" style="margin:10px 0 6px">${h.simpler.q}</p><div class="opts" id="simpler">${h.simpler.opts.map((t, i) => `<button class="option" data-i="${i}">${t}</button>`).join("")}</div></div>` : ""}
+    </div>`;
+    after.querySelectorAll("#simpler .option").forEach((b) => (b.onclick = () => {
+      const ok = Number(b.dataset.i) === h.simpler.right;
+      b.classList.add(ok ? "right" : "wrong");
+      b.insertAdjacentHTML("beforeend", `<svg class="i mark" data-i="${ok ? "circle-check" : "circle-x"}" style="color:var(${ok ? "--right" : "--wrong"})"></svg>`);
+      fillIcons(b);
+    }));
+  }
+  wirePins(after); fillIcons(after);
+}
+
+function showOther() {
+  seen.add("other");
+  const after = $("after");
+  after.innerHTML = `<div class="fallback rise part" data-part="General fallback"><button class="pin" aria-label="Suggest a change to this hint"><svg class="i" data-i="message-plus"></svg></button>
+    <p class="author-only"><span class="badge badge-review no-dot">Author's view</span>Any answer nobody planned for</p>
+    <p class="lead">Not quite.</p><p style="margin:0">${GENERAL}</p></div>`;
+  wirePins(after); render(); fillIcons(after);
+}
+
+function openNote(part) {
+  if (part.querySelector(":scope > .notebox")) return;
+  const box = document.createElement("div");
+  box.className = "notebox";
+  box.innerHTML = `<textarea rows="2" placeholder="What should change in the ${part.dataset.part.toLowerCase()}, and why?"></textarea>
+    <div class="row"><button class="b b-primary b-sm">Save suggestion</button><button class="b b-quiet b-sm">Cancel</button></div>`;
+  part.append(box);
+  const ta = box.querySelector("textarea"); ta.focus();
+  const [save, cancel] = box.querySelectorAll("button");
+  cancel.onclick = () => box.remove();
+  save.onclick = () => {
+    const text = ta.value.trim() || "Make this shorter.";
+    notes.push(text); box.remove();
+    part.insertAdjacentHTML("beforeend", `<div class="note-chip"><svg class="i" data-i="message"></svg><span><b>${part.dataset.part}:</b> ${text}</span></div>`);
+    $("here").classList.add("note"); render();
+  };
+}
+function wirePins(root) { root.querySelectorAll(".pin").forEach((p) => (p.onclick = () => openNote(p.closest(".part")))); }
+
+$("checkBtn").onclick = check;
+$("again").onclick = () => { answered = null; picked = null; $("after").innerHTML = ""; render(); };
+$("suggestBtn").onclick = () => {
+  if (notes.length) { $("dockStatus").innerHTML = "<b>In the app this calls Claude</b> (a few cents). This mock doesn't."; return; }
+  openNote(document.querySelector('.part[data-part="Reading"]'));
+  document.querySelector('.part[data-part="Reading"]').scrollIntoView({ behavior: "smooth", block: "center" });
+};
+function doApprove() {
+  approved = true; $("confirm").hidden = true;
+  const here = $("here"); here.className = "pill ok pop"; here.innerHTML = '<svg class="i i-sm" data-i="check"></svg>2';
+  $("approvedCount").textContent = "3 of 11 approved"; render();
+}
+$("approve").onclick = () => {
+  if (approved) return;
+  const left = PATHS.length - seen.size;
+  if (left > 0) { $("confirm").hidden = false; $("confirmText").textContent = `You haven't tried ${left} path${left > 1 ? "s" : ""} yet.`; return; }
+  doApprove();
+};
+$("confirmYes").onclick = doApprove;
+$("reset").onclick = () => { $("here").innerHTML = "2"; $("after").innerHTML = ""; $("confirm").hidden = true; start(); };
+$("look").onclick = (e) => { const dark = document.body.classList.toggle("look-dark"); document.body.classList.toggle("look-light", !dark); e.target.textContent = dark ? "Clean study" : "Night desk"; };
+$("rm").onclick = (e) => { const on = document.body.classList.toggle("rm"); e.target.textContent = `Reduced motion: ${on ? "on" : "off"}`; };
+wirePins(document);
+document.addEventListener("DOMContentLoaded", start);
+</script>
+</body>
+</html>

@@ -25,3 +25,6 @@ content/drafts/
 
 # Demo video recordings and renders (large binaries, made locally)
 /devpost/demo-video/media/
+
+# UX audit screenshots (made locally)
+/devpost/ux/media/

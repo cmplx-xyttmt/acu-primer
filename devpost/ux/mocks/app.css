@@ -1,0 +1,336 @@
+/* Shared styles for the acu-primer mocks. The tokens are the app's own (src/app/theme.css),
+   scoped to .look-light ("Clean study") and .look-dark ("Night desk") so one page can show
+   both. The component classes below are the proposed vocabulary (research.md, proposal 1). */
+@import url("fonts.css");
+
+.look-light {
+  --bg: #ffffff;
+  --surface: #f3f4f6;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --text: #111827;
+  --text-2: #6b7280;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-press: #1e40af;
+  --accent-text: #ffffff;
+  --accent-soft: #eff4ff;
+  --hover-border: #93b4f5;
+  --fallback-bg: #eff4ff;
+  --fallback-edge: #2563eb;
+  --right: #15803d;
+  --right-bg: #ecfdf3;
+  --wrong: #b91c1c;
+  --wrong-bg: #fef2f2;
+  --draft: #92400e;
+  --draft-bg: #fef3c7;
+  --review: #6d28d9;
+  --review-bg: #f5f3ff;
+  --review-edge: #8b5cf6;
+  --shadow: 0 1px 2px rgb(17 24 39 / 0.06), 0 4px 14px -6px rgb(17 24 39 / 0.12);
+  --shadow-lift: 0 2px 4px rgb(17 24 39 / 0.06), 0 12px 28px -10px rgb(17 24 39 / 0.22);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --font: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-num: "Plus Jakarta Sans", system-ui, sans-serif;
+  color-scheme: light;
+}
+.look-dark {
+  --bg: #14161a;
+  --surface: #1c1f24;
+  --card: #1c1f24;
+  --border: #33373e;
+  --border-strong: #464b54;
+  --text: #e6e3dc;
+  --text-2: #9b978f;
+  --accent: #f2b84b;
+  --accent-hover: #f6c76d;
+  --accent-press: #e0a536;
+  --accent-text: #14161a;
+  --accent-soft: #2a2416;
+  --hover-border: #f2b84b;
+  --fallback-bg: #221e14;
+  --fallback-edge: #f2b84b;
+  --right: #7fc28e;
+  --right-bg: #18261c;
+  --wrong: #f0a39b;
+  --wrong-bg: #2b1a18;
+  --draft: #f0a98a;
+  --draft-bg: #2e1d16;
+  --review: #c4b5fd;
+  --review-bg: #221d33;
+  --review-edge: #a78bfa;
+  --shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 6px 18px -10px rgb(0 0 0 / 0.7);
+  --shadow-lift: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 14px 30px -12px rgb(0 0 0 / 0.8);
+  --radius: 6px;
+  --radius-sm: 5px;
+  --font: "IBM Plex Sans", system-ui, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: dark;
+}
+.look-light,
+.look-dark {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+.look-light *,
+.look-dark * {
+  box-sizing: border-box;
+}
+.num {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Icons: Lucide-style, 24 grid, 2px stroke, currentColor. */
+.i {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: -3px;
+}
+.i-sm {
+  width: 14px;
+  height: 14px;
+  vertical-align: -2px;
+}
+
+/* Buttons: three levels. All share the shape and the states. */
+.b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  padding: 0.65rem 1.1rem;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 120ms ease, border-color 120ms ease, box-shadow 120ms ease, transform 80ms ease;
+}
+.b:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.b:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.b-primary {
+  background: var(--accent);
+  color: var(--accent-text);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.18) inset, 0 1px 2px rgb(0 0 0 / 0.12);
+}
+.b-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+.b-primary:active:not(:disabled) {
+  background: var(--accent-press);
+}
+.b-secondary {
+  background: var(--card);
+  color: var(--text);
+  border-color: var(--border-strong);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+}
+.b-secondary:hover:not(:disabled) {
+  border-color: var(--hover-border);
+  background: var(--accent-soft);
+}
+.b-quiet {
+  background: transparent;
+  color: var(--text-2);
+  padding-inline: 0.6rem;
+}
+.b-quiet:hover:not(:disabled) {
+  background: var(--surface);
+  color: var(--text);
+}
+.b:disabled {
+  background: var(--surface);
+  color: var(--text-2);
+  border-color: var(--border);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+.b-sm {
+  font-size: 0.85rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+}
+/* Forced states, for the state table in components.html */
+.b-primary.is-hover {
+  background: var(--accent-hover);
+}
+.b-primary.is-press {
+  background: var(--accent-press);
+  transform: translateY(1px);
+}
+.b-secondary.is-hover {
+  border-color: var(--hover-border);
+  background: var(--accent-soft);
+}
+.b-quiet.is-hover {
+  background: var(--surface);
+  color: var(--text);
+}
+.is-focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Status badges: small, tinted, square-ish, no border, never underlined, never a pointer. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.3rem 0.5rem;
+  border-radius: 5px;
+  white-space: nowrap;
+  cursor: default;
+  user-select: none;
+}
+.badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.badge.no-dot::before {
+  display: none;
+}
+.badge-draft {
+  color: var(--draft);
+  background: var(--draft-bg);
+}
+.badge-ok {
+  color: var(--right);
+  background: var(--right-bg);
+}
+.badge-info {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.look-light .badge-info {
+  color: #1d4ed8;
+}
+.badge-review {
+  color: var(--review);
+  background: var(--review-bg);
+}
+.badge-muted {
+  color: var(--text-2);
+  background: var(--surface);
+}
+
+/* Cards */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.look-light .card.flat {
+  background: var(--surface);
+  border-color: transparent;
+  box-shadow: none;
+}
+a.card,
+button.card,
+.card.clickable {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 120ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+a.card:hover,
+button.card:hover,
+.card.clickable:hover {
+  border-color: var(--hover-border);
+  box-shadow: var(--shadow-lift);
+  transform: translateY(-1px);
+}
+
+/* Answer options as in the app, plus right/wrong icons so the verdict isn't colour only */
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.7rem 0.95rem;
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+.option:hover:not(:disabled) {
+  border-color: var(--hover-border);
+}
+.option.picked {
+  border-color: var(--accent);
+}
+.option.right {
+  border-color: var(--right);
+  background: var(--right-bg);
+}
+.option.wrong {
+  border-color: var(--wrong);
+  background: var(--wrong-bg);
+}
+.option .mark {
+  margin-left: auto;
+}
+.option:disabled {
+  cursor: default;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-decoration: none;
+}
+.look-dark .wordmark {
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.wordmark .dot {
+  color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .look-light *,
+  .look-dark * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

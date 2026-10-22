@@ -1,0 +1,26 @@
+/* Shared look for the concept B motion pieces: the app's light theme (warm paper, blue accent,
+   Plus Jakarta Sans), on a 1920x1080 stage. Every frame is set by render(t) in each page. */
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 400; src: url(../page-to-lesson/fonts/plus-jakarta-sans-latin-400-normal.woff2) format("woff2"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 600; src: url(../page-to-lesson/fonts/plus-jakarta-sans-latin-600-normal.woff2) format("woff2"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 700; src: url(../page-to-lesson/fonts/plus-jakarta-sans-latin-700-normal.woff2) format("woff2"); }
+@font-face { font-family: "Plus Jakarta Sans"; font-weight: 800; src: url(../page-to-lesson/fonts/plus-jakarta-sans-latin-800-normal.woff2) format("woff2"); }
+:root {
+  --bg: #fbf8f1; --card: #fff; --surface: #f3efe4; --border: #e7e0cf; --text: #1f2430; --text-2: #6d6a62;
+  --accent: #2563eb; --accent-soft: #e9f0fe; --sun: #facc15; --banner: linear-gradient(135deg, #e9f0fe 0%, #fdf3d7 100%);
+  --fallback-bg: #fffaf0; --fallback-edge: #e4a72e; --right: #15803d; --right-bg: #ecfdf3; --wrong: #b91c1c; --wrong-bg: #fef2f2;
+  --draft: #92400e; --draft-bg: #fef3c7; --done: #166534; --done-bg: #dcfce7;
+  --shadow: 0 1px 2px rgb(60 50 30 / 0.06), 0 4px 14px -6px rgb(60 50 30 / 0.14);
+  --shadow-lift: 0 2px 4px rgb(60 50 30 / 0.06), 0 14px 30px -12px rgb(60 50 30 / 0.26);
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; background: #0d0f12; overflow: hidden; }
+body { display: grid; place-items: center; font-family: "Plus Jakarta Sans", system-ui, sans-serif; color: var(--text); }
+#stage { position: relative; width: 1920px; height: 1080px; background: var(--bg); overflow: hidden; flex: none; transform-origin: center; }
+.abs { position: absolute; }
+.page-img { position: absolute; border-radius: 6px; box-shadow: 0 24px 50px -22px rgb(40 30 10 / 0.45); background: #fff; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); }
+.badge { display: inline-flex; align-items: center; gap: 6px; font-size: 20px; font-weight: 600; padding: 4px 12px; border-radius: 7px; }
+.badge-draft { background: var(--draft-bg); color: var(--draft); }
+.badge-done { background: var(--done-bg); color: var(--done); }
+.label { font-size: 17px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-2); }
+.src { font-size: 20px; color: var(--text-2); }

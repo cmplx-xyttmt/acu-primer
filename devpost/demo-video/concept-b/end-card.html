@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>End card</title>
+<!-- Concept B, the last shot: the logo, the name, the loop in five words, and a slot for the
+     repo link. The loop words are labels from the app; the bracketed line is Isaac's to fill. -->
+<link rel="stylesheet" href="base.css">
+<style>
+#mark { left: 50%; top: 270px; width: 150px; height: 150px; margin-left: -75px; }
+#name { left: 0; right: 0; top: 450px; text-align: center; font-size: 76px; font-weight: 800; letter-spacing: -0.02em; }
+#name em { font-style: normal; color: var(--accent); }
+#loop { left: 0; right: 0; top: 600px; display: flex; justify-content: center; align-items: center; gap: 18px; font-size: 30px; font-weight: 700; }
+#loop .step { padding: 10px 22px; border-radius: 12px; background: var(--card); border: 1px solid var(--border); box-shadow: var(--shadow); }
+#loop .arrow { color: var(--fallback-edge); font-size: 30px; }
+#repo { left: 0; right: 0; top: 760px; text-align: center; font-size: 26px; color: var(--text-2); }
+</style>
+</head>
+<body>
+<div id="stage" style="background: var(--banner)">
+  <div id="mark" class="abs"></div>
+  <div id="name" class="abs">acu<em>primer</em></div>
+  <div id="loop" class="abs"></div>
+  <div id="repo" class="abs">[repo link]</div>
+</div>
+<script src="motion.js"></script>
+<script>
+document.getElementById("mark").innerHTML = LOGO;
+const WORDS = ["Book", "Lessons", "Review", "Students", "Log"];
+const loop = document.getElementById("loop");
+const parts = [];
+WORDS.forEach((w, i) => {
+  if (i) { const a = document.createElement("span"); a.className = "arrow"; a.textContent = "→"; loop.appendChild(a); parts.push(a); }
+  const s = document.createElement("span"); s.className = "step"; s.textContent = w; loop.appendChild(s); parts.push(s);
+});
+function render(t) {
+  const m = seg(t, 0, 0.7, easeOut);
+  style(document.getElementById("mark"), { opacity: m, transform: `scale(${lerp(0.7, 1, m)})` });
+  const n = seg(t, 0.4, 1.1);
+  style(document.getElementById("name"), { opacity: n, transform: `translateY(${(1 - n) * 16}px)` });
+  parts.forEach((p, i) => { const k = seg(t, 1.2 + i * 0.14, 1.6 + i * 0.14, easeOut); style(p, { opacity: k, transform: `translateY(${(1 - k) * 12}px)` }); });
+  style(document.getElementById("repo"), { opacity: seg(t, 2.8, 3.4) });
+}
+document.fonts.ready.then(() => play(render, 6));
+</script>
+</body>
+</html>

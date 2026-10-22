@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chapter to lessons</title>
+<!-- Concept B, shots 2-4: the real OpenIntro 5.1 pages become the drafted lesson's ten modules;
+     module 2 opens into its paths (the right answer, each wrong answer and its hint, any other
+     answer); then the review ticks run down and Draft turns to Reviewed. The module titles, the
+     check and its wrong answers are the real ones from content/openintro-sampling/
+     5.1-point-estimates-draft.json. The page images come from media/pages (gitignored). -->
+<link rel="stylesheet" href="base.css">
+<style>
+#lesson { left: 760px; top: 96px; width: 1040px; height: 92px; padding: 0 26px; display: flex; align-items: center; gap: 18px; background: var(--banner); border-radius: 14px; }
+#lesson h2 { font-size: 28px; font-weight: 700; flex: 1; white-space: nowrap; }
+.row { position: absolute; left: 760px; width: 1040px; height: 64px; display: flex; align-items: center; gap: 16px; padding: 0 22px; font-size: 24px; font-weight: 600; }
+.row .n { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; font-size: 18px; color: var(--text-2); flex: none; }
+.row .tick { margin-left: auto; width: 34px; height: 34px; border-radius: 50%; background: var(--right); color: #fff; display: grid; place-items: center; font-size: 20px; font-weight: 800; }
+.box { position: absolute; padding: 14px 18px; font-size: 21px; line-height: 1.35; }
+.box .label { font-size: 15px; margin-bottom: 4px; }
+.box.right { background: var(--right-bg); border-color: #a7e3bd; }
+.box.wrong { border-left: 4px solid var(--wrong); }
+.box.hint { background: var(--fallback-bg); border: 2px dashed var(--fallback-edge); box-shadow: none; }
+.tag { display: inline-block; margin-top: 6px; font-size: 16px; font-weight: 600; padding: 2px 10px; border-radius: 7px; background: #f5f3ff; color: #6d28d9; }
+#scan { width: 520px; height: 70px; background: linear-gradient(180deg, rgb(37 99 235 / 0), rgb(37 99 235 / 0.22), rgb(37 99 235 / 0)); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="pages"></div>
+  <div id="scan" class="abs"></div>
+  <div id="src" class="abs src" style="left:180px; top:1000px">OpenIntro Statistics, 4th edition · Section 5.1 · CC BY-SA</div>
+  <div id="lesson" class="abs"><span class="label" style="font-size:18px">Lesson</span><h2>5.1 Point estimates and sampling variability</h2><span id="badge" class="badge badge-draft">Draft</span></div>
+  <div id="rows"></div>
+  <svg id="wires" class="abs" width="1920" height="1080" style="left:0;top:0"></svg>
+  <div id="tree"></div>
+</div>
+<script src="motion.js"></script>
+<script>
+const TITLES = ["Parameter and point estimate", "Two kinds of error", "The sampling distribution", "Standard error", "Bigger samples, smaller error", "The Central Limit Theorem", "Checking independence", "The plug-in principle", "How p and n shape the distribution", "Takeaways"];
+const pages = document.getElementById("pages"), rows = document.getElementById("rows"), tree = document.getElementById("tree"), wires = document.getElementById("wires");
+const imgs = [4, 3, 2, 1].map((n) => { const i = document.createElement("img"); i.className = "page-img"; i.src = `../media/pages/ch5-0${n}.png`; pages.appendChild(i); return i; });
+const front = imgs[3];
+const rowEls = TITLES.map((t, i) => { const d = document.createElement("div"); d.className = "row card"; d.innerHTML = `<span class="n">${i + 1}</span><span>${t}</span><span class="tick">✓</span>`; rows.appendChild(d); return d; });
+
+// Module 2's paths, as the review shows them.
+const BOXES = [
+  { id: "q", x: 760, y: 300, w: 520, cls: "", html: `<div class="label">Check</div>A student poll asks: "Do you support your school by supporting funding for the new stadium?" What kind of error is the wording most likely to cause?` },
+  { id: "r", x: 1360, y: 210, w: 460, cls: "right", html: `<div class="label">Right answer</div>Bias, pushing the estimate up however many students are asked` },
+  { id: "w1", x: 1360, y: 370, w: 460, cls: "wrong", html: `<div class="label">Wrong answer</div>Sampling error, which asking more students would fix<br><span class="tag">misconception: the model's guess</span>` },
+  { id: "h1", x: 1400, y: 540, w: 420, cls: "hint", html: `<div class="label">Hint</div>Re-explanation, then a simpler question` },
+  { id: "w2", x: 1360, y: 660, w: 460, cls: "wrong", html: `<div class="label">Wrong answer</div>No error, as long as the students are picked at random` },
+  { id: "h2", x: 1400, y: 800, w: 420, cls: "hint", html: `<div class="label">Hint</div>Re-explanation` },
+  { id: "o", x: 760, y: 640, w: 520, cls: "", html: `<div class="label">Any other answer</div>The general hint` },
+];
+const box = {};
+for (const b of BOXES) { const d = document.createElement("div"); d.className = `box card ${b.cls}`; d.innerHTML = b.html; style(d, { left: b.x + "px", top: b.y + "px", width: b.w + "px" }); tree.appendChild(d); box[b.id] = d; }
+// Wires: from the check to each path, then from a wrong answer down to its hint.
+const WIRES = [["q", "r"], ["q", "w1"], ["w1", "h1"], ["q", "w2"], ["w2", "h2"], ["q", "o"]];
+const paths = WIRES.map(() => { const p = document.createElementNS("http://www.w3.org/2000/svg", "path"); p.setAttribute("fill", "none"); p.setAttribute("stroke", "#c9bfa6"); p.setAttribute("stroke-width", "3"); wires.appendChild(p); return p; });
+function layoutWires() {
+  WIRES.forEach(([a, b], i) => {
+    const A = BOXES.find((x) => x.id === a), B = BOXES.find((x) => x.id === b);
+    const ha = box[a].offsetHeight, hb = box[b].offsetHeight;
+    let d;
+    if (b.startsWith("h")) d = `M ${A.x + 24} ${A.y + ha} V ${B.y + hb / 2} H ${B.x}`;
+    else if (b === "o") d = `M ${A.x + 40} ${A.y + ha} V ${B.y}`;
+    else d = `M ${A.x + A.w} ${A.y + 50} C ${A.x + A.w + 50} ${A.y + 50}, ${B.x - 50} ${B.y + hb / 2}, ${B.x} ${B.y + hb / 2}`;
+    paths[i].setAttribute("d", d);
+    const L = paths[i].getTotalLength(); paths[i].dataset.len = L; paths[i].style.strokeDasharray = L;
+  });
+}
+
+const PAGE = { x: 180, y: 96, w: 520 }, PH = 520 / 0.625;
+function render(t) {
+  // 0-2s: the pages fan in. 4.5-7s: they shrink to the left as the lesson takes shape.
+  const fan = seg(t, 0, 1.8), shrink = seg(t, 4.5, 7);
+  imgs.forEach((img, i) => {
+    const off = (3 - i) * 26 * fan;
+    const w = lerp(PAGE.w, 300, shrink);
+    style(img, { left: lerp(PAGE.x + off, 120 + (3 - i) * 14, shrink) + "px", top: lerp(PAGE.y + 40 * (1 - fan) - off * 0.4, 260 - (3 - i) * 10, shrink) + "px", width: w + "px", opacity: fan, transform: `rotate(${(3 - i) * -2.5 * fan}deg)` });
+  });
+  style(document.getElementById("src"), { opacity: fan * (1 - shrink) });
+  // 2.2-4.4s: a scan line reads the front page.
+  const scan = seg(t, 2.2, 4.4, (x) => x);
+  style(document.getElementById("scan"), { left: PAGE.x + "px", top: PAGE.y + scan * (PH - 70) + "px", opacity: t > 2.2 && t < 4.5 ? Math.sin(scan * Math.PI) : 0 });
+
+  // 5-8.4s: the lesson header, then ten module rows fly out of the page.
+  const head = seg(t, 5, 5.8);
+  style(document.getElementById("lesson"), { opacity: head, transform: `translateY(${(1 - head) * 20}px)` });
+  // 8.6-9.4s and back at 14.2-15s: every row but module 2 dims while it opens.
+  const focus = seg(t, 8.6, 9.4) * (1 - seg(t, 14.2, 15));
+  rowEls.forEach((el, i) => {
+    const k = seg(t, 5.6 + i * 0.22, 6.5 + i * 0.22, easeOut);
+    const y = 210 + i * 76;
+    const fromX = 270, fromY = 420;
+    const yFocus = i === 1 ? lerp(y, 210, focus) : y;
+    style(el, { left: lerp(fromX, 760, k) + "px", top: lerp(fromY, yFocus, k) + "px", width: (i === 1 ? lerp(1040, 520, focus) : 1040) + "px", opacity: k * (i === 1 ? 1 : 1 - focus), transform: `scale(${lerp(0.6, 1, k)})` });
+    // 15.4s on: review ticks run down the modules.
+    const tk = seg(t, 15.4 + i * 0.2, 15.7 + i * 0.2, easeOut);
+    style(el.querySelector(".tick"), { opacity: tk, transform: `scale(${tk})` });
+  });
+  // Module 2's paths draw in, one after another, and fold away again.
+  const out = 1 - seg(t, 13.6, 14.3);
+  const order = ["q", "r", "w1", "h1", "w2", "h2", "o"];
+  order.forEach((id, j) => { const k = seg(t, 9.2 + j * 0.45, 9.7 + j * 0.45, easeOut) * out; style(box[id], { opacity: k, transform: `translateY(${(1 - k) * 16}px)` }); });
+  WIRES.forEach(([, b], i) => { const j = order.indexOf(b); const k = seg(t, 9.0 + j * 0.45, 9.6 + j * 0.45) * out; const L = +paths[i].dataset.len; paths[i].style.strokeDashoffset = L * (1 - k); paths[i].style.opacity = k > 0 ? 1 : 0; });
+  // 17.6s: Draft becomes Reviewed.
+  const b = document.getElementById("badge"), done = t >= 17.6;
+  b.className = `badge ${done ? "badge-done" : "badge-draft"}`;
+  b.textContent = done ? "✓ Reviewed by a person" : "Draft";
+  const p = clamp((t - 17.6) / 0.35);
+  b.style.transform = done ? `scale(${1 + Math.sin(p * Math.PI) * 0.15})` : "";
+}
+document.fonts.ready.then(() => { layoutWires(); play(render, 20); });
+</script>
+</body>
+</html>

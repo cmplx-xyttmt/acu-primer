@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concept B assets</title>
+<style>
+:root{--text:#24312a;--heading:#17492f;--link:#20603e;--muted:rgba(26,40,28,.72);--hr:rgba(23,73,47,.15);--surface:rgba(255,255,255,.55);--surface-border:rgba(255,255,255,.78);--shadow:0 20px 48px -24px rgba(23,73,47,.45);--bg:linear-gradient(165deg,#f5f0de 0%,#e9ebd0 52%,#dce4c7 100%);--amber:#e4882e;--code:rgba(46,134,89,.12);--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,monospace}
+@media (prefers-color-scheme:dark){:root{--text:#d4dae3;--heading:#eef3fa;--link:#5fbf99;--muted:rgba(212,218,227,.7);--hr:rgba(255,255,255,.12);--surface:rgba(255,255,255,.05);--surface-border:rgba(255,255,255,.12);--shadow:0 20px 48px -24px rgba(0,0,0,.6);--bg:linear-gradient(165deg,#1a2028 0%,#151a21 55%,#11151a 100%);--code:rgba(95,191,153,.15)}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);background-attachment:fixed;color:var(--text);font:15px/1.6 var(--sans)}
+main{max-width:1180px;margin:0 auto;padding:28px 16px 70px}
+h1{font-family:var(--serif);color:var(--heading);font-weight:600;margin:0 0 6px}
+p{margin:0 0 10px;max-width:46rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:18px;margin-top:22px}
+.card{margin:0;background:var(--surface);backdrop-filter:blur(18px);border:1px solid var(--surface-border);border-radius:1.1rem;box-shadow:var(--shadow);overflow:hidden}
+video{display:block;width:100%;aspect-ratio:16/9;background:#000}
+figcaption{display:grid;gap:4px;padding:12px 14px 14px}
+figcaption b{font-family:var(--serif);color:var(--heading);font-size:1.05rem;font-weight:600}
+figcaption span{color:var(--muted);font-size:13.5px}
+.kind{font-family:var(--mono);font-size:11px!important;text-transform:uppercase;letter-spacing:.06em;color:var(--amber)!important;font-weight:700}
+code{font-family:var(--mono);font-size:12px;background:var(--code);border-radius:6px;padding:1px 6px;justify-self:start;overflow-wrap:anywhere}
+a{color:var(--link)}
+</style>
+</head>
+<body>
+<main>
+<h1>Concept B assets</h1>
+<p>The motion pieces and app recordings for the demo video, in the order of the storyboard. All 1920×1080, H.264, no sound. The shot list, narration points and what's still to do are in <a href="storyboard.md">storyboard.md</a>.</p>
+<p>The videos live in <code>devpost/demo-video/media/</code>, which isn't in git, so this page only plays on this laptop.</p>
+<div class="grid"><figure class="card"><video src="../media/concept-b/chapter-to-lessons.mp4" controls muted preload="metadata"></video><figcaption><span class="kind">Motion</span><b>A chapter becomes a lesson</b><span>Shot 1 · 20 s. The real 5.1 pages turn into the ten modules; module 2 opens into its paths; Draft becomes Reviewed by a person.</span><code>chapter-to-lessons.mp4</code></figcaption></figure><figure class="card"><video src="../media/concept-b/book-to-subject.mp4" controls muted preload="metadata"></video><figcaption><span class="kind">Motion</span><b>A book becomes a subject</b><span>Shot 10 · 13 s. The contents page's chapters become chapter cards; only 5.1 is reviewed so far, the rest are dashed "to draft".</span><code>book-to-subject.mp4</code></figcaption></figure><figure class="card"><video src="../media/concept-b/end-card.mp4" controls muted preload="metadata"></video><figcaption><span class="kind">Motion</span><b>End card</b><span>Shot 11 · 6 s. The repo link is a placeholder.</span><code>end-card.mp4</code></figcaption></figure><figure class="card"><video src="../media/concept-b/clips/c07-draft-screen.mp4" controls muted preload="metadata"></video><figcaption><span class="kind">App</span><b>Draft screen</b><span>Shot 3 opening · 9 s. The paid draft itself is still to record.</span><code>clips/c07-draft-screen.mp4</code></figcaption></figure><figure class="card"><video src="../media/concept-b/clips/c02-review-play.mp4" controls muted preload="metadata"></video><figcaption><span class="kind">App</span><b>Review by playing, then sign off</b><span>Shot 4 · 63 s, trim to about 30 s.</span><code>clips/c02-review-play.mp4</code></figcaption></figure><figure class="card"><video src="../media/concept-b/clips/c01-home-to-chapter.mp4" controls muted preload="metadata"></video><figcaption><span class="kind">App</span><b>A student finds the chapter</b><span>Shot 5 · 16 s.</span><code>clips/c01-home-to-chapter.mp4</code></figcaption></figure><figure class="card"><video src="../media/concept-b/clips/c03-student-wrong-right.mp4" controls muted preload="metadata"></video><figcaption><span class="kind">App</span><b>Wrong, hint, simpler question, right</b><span>Shot 6 · 30 s. Trim the stray click at the end.</span><code>clips/c03-student-wrong-right.mp4</code></figcaption></figure><figure class="card"><video src="../media/concept-b/clips/c04-student-fails.mp4" controls muted preload="metadata"></video><figcaption><span class="kind">App</span><b>The hint doesn't land (dark mode)</b><span>Shot 7 · 32 s, the module 2 part.</span><code>clips/c04-student-fails.mp4</code></figcaption></figure><figure class="card"><video src="../media/concept-b/clips/c05-student-log.mp4" controls muted preload="metadata"></video><figcaption><span class="kind">App</span><b>The author sees the path</b><span>Shot 8 · 14 s.</span><code>clips/c05-student-log.mp4</code></figcaption></figure><figure class="card"><video src="../media/concept-b/clips/c06-offline.mp4" controls muted preload="metadata"></video><figcaption><span class="kind">App</span><b>Offline</b><span>Shot 9 · 18 s, optional.</span><code>clips/c06-offline.mp4</code></figcaption></figure></div>
+</main>
+</body>
+</html>

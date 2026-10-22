@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book to subject</title>
+<!-- Concept B, the closing piece: the whole OpenIntro book becomes a subject. The cover, then
+     the real table of contents; its chapters lift out into chapter cards under the subject, as on
+     the app's subject page. Only chapter 5's section 5.1 is drafted and reviewed today, so the
+     other chapters are dashed "to draft" cards: the picture shows where the app is going without
+     claiming it's done. Chapter titles are the book's (TOC page 3). -->
+<link rel="stylesheet" href="base.css">
+<style>
+#banner { left: 700px; top: 90px; width: 1120px; padding: 26px 30px; border-radius: 14px; background: var(--banner); }
+#banner h1 { font-size: 40px; font-weight: 800; letter-spacing: -0.01em; margin: 6px 0 8px; }
+#banner p { font-size: 22px; color: var(--text-2); }
+.ch { position: absolute; width: 360px; height: 190px; overflow: hidden; display: grid; grid-template-rows: 46px 1fr; }
+.ch .band { background: var(--banner); }
+.ch .body { padding: 14px 18px; display: grid; align-content: start; gap: 8px; }
+.ch .label { font-size: 15px; }
+.ch .t { font-size: 22px; font-weight: 700; line-height: 1.25; }
+.ch.todo { background: transparent; border: 2px dashed var(--border); box-shadow: none; }
+.ch.todo .band { background: transparent; }
+.ch.todo .t { color: var(--text-2); }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 16px; font-weight: 600; padding: 3px 10px; border-radius: 7px; }
+.pill.done { background: var(--done-bg); color: var(--done); }
+.pill.todo { border: 1.5px dashed var(--border); color: var(--text-2); }
+.line { position: absolute; font-size: 24px; font-weight: 700; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <img id="cover" class="page-img" src="../media/pages/cover-001.png" alt="">
+  <img id="toc" class="page-img" src="../media/pages/toc-003.png" alt="">
+  <div id="src" class="abs src" style="left:140px; top:1000px">OpenIntro Statistics, 4th edition · CC BY-SA</div>
+  <div id="banner" class="abs"><span class="label">Subject</span><h1>OpenIntro Statistics</h1><p>An introduction to statistics: data, probability, and the foundations of inference.</p></div>
+  <div id="lines"></div>
+  <div id="cards"></div>
+</div>
+<script src="motion.js"></script>
+<script>
+const CH = ["Introduction to data", "Summarizing data", "Probability", "Distributions of random variables", "Foundations for inference", "Inference for categorical data", "Inference for numerical data"];
+const lines = document.getElementById("lines"), cards = document.getElementById("cards");
+const lineEls = CH.map((c, i) => { const d = document.createElement("div"); d.className = "line"; d.textContent = `${i + 1}  ${c}`; lines.appendChild(d); return d; });
+const cardEls = CH.map((c, i) => {
+  const d = document.createElement("div");
+  const live = i === 4;
+  d.className = `ch card ${live ? "" : "todo"}`;
+  d.innerHTML = `<span class="band"></span><span class="body"><span class="label">Chapter ${i + 1}</span><span class="t">${c}</span>${
+    live ? `<span><span class="pill done">✓ 5.1 reviewed</span> <span class="pill todo">5.2, 5.3 to draft</span></span>` : `<span><span class="pill todo">to draft</span></span>`}</span>`;
+  cards.appendChild(d);
+  return d;
+});
+const cover = document.getElementById("cover"), toc = document.getElementById("toc");
+const BOOK = { x: 140, y: 110, w: 520 };
+function render(t) {
+  // 0-1.6s: the cover. 1.8-3.4s: the contents page slides over it.
+  const c = seg(t, 0, 1.6), tc = seg(t, 1.8, 3.4);
+  const shrink = seg(t, 6.8, 8);
+  const w = lerp(BOOK.w, 300, shrink);
+  style(cover, { left: lerp(BOOK.x, 110, shrink) + "px", top: lerp(BOOK.y + (1 - c) * 30, 300, shrink) + "px", width: w + "px", opacity: c, transform: `rotate(${-3 * tc}deg)` });
+  style(toc, { left: lerp(BOOK.x + 40, 150, shrink) + lerp(500, 0, tc) + "px", top: lerp(BOOK.y + 20, 320, shrink) + "px", width: w + "px", opacity: tc });
+  style(document.getElementById("src"), { opacity: c * (1 - shrink) });
+  // 3.8-6.4s: the seven chapter titles lift off the contents page into a list.
+  lineEls.forEach((el, i) => {
+    const k = seg(t, 3.8 + i * 0.3, 4.6 + i * 0.3, easeOut);
+    const gone = seg(t, 6.8 + i * 0.06, 7.3 + i * 0.06);
+    style(el, { left: lerp(300, 820, k) + "px", top: lerp(240 + i * 40, 150 + i * 90, k) + "px", opacity: k * (1 - gone), transform: `scale(${lerp(0.6, 1.25, k)})`, transformOrigin: "left center" });
+  });
+  // 7.6-9.8s: the list becomes the subject page: a banner, then a card per chapter.
+  const b = seg(t, 7.6, 8.4);
+  style(document.getElementById("banner"), { opacity: b, transform: `translateY(${(1 - b) * 20}px)` });
+  cardEls.forEach((el, i) => {
+    const k = seg(t, 7.8 + i * 0.16, 8.7 + i * 0.16, easeOut);
+    const col = i % 3, row = Math.floor(i / 3);
+    const x = 700 + col * 380, y = 330 + row * 215;
+    style(el, { left: lerp(x - 40, x, k) + "px", top: lerp(y + 40, y, k) + "px", opacity: k, transform: `scale(${lerp(0.7, 1, k)})` });
+  });
+  // 10.4s: chapter 5 lifts, the one drafted and reviewed so far.
+  const lift = seg(t, 10.4, 11);
+  style(cardEls[4], { boxShadow: lift > 0 ? `0 ${2 + 14 * lift}px ${4 + 30 * lift}px -12px rgb(60 50 30 / ${0.14 + 0.2 * lift})` : "", borderColor: lift > 0.5 ? "#93b4f5" : "" });
+  cardEls[4].style.transform += ` translateY(${-8 * lift}px)`;
+}
+document.fonts.ready.then(() => play(render, 13));
+</script>
+</body>
+</html>

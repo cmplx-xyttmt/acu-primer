@@ -1,7 +1,9 @@
 <script lang="ts">
   // One reviewable part of a step (the reading, the check, a hint...), with a way to pin a
-  // suggestion to it and the suggestions already pinned there.
+  // suggestion to it and the suggestions already pinned there. In review by playing (slice 11)
+  // the part has no box: a small button in its margin, faint until the part is hovered.
   import type { Snippet } from "svelte";
+  import MessageSquarePlus from "@lucide/svelte/icons/message-square-plus";
   import type { Suggestion } from "../../shared/review.ts";
 
   let {
@@ -9,9 +11,11 @@
     suggestions,
     onSuggest,
     onWithdraw,
+    margin = false,
     children,
   }: {
     label: string;
+    margin?: boolean;
     suggestions: Suggestion[]; // this part's, any status
     onSuggest: (text: string) => Promise<void>;
     onWithdraw: (id: string) => Promise<void>;
@@ -34,13 +38,21 @@
   }
 </script>
 
-<div class="part" class:has-open={suggestions.some((s) => s.status === "open")}>
-  <div class="part-head">
-    <span class="label">{label}</span>
+<div class="part" class:margin class:has-open={suggestions.some((s) => s.status === "open")}>
+  {#if margin}
     {#if !writing}
-      <button class="btn-quiet" onclick={() => (writing = true)}>Suggest a change</button>
+      <button class="pin" title="Suggest a change to: {label}" aria-label="Suggest a change to: {label}" onclick={() => (writing = true)}>
+        <MessageSquarePlus size={17} aria-hidden="true" />
+      </button>
     {/if}
-  </div>
+  {:else}
+    <div class="part-head">
+      <span class="label">{label}</span>
+      {#if !writing}
+        <button class="btn-quiet" onclick={() => (writing = true)}>Suggest a change</button>
+      {/if}
+    </div>
+  {/if}
   {@render children()}
 
   {#each suggestions as s (s.id)}
@@ -62,7 +74,7 @@
       }}
     >
       <!-- svelte-ignore a11y_autofocus (opened by the author's click) -->
-      <textarea bind:value={text} rows="3" placeholder="What should change here, and why?" autofocus></textarea>
+      <textarea bind:value={text} rows="3" placeholder={margin ? `${label}: what should change, and why?` : "What should change here, and why?"} autofocus></textarea>
       <div class="actions">
         <button class="btn" type="submit" disabled={!text.trim() || saving}>{saving ? "Saving…" : "Save suggestion"}</button>
         <button class="btn-quiet" type="button" onclick={() => ((writing = false), (text = ""))}>Cancel</button>
@@ -80,6 +92,43 @@
   }
   .part.has-open {
     border-color: var(--accent);
+  }
+  .part.margin {
+    position: relative;
+    margin-top: 0;
+    padding: 0.1rem 2.4rem 0.1rem 0;
+    border: none;
+    border-radius: 0;
+  }
+  .part.margin.has-open {
+    border-right: 3px solid var(--review-edge);
+  }
+  .pin {
+    position: absolute;
+    top: 0.2rem;
+    right: 0;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--review);
+    opacity: 0.3;
+    transition: opacity 120ms ease, background-color 120ms ease;
+  }
+  .part.margin:hover .pin,
+  .pin:focus-visible {
+    opacity: 1;
+    background: var(--review-bg);
+    border-color: var(--review-edge);
+  }
+  @media (hover: none) {
+    .pin {
+      opacity: 0.85;
+    }
   }
   .part-head {
     display: flex;

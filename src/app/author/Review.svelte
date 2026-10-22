@@ -1,8 +1,10 @@
 <script lang="ts">
   // Step-by-step review (slice 4b). The lesson is reviewed one step at a time: its outcomes,
-  // then each module with every branch open. The author approves a step with one tick, or
-  // pins suggestions to its parts. Sign off is the last step, and it unlocks (on the server
-  // too) only when every step is approved and no suggestion is open.
+  // then each module. The author approves a step with one tick, or pins suggestions to its
+  // parts. Sign off is the last step, and it unlocks (on the server too) only when every step
+  // is approved and no suggestion is open.
+  // Slice 11: a module is reviewed by playing it (ReviewPlayer), inside a violet frame;
+  // "Every branch" shows all its branches at once instead.
   import type { AuthorLesson, Check, AlternativeCheck, Fallback, SimpleCheck } from "../../shared/lesson.ts";
   import { OUTCOMES_STEP, canApprove, reviewState, type Suggestion } from "../../shared/review.ts";
   import { authorApi, ApiError } from "../lib/api.ts";
@@ -10,6 +12,10 @@
   import AuthorBar from "./AuthorBar.svelte";
   import Mark from "./Mark.svelte";
   import Part from "./Part.svelte";
+  import ReviewPlayer from "./ReviewPlayer.svelte";
+  import { reviewPaths, untried, type PathId } from "../../shared/reviewPaths.ts";
+  import Play from "@lucide/svelte/icons/play";
+  import Layers from "@lucide/svelte/icons/layers";
 
   let { lessonId, onLocked }: { lessonId: string; onLocked: () => void } = $props();
 
@@ -19,6 +25,33 @@
   let confirming = $state(false);
   let busy = $state(false);
 
+  // Play or every branch, remembered on this browser.
+  const VIEW_KEY = "acu:reviewView";
+  let view = $state<"play" | "branches">(readView());
+  function readView(): "play" | "branches" {
+    try {
+      return localStorage.getItem(VIEW_KEY) === "branches" ? "branches" : "play";
+    } catch {
+      return "play";
+    }
+  }
+  function setView(v: "play" | "branches") {
+    view = v;
+    asking = false;
+    try {
+      localStorage.setItem(VIEW_KEY, v);
+    } catch {}
+  }
+  // The paths the author has seen while playing, per module, for this visit.
+  let seenByStep = $state<Record<string, PathId[]>>({});
+  const markSeen = (stepId: string) => (path: PathId) => {
+    const now = seenByStep[stepId] ?? [];
+    if (!now.includes(path)) seenByStep[stepId] = [...now, path];
+  };
+  // Approving before every path is seen asks once, with the paths still to see.
+  let asking = $state(false);
+  let justApproved = $state<string | null>(null);
+
   const rs = $derived(
     lesson ? reviewState(lesson.content, new Set(lesson.review.approvedSteps), lesson.review.suggestions) : null,
   );
@@ -26,6 +59,8 @@
   const onSignOffStep = $derived(!!rs && stepIndex >= rs.steps.length);
   const step = $derived(rs && !onSignOffStep ? rs.steps[stepIndex] : null);
   const mod = $derived(lesson && step && step.id !== OUTCOMES_STEP ? lesson.content.modules.find((m) => m.id === step.id) : null);
+  const pathsLeft = $derived(mod?.check && step ? untried(reviewPaths(mod.check), new Set(seenByStep[step.id] ?? [])) : []);
+  const pathsTotal = $derived(mod?.check ? reviewPaths(mod.check).length : 0);
 
   function fail(err: unknown) {
     if (err instanceof ApiError && err.status === 401) onLocked();
@@ -57,13 +92,21 @@
     stepIndex = i;
     reviseNote = "";
     confirming = false;
+    asking = false;
     scrollTo({ top: 0 });
   }
 
   async function approveAndNext() {
     if (!step) return;
-    await run(() => authorApi.approve(lessonId, step.id));
-    if (!error) goToStep(stepIndex + 1);
+    const id = step.id;
+    await run(() => authorApi.approve(lessonId, id));
+    if (error) return;
+    justApproved = id;
+    goToStep(stepIndex + 1);
+  }
+  function tryApprove() {
+    if (view === "play" && pathsLeft.length > 0 && !asking) asking = true;
+    else approveAndNext();
   }
 
   const partSuggestions = (part: string) =>
@@ -84,6 +127,7 @@
     try {
       const r = await authorApi.revise(lessonId, step.id);
       lesson = r.lesson;
+      delete seenByStep[step.id]; // the module changed, so its paths need seeing again
       reviseNote = r.note;
     } catch (err) {
       fail(err);
@@ -91,7 +135,8 @@
       busy = false;
     }
   }
-  const swapIn = (moduleId: string, altId: string) => run(() => authorApi.swap(lessonId, moduleId, altId));
+  const swapIn = (moduleId: string, altId: string) =>
+    run(() => authorApi.swap(lessonId, moduleId, altId)).then(() => delete seenByStep[moduleId]);
   const setPart = (moduleId: string, which: number | "general", part: "reExplanation" | "simplerQuestion", enabled: boolean) =>
     run(() => authorApi.setPart(lessonId, moduleId, which, part, enabled));
 
@@ -167,6 +212,13 @@
 {/snippet}
 
 <AuthorBar back={{ href: "/author", label: "Your subjects" }} />
+{#if view === "play"}
+  <div class="frame" aria-hidden="true"></div>
+  <div class="mode-bar">
+    <span class="badge badge-review">Review mode</span>
+    <span class="mode-text">You're playing this lesson as a student would. Students never see this bar.</span>
+  </div>
+{/if}
 
 <main class="page wide">
   {#if !lesson || !rs}
@@ -181,6 +233,14 @@
         </span>
       </div>
       <div class="bar"><span style="width: {(100 * rs.approved) / rs.total}%"></span></div>
+      <div class="views" role="group" aria-label="How to review">
+        <button class="btn-sm" class:on={view === "play"} aria-pressed={view === "play"} onclick={() => setView("play")}>
+          <Play size={15} aria-hidden="true" />Play
+        </button>
+        <button class="btn-sm" class:on={view === "branches"} aria-pressed={view === "branches"} onclick={() => setView("branches")}>
+          <Layers size={15} aria-hidden="true" />Every branch
+        </button>
+      </div>
     </header>
 
     <nav class="steps" aria-label="Review steps">
@@ -190,6 +250,7 @@
           class:current={i === stepIndex}
           class:approved={s.approved}
           class:flagged={s.open > 0}
+          class:pop={s.id === justApproved && s.approved}
           title={s.title}
           onclick={() => goToStep(i)}
         >
@@ -203,7 +264,7 @@
 
     {#if step}
       <section>
-        <h2>{step.title}</h2>
+        {#if !(mod && view === "play")}<h2>{step.title}</h2>{/if}
 
         {#if step.id === OUTCOMES_STEP}
           <Part
@@ -216,6 +277,19 @@
               {#each lesson.content.outcomes as o}<li>{@html renderInline(o)}</li>{/each}
             </ul>
           </Part>
+        {:else if mod && view === "play"}
+          {#key mod.id}
+            <ReviewPlayer
+              {mod}
+              {busy}
+              seen={seenByStep[mod.id] ?? []}
+              onSeen={markSeen(mod.id)}
+              {partSuggestions}
+              {suggestFor}
+              onWithdraw={withdraw}
+              {setPart}
+            />
+          {/key}
         {:else if mod}
           <Part label="Reading" suggestions={partSuggestions("reading")} onSuggest={suggestFor("reading", "Reading")} onWithdraw={withdraw}>
             <div class="reading">{@html renderReading(mod.reading)}</div>
@@ -283,8 +357,22 @@
         {/if}
 
         {#if reviseNote}<p class="ok note">{reviseNote}</p>{/if}
-        <div class="decide">
-          {#if step.approved}
+        <div class="decide" class:dock={view === "play"}>
+          {#if view === "play" && mod?.check && !step.approved}
+            <p class="dock-status muted">
+              {pathsLeft.length === 0
+                ? "Every path seen."
+                : `${pathsTotal - pathsLeft.length} of ${pathsTotal} paths seen.`}
+            </p>
+          {/if}
+          {#if asking}
+            <p class="asking">
+              You haven't tried {pathsLeft.length === 1 ? "one path" : `${pathsLeft.length} paths`} yet:
+              {pathsLeft.map((p) => p.label).join("; ")}. Approve anyway?
+            </p>
+            <button class="btn" disabled={busy} onclick={approveAndNext}>Approve anyway</button>
+            <button class="btn-quiet" onclick={() => (asking = false)}>Keep playing</button>
+          {:else if step.approved}
             <p class="ok">Approved ✓</p>
             <button class="btn-quiet" disabled={busy} onclick={() => run(() => authorApi.unapprove(lessonId, step.id))}>
               Take back the approval
@@ -296,7 +384,7 @@
             </p>
             <button class="btn" disabled={busy} onclick={applyWithClaude}>{busy ? "Claude is revising…" : "Apply with Claude"}</button>
           {:else}
-            <button class="btn" disabled={busy} onclick={approveAndNext}>Approve and go on</button>
+            <button class="btn" disabled={busy} onclick={tryApprove}>{view === "play" && mod ? "Approve module" : "Approve and go on"}</button>
           {/if}
         </div>
 
@@ -348,6 +436,73 @@
   .wide {
     max-width: 52rem;
   }
+  /* Review mode's frame: a violet edge round the window and a bar students never see. */
+  .frame {
+    position: fixed;
+    inset: 0;
+    border: 3px solid var(--review-edge);
+    pointer-events: none;
+    z-index: 30;
+  }
+  .mode-bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.75rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem 16px;
+    background: var(--review-bg);
+    border-bottom: 1px solid var(--review-edge);
+    font-size: 0.88rem;
+    color: var(--review);
+  }
+  .views {
+    display: inline-flex;
+    margin-top: 0.8rem;
+    padding: 3px;
+    gap: 3px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+  }
+  .views button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: none;
+    border-radius: 999px;
+    padding: 0.25rem 0.8rem;
+    background: none;
+    color: var(--text-2);
+    font-weight: 600;
+  }
+  .views button.on {
+    background: var(--card);
+    color: var(--text);
+    box-shadow: var(--shadow);
+  }
+  .dock {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    margin-top: 1.5rem;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--review-edge);
+    border-radius: var(--radius);
+    background: var(--card);
+    box-shadow: var(--shadow-lift);
+  }
+  .dock-status {
+    margin: 0;
+    flex: 1 1 12rem;
+  }
+  .asking {
+    margin: 0;
+    flex: 1 1 100%;
+  }
   header h1 {
     margin-bottom: 0.35rem;
   }
@@ -396,6 +551,9 @@
     background: var(--surface);
     color: var(--text);
     font-weight: 600;
+  }
+  .wide:has(.dock) .step.current {
+    box-shadow: 0 0 0 2px var(--review-edge);
   }
   h2 {
     font-size: 1.15rem;

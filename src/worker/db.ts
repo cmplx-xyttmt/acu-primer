@@ -2,6 +2,7 @@
 
 import type { AuthorChapter, AuthorLesson, AuthorSubject, ChapterCard, ChapterResponse, Lesson, LessonStatus, SubjectCard } from "../shared/lesson.ts";
 import { reviewState, stepContent, type Suggestion } from "../shared/review.ts";
+import type { NewBook } from "../shared/bookPlan.ts";
 import type { StudentEvent, StudentSummary } from "../shared/events.ts";
 
 interface ChapterRow {
@@ -76,12 +77,12 @@ const lessonSummary = (row: AuthorLessonRow) => ({
 // Chapters without a subject come last, in a group with an empty id.
 export async function authorSubjects(db: D1Database): Promise<AuthorSubject[]> {
   const [subjects, chapters, lessons] = await db.batch([
-    db.prepare("SELECT id, slug, title, overview, brief FROM subjects ORDER BY position, title"),
-    db.prepare("SELECT id, slug, title, overview, subject_id, show_unreviewed FROM chapters ORDER BY position, title"),
+    db.prepare("SELECT id, slug, title, overview, brief, book FROM subjects ORDER BY position, title"),
+    db.prepare("SELECT id, slug, title, overview, subject_id, show_unreviewed, plan FROM chapters ORDER BY position, title"),
     db.prepare("SELECT id, chapter_id, position, title, status, updated_at, signed_off_at FROM lessons ORDER BY position"),
   ]);
   const lessonRows = lessons.results as unknown as AuthorLessonRow[];
-  const chapterRows = chapters.results as unknown as (ChapterRow & { overview: string | null; subject_id: string | null })[];
+  const chapterRows = chapters.results as unknown as (ChapterRow & { overview: string | null; subject_id: string | null; plan: string | null })[];
   const toChapter = (c: (typeof chapterRows)[number]): AuthorChapter => ({
     id: c.id,
     slug: c.slug,
@@ -90,12 +91,13 @@ export async function authorSubjects(db: D1Database): Promise<AuthorSubject[]> {
     subjectId: c.subject_id,
     showUnreviewed: c.show_unreviewed === 1,
     lessons: lessonRows.filter((l) => l.chapter_id === c.id).map(lessonSummary),
+    plan: c.plan ? JSON.parse(c.plan) : null,
   });
-  const result: AuthorSubject[] = (subjects.results as unknown as { id: string; slug: string; title: string; overview: string | null; brief: string | null }[]).map(
-    (s) => ({ ...s, chapters: chapterRows.filter((c) => c.subject_id === s.id).map(toChapter) }),
+  const result: AuthorSubject[] = (subjects.results as unknown as { id: string; slug: string; title: string; overview: string | null; brief: string | null; book: string | null }[]).map(
+    (s) => ({ ...s, book: s.book ? JSON.parse(s.book) : null, chapters: chapterRows.filter((c) => c.subject_id === s.id).map(toChapter) }),
   );
   const loose = chapterRows.filter((c) => !c.subject_id || !result.some((s) => s.id === c.subject_id));
-  if (loose.length > 0) result.push({ id: "", slug: "", title: "Chapters without a subject", overview: null, brief: null, chapters: loose.map(toChapter) });
+  if (loose.length > 0) result.push({ id: "", slug: "", title: "Chapters without a subject", overview: null, brief: null, book: null, chapters: loose.map(toChapter) });
   return result;
 }
 
@@ -182,6 +184,17 @@ export async function createChapter(db: D1Database, subjectId: string, c: { titl
     .bind(slug, slug, c.title, c.overview, subjectId, pos?.next ?? 1)
     .run();
   return { id: slug, slug };
+}
+
+/** A subject made from a book, with its chapters, in one batch (POST /api/author/books). */
+export async function createBook(db: D1Database, b: NewBook): Promise<{ id: string; slug: string }> {
+  const subject = await createSubject(db, { title: b.subject.title, overview: b.subject.overview || null, brief: b.subject.brief || null });
+  await db.prepare("UPDATE subjects SET book = ? WHERE id = ?").bind(JSON.stringify(b.book), subject.id).run();
+  for (const c of b.chapters) {
+    const chapter = await createChapter(db, subject.id, { title: c.title, overview: c.overview || null });
+    if (chapter) await db.prepare("UPDATE chapters SET plan = ? WHERE id = ?").bind(JSON.stringify(c.plan), chapter.id).run();
+  }
+  return subject;
 }
 
 async function sha256(value: unknown): Promise<string> {
@@ -392,7 +405,7 @@ export async function monthSpend(db: D1Database): Promise<number> {
 
 export async function recordSpend(
   db: D1Database,
-  s: { kind: "draft" | "revise"; model: string; lessonId: string | null; input: number; output: number; cacheWrite: number; cacheRead: number; costUsd: number },
+  s: { kind: "draft" | "revise" | "contents"; model: string; lessonId: string | null; input: number; output: number; cacheWrite: number; cacheRead: number; costUsd: number },
 ) {
   await db
     .prepare(

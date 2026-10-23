@@ -6,7 +6,7 @@ import { json } from "./http.ts";
 import { getChapter } from "./routes/chapters.ts";
 import { getSubject, getSubjects } from "./routes/subjects.ts";
 import { postEvents } from "./routes/events.ts";
-import { getBudget, putChapter, postSource, postDraft, postRevise, postEdit, postSubject, putSubject, postChapter } from "./routes/drafting.ts";
+import { getBudget, putChapter, postSource, postDraft, postRevise, postEdit, postSubject, putSubject, postChapter, postBook, postContents } from "./routes/drafting.ts";
 import {
   listSubjects,
   getLesson,
@@ -36,6 +36,8 @@ const routes: [method: string, pattern: RegExp, handler: Handler][] = [
   ["POST", /^\/api\/events$/, postEvents],
   ["GET", /^\/api\/author\/subjects$/, listSubjects],
   ["POST", /^\/api\/author\/subjects$/, postSubject],
+  ["POST", /^\/api\/author\/books$/, postBook],
+  ["POST", /^\/api\/author\/books\/contents$/, postContents],
   ["PUT", new RegExp(`^/api/author/subjects/${id}$`), putSubject],
   ["POST", new RegExp(`^/api/author/subjects/${id}/chapters$`), postChapter],
   ["GET", new RegExp(`^/api/author/lessons/${id}$`), getLesson],

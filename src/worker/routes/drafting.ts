@@ -2,7 +2,8 @@
 // logged in the spend table, and calls stop once the month's spend reaches MONTHLY_BUDGET_USD.
 
 import Anthropic, { toFile } from "@anthropic-ai/sdk";
-import { apiKey, draftLesson, reviseStep, type Usage } from "../claude.ts";
+import { apiKey, draftLesson, readContents, reviseStep, type Usage } from "../claude.ts";
+import { NewBook } from "../../shared/bookPlan.ts";
 import {
   authorLesson,
   chapterForDrafting,
@@ -17,6 +18,7 @@ import {
   createSubject,
   updateSubject,
   createChapter,
+  createBook,
 } from "../db.ts";
 import { json } from "../http.ts";
 import type { Ctx } from "../index.ts";
@@ -43,7 +45,7 @@ async function readyToSpend(env: Env): Promise<{ ok: true; client: Anthropic } |
   return { ok: true, client: c };
 }
 
-const log = (env: Env, kind: "draft" | "revise", lessonId: string | null, u: Usage) =>
+const log = (env: Env, kind: "draft" | "revise" | "contents", lessonId: string | null, u: Usage) =>
   recordSpend(env.DB, { kind, model: env.DRAFT_MODEL, lessonId, ...u });
 
 // GET /api/author/budget — what's been spent on Claude this month, against the limit.
@@ -80,6 +82,29 @@ export async function postSubject({ env, request }: Ctx): Promise<Response> {
   const title = textField(body, "title", 200);
   if (!title) return json({ error: "A subject needs a title." }, 400);
   return json(await createSubject(env.DB, { title, overview: textField(body, "overview", 1000) ?? null, brief: textField(body, "brief", 4000) ?? null }));
+}
+
+// POST /api/author/books — a subject made from a book, with its chapters and their plans
+// (bookPlan.ts > NewBook). No Claude call: the plan comes from the PDF's bookmarks, or from
+// POST /api/author/books/contents.
+export async function postBook({ env, request }: Ctx): Promise<Response> {
+  const parsed = NewBook.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) return json({ error: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") }, 400);
+  return json(await createBook(env.DB, parsed.data));
+}
+
+// POST /api/author/books/contents — body: the book's contents pages as a small PDF. Claude
+// lists the chapters and sections with their printed pages (low effort, a few cents).
+export async function postContents({ env, request }: Ctx): Promise<Response> {
+  if (!(request.headers.get("content-type") ?? "").includes("application/pdf")) return json({ error: "Send the contents pages as a PDF." }, 415);
+  const pdf = new Uint8Array(await request.arrayBuffer());
+  if (pdf.length === 0 || pdf.length > 4_000_000) return json({ error: "Send only the contents pages (up to about 10 pages)." }, 413);
+  const ready = await readyToSpend(env);
+  if (!ready.ok) return ready.res;
+  const result = await readContents(ready.client, env.DRAFT_MODEL, pdf);
+  await log(env, "contents", null, result.usage);
+  if (!result.ok) return json({ error: result.error, usage: result.usage }, 502);
+  return json({ contents: result.value, usage: result.usage });
 }
 
 // PUT /api/author/subjects/:id — { title?, overview?, brief? }

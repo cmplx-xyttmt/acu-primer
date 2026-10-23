@@ -8,6 +8,7 @@
   import { navigate } from "../router.svelte.ts";
   import Mark from "./Mark.svelte";
   import AuthorBar from "./AuthorBar.svelte";
+  import BookUp from "@lucide/svelte/icons/book-up";
   import Plus from "@lucide/svelte/icons/plus";
   import WandSparkles from "@lucide/svelte/icons/wand-sparkles";
   import Users from "@lucide/svelte/icons/users";
@@ -96,7 +97,10 @@
   <div class="head">
     <h1>Your subjects</h1>
     {#if !newSubject}
-      <button class="btn" onclick={() => (newSubject = { title: "", overview: "", preset: "", brief: "" })}><Plus size={18} aria-hidden="true" />New subject</button>
+      <span class="starts">
+        <a class="btn" href="/author/books/new" onclick={(e) => go(e, "/author/books/new")}><BookUp size={18} aria-hidden="true" />Start from a book</a>
+        <button class="btn-secondary" onclick={() => (newSubject = { title: "", overview: "", preset: "", brief: "" })}><Plus size={18} aria-hidden="true" />New subject</button>
+      </span>
     {/if}
   </div>
   {#if budget}
@@ -224,6 +228,11 @@
 </main>
 
 <style>
+  .starts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
   .wide {
     max-width: 52rem;
   }

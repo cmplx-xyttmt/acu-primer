@@ -1,6 +1,7 @@
 <script lang="ts">
   // The authoring session (slice 3b): pick the book PDF and a page range, and Claude drafts a
-  // lesson from just those pages. The PDF stays on this laptop; only the cut pages are sent.
+  // lesson from just those pages. For a chapter made from a book (Oct 23), its sections are
+  // listed: picking one fills in the pages and title, and the PDF kept in this browser is used. The PDF stays on this laptop; only the cut pages are sent.
   // The draft is saved unreviewed and then goes through the step-by-step review.
   import type { AuthorChapter, AuthorSubject } from "../../shared/lesson.ts";
   import { authorApi, streamDraft, ApiError } from "../lib/api.ts";
@@ -8,6 +9,9 @@
   import AuthorBar from "./AuthorBar.svelte";
   import FileUp from "@lucide/svelte/icons/file-up";
   import WandSparkles from "@lucide/svelte/icons/wand-sparkles";
+  import BookOpen from "@lucide/svelte/icons/book-open";
+  import { keepBook, keptBook } from "../lib/bookStore.ts";
+  import type { Section } from "../../shared/bookPlan.ts";
 
   let { chapterId, onLocked }: { chapterId: string; onLocked: () => void } = $props();
 
@@ -35,10 +39,33 @@
   }
 
   // svelte-ignore state_referenced_locally (App.svelte re-creates this per chapter)
-  authorApi.subjects().then((subjects) => {
+  let keptName = $state(""); // the PDF found in this browser, if any
+  authorApi.subjects().then(async (subjects) => {
     subject = subjects.find((s) => s.chapters.some((c) => c.id === chapterId)) ?? null;
     chapter = subject?.chapters.find((c) => c.id === chapterId) ?? null;
+    if (subject?.book) {
+      book = subject.book.title;
+      const kept = await keptBook(subject.id);
+      if (kept) {
+        file = kept;
+        keptName = kept.name;
+      }
+    }
   }, fail);
+
+  // A section was drafted already if a lesson in the chapter carries its title (without the number).
+  const bare = (s: string) => s.toLowerCase().replace(/^[\d.]+\s*/, "").replace(/[^a-z0-9]+/g, " ").trim();
+  const drafted = (s: Section) => !!chapter?.lessons.some((l) => bare(l.title).includes(bare(s.title)));
+  function useSection(s: Section) {
+    section = s.title;
+    pages = s.pages;
+  }
+  function pickFile(f: File | null) {
+    file = f;
+    keptName = "";
+    // Keep it for next time, for a subject made from a book.
+    if (f && subject?.book) keepBook(subject.id, f).then((ok) => ok && (keptName = f.name));
+  }
   const loadBudget = () => authorApi.budget().then((b) => (budget = b), fail);
   loadBudget();
 
@@ -108,6 +135,27 @@
     </p>
   {/if}
 
+  {#if chapter?.plan && phase !== "done"}
+    <section class="sections">
+      <h2><BookOpen size={18} aria-hidden="true" />Sections in this chapter</h2>
+      {#if chapter.plan.sections.length === 0}
+        <p class="muted">The book's contents didn't list sections for this chapter, which runs over pp. {chapter.plan.pages}. Type the pages for one lesson below.</p>
+      {:else}
+        <p class="muted">Each section becomes one lesson. Pick one to fill in the form below.</p>
+        <ul>
+          {#each chapter.plan.sections as s (s.title + s.pages)}
+            <li class:chosen={section === s.title && pages === s.pages}>
+              <span class="t">{s.title}</span>
+              <span class="muted num">pp. {s.pages}</span>
+              {#if drafted(s)}<span class="badge badge-done">Drafted</span>{/if}
+              <button class="btn-quiet btn-sm" onclick={() => useSection(s)}>{section === s.title && pages === s.pages ? "Chosen" : "Use this section"}</button>
+            </li>
+          {/each}
+        </ul>
+      {/if}
+    </section>
+  {/if}
+
   {#if phase === "done" && result}
     <section class="done">
       <h2>Drafted</h2>
@@ -128,8 +176,8 @@
         Book or reading (PDF, stays on this laptop)
         <span class="picker">
           <span class="btn-secondary btn-sm"><FileUp size={15} aria-hidden="true" />Choose PDF</span>
-          <span class="muted">{file ? `${file.name} (${Math.round(file.size / 1024)} KB)` : "No file chosen"}</span>
-          <input type="file" accept="application/pdf" onchange={(e) => (file = (e.currentTarget as HTMLInputElement).files?.[0] ?? null)} />
+          <span class="muted">{file ? `${file.name} (${Math.round(file.size / 1024)} KB)${keptName === file.name ? ", kept in this browser" : ""}` : subject?.book ? `Pick ${subject.book.fileName} again (it isn't kept in this browser)` : "No file chosen"}</span>
+          <input type="file" accept="application/pdf" onchange={(e) => pickFile((e.currentTarget as HTMLInputElement).files?.[0] ?? null)} />
         </span>
       </label>
       <label>
@@ -169,6 +217,38 @@
   }
   a {
     color: var(--accent);
+  }
+  .sections ul {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+  .sections li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+  }
+  .sections li.chosen {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .sections .t {
+    font-weight: 600;
+    flex: 1 1 14rem;
+  }
+  .sections h2 {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 1.1rem;
+    margin: 1.4rem 0 0.2rem;
   }
   .brief-note {
     font-size: 0.88rem;

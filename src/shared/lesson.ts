@@ -9,6 +9,7 @@
 // wrongAnswers or generalFallback, so a fallback can't carry fallbacks of its own.
 
 import { z } from "zod";
+import type { BookInfo, ChapterPlan } from "./bookPlan.ts";
 
 const id = z.string().min(1);
 const text = z.string().min(1);
@@ -249,6 +250,7 @@ export interface AuthorChapter {
   subjectId: string | null;
   showUnreviewed: boolean;
   lessons: AuthorLessonSummary[];
+  plan: ChapterPlan | null; // for a chapter made from a book: its pages and sections
 }
 
 export interface AuthorSubject {
@@ -257,5 +259,6 @@ export interface AuthorSubject {
   title: string;
   overview: string | null;
   brief: string | null; // who the learner is; every draft in the subject follows it
+  book: BookInfo | null; // for a subject made from a book
   chapters: AuthorChapter[];
 }

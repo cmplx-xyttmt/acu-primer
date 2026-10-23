@@ -310,3 +310,42 @@ export function reviseStep(
     },
   });
 }
+
+import { Contents } from "../shared/bookPlan.ts";
+
+// --- Reading a book's contents pages (starting from a book, Oct 23) ------------------------
+
+const CONTENTS_FORMAT = zodOutputFormat(Contents);
+
+const CONTENTS_SYSTEM = `You read the table of contents of a book from PDF pages and list its chapters and their numbered sections, in order, exactly as printed.
+- Each chapter: its title with its number if it has one ("5 Foundations for inference"), and the page number printed next to it.
+- Each section: its title with its number ("5.1 Point estimates and sampling variability") and its printed page.
+- Leave out sub-sections below the first level (5.1.1), exercises and chapter reviews. Include front and back matter (Preface, Index, Appendix) as chapters with no sections, so the author can untick them.
+- Use the printed page numbers as numbers. If a page number is a roman numeral or missing, use null.
+- Copy titles; don't rephrase or invent anything.`;
+
+/** Read a book's contents pages (a small cut PDF) into chapters and sections, with printed pages. */
+export function readContents(client: Anthropic, model: string, pdf: Uint8Array): Promise<CallResult<Contents>> {
+  let binary = "";
+  for (let i = 0; i < pdf.length; i += 0x8000) binary += String.fromCharCode(...pdf.subarray(i, i + 0x8000));
+  return structuredCall<Contents>(client, model, {
+    system: CONTENTS_SYSTEM,
+    format: CONTENTS_FORMAT,
+    effort: "low",
+    maxTokens: 12000,
+    messages: [
+      {
+        role: "user",
+        content: [
+          { type: "document", source: { type: "base64", media_type: "application/pdf", data: btoa(binary) } },
+          { type: "text", text: "List the chapters and sections in these contents pages." },
+        ],
+      },
+    ],
+    validate: (raw) => {
+      const c = Contents.safeParse(raw);
+      if (!c.success) return { ok: false, problems: issues(c.error) };
+      return c.data.chapters.length > 0 ? { ok: true, value: c.data } : { ok: false, problems: ["no chapters found"] };
+    },
+  });
+}

@@ -2,6 +2,7 @@
 
 import type { AuthorLesson, AuthorSubject, ChapterResponse, SubjectCard } from "../../shared/lesson.ts";
 import type { StudentSummary } from "../../shared/events.ts";
+import type { Contents, NewBook } from "../../shared/bookPlan.ts";
 
 export interface LoggedEvent {
   id: string;
@@ -111,6 +112,13 @@ export const authorApi = {
     author<AuthorLesson>(`/api/author/lessons/${id}/edits`, { method: "POST", body: JSON.stringify({ kind: "swap", moduleId, alternativeId }) }),
   setPart: (id: string, moduleId: string, which: number | "general", part: "reExplanation" | "simplerQuestion", enabled: boolean) =>
     author<AuthorLesson>(`/api/author/lessons/${id}/edits`, { method: "POST", body: JSON.stringify({ kind: "switch", moduleId, which, part, enabled }) }),
+  createBook: (b: NewBook) => author<{ id: string; slug: string }>("/api/author/books", { method: "POST", body: JSON.stringify(b) }),
+  readContents: (pdf: Uint8Array) =>
+    request<{ contents: Contents; usage: { costUsd: number } }>("/api/author/books/contents", {
+      method: "POST",
+      headers: { "x-author-passphrase": savedPassphrase(), "content-type": "application/pdf" },
+      body: pdf as BufferSource,
+    }),
   setExplore: (id: string, moduleId: string, enabled: boolean) =>
     author<AuthorLesson>(`/api/author/lessons/${id}/edits`, { method: "POST", body: JSON.stringify({ kind: "explore", moduleId, enabled }) }),
   withdraw: (suggestionId: string) =>

@@ -1,5 +1,7 @@
 # Concept B, final assets: a chapter becomes lessons, a book becomes a subject
 
+**Update, Oct 23 evening: the video now uses Jeff Erickson's *Algorithms* (CC BY 4.0) as its example** (Isaac chose it over CLRS, which is copyrighted). The rough cut is `../media/concept-b/rough-cut.mp4` (2:54, no sound), built by `rough-cut.sh`; the shot list with points to cover and boxes for Isaac's words is `narration.html`. New pieces: `section-to-lesson.html` (the opener, from the real Erickson pages and the lesson drafted from them), and clips c08 (Start from a book and a real draft of section 1.3, Tower of Hanoi: 354 s, $1.08, two attempts), c09 (review by playing and sign-off), c10 (a student: a wrong sort and its hint, a wrong prediction in the stepper), c11 (the sampling exploration) and c12 (the log). The draft is in Isaac's local database as "Tower of Hanoi: Thinking Recursively", unreviewed; the sign-off on camera happened in a copy. Claude chose a sort check for the rules and a stepper exploration for the 3-disk algorithm; all 7 moves were checked against a simulated run. The sections below describe the Oct 22 version.
+
 Made Oct 22, 2026, after slices 9 to 11. It follows the concept B storyboard in `../page-to-lesson/storyboard.md`, with Isaac's two changes. A chapter's pages turn into a lesson of modules, and at the end the whole book turns into a subject of chapters.
 
 Everything here is a draft for Isaac to cut. Captions are bracketed placeholders and the narration is points to cover, because the `6-ship` rules say the words must be his.

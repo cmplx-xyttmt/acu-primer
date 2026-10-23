@@ -54,7 +54,7 @@ const LETTERED = /^[A-Z][.:]?\s/;
 const range = (from: number, to: number) => (to > from ? `${from}-${to}` : `${from}`);
 
 // Front and back matter: kept in the list, but unticked, so the author can still add one.
-const NOT_A_CHAPTER = /^(contents|table of contents|preface|foreword|acknowledg|about the author|index|bibliography|references|glossary|copyright|dedication|title page|cover|notation|appendix|answers|solutions|exercises|credits|for (teachers|instructors|students)|list of|front matter|back matter)/i;
+const NOT_A_CHAPTER = /^(contents|table of contents|preface|foreword|acknowledg|about the author|index|bibliography|references|glossary|copyright|dedication|title page|cover|notation|appendix|answers|solutions|exercises|credits|image credits|colophon|for (teachers|instructors|students)|list of|front matter|back matter)/i;
 
 /**
  * Bookmarks → chapters with sections. A chapter's pages run from its bookmark to the page before

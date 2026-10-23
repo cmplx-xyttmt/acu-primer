@@ -13,6 +13,10 @@ const [, , outDir, ...only] = process.argv;
 const CHAPTER = "/s/openintro-statistics/openintro-sampling";
 const DRAFT = "5.1 Point estimates and sampling variability";
 const STUDENT = "Amina";
+// The one clip allowed to spend: Start from a book, then a real draft (about $1.30). Run it only
+// against the database the lesson should stay in, and only when asked to.
+const PAID_CLIP = "c08-book-and-draft";
+const BOOK = { path: "/test-book.pdf", name: "Algorithms-JeffE.pdf", title: "Algorithms, by Jeff Erickson", chapter: "Recursion", section: "Tower of Hanoi" };
 
 // A cursor dot that follows the mouse, since Playwright's video doesn't show one.
 const CURSOR = () => {
@@ -68,7 +72,8 @@ async function clip(browser, name, storage, run, theme = "light") {
     for (const [k, v] of Object.entries(s)) localStorage.setItem(k, v);
     localStorage.setItem("acu:theme", theme);
   }, [storage, theme]);
-  await ctx.route(/\/api\/author\/(drafts|lessons\/[^/]+\/steps\/[^/]+\/revise)/, (r) => r.abort());
+  // The paid routes stay blocked, except in the one clip that records a real draft.
+  if (name !== PAID_CLIP) await ctx.route(/\/api\/author\/(drafts|lessons\/[^/]+\/steps\/[^/]+\/revise)/, (r) => r.abort());
   const page = await ctx.newPage();
   try {
     await run(page, ctx);
@@ -201,6 +206,174 @@ async function clip(browser, name, storage, run, theme = "light") {
     await click(page, page.getByRole("link", { name: /Draft a lesson/ }).first(), 2500);
     await scroll(page, 300); await wait(2000);
   });
+
+  // --- The Erickson clips (Oct 23), run against a copy of the database after the real draft ---
+  const HANOI = "recursion-tower-of-hanoi-c16db1";
+  const HANOI_CHAPTER = "/s/algorithms-by-jeff-erickson/recursion";
+  // The lesson as students get it, to find right answers without hard-coding them.
+  const hanoiContent = (page) =>
+    page.evaluate(async (id) => {
+      const r = await fetch("/api/chapters/recursion").then((x) => x.json());
+      return r.lessons.find((l) => l.id === id).content;
+    }, HANOI);
+  // Sort the tray: tap each item (the next one is picked up by itself), then its category.
+  async function sortAll(page, placements) {
+    const heads = page.locator(".cat-head");
+    const labels = await heads.allTextContents();
+    for (const cat of placements) await click(page, heads.nth(labels.findIndex((l) => l.trim() === cat)), 250);
+  }
+  async function firstChip(page) {
+    await click(page, page.locator(".tray .chip").first(), 300);
+  }
+
+  // Shot: review the drafted lesson by playing it, then sign it off. (Modules 2, 4, 5 and 6 were
+  // approved beforehand in the copy, to keep the clip short.)
+  await clip(browser, "c09-hanoi-review", author, async (page) => {
+    await page.goto(BASE + "/author/lessons/" + HANOI); await wait(2500);
+    await click(page, btn(page, "Approve and go on"), 1800);
+    // Module 1, the sort: a known mistake ("lift two disks at once" as allowed), then right.
+    await firstChip(page);
+    await sortAll(page, ["Allowed", "Allowed", "Not allowed", "Allowed", "Allowed", "Allowed"]);
+    await click(page, btn(page, "Check"), 1500);
+    await scroll(page, 450); await wait(3000);
+    await click(page, btn(page, "Answer again"), 600);
+    await scroll(page, -500);
+    await firstChip(page);
+    await sortAll(page, ["Allowed", "Allowed", "Not allowed", "Not allowed", "Allowed", "Allowed"]);
+    await click(page, btn(page, "Check"), 2500);
+    await click(page, btn(page, "Approve module"), 1500);
+    await click(page, btn(page, "Approve anyway"), 1500);
+    // Module 3, the stepper exploration, predicting wrong on purpose, then the check.
+    await click(page, page.locator("nav.steps button").filter({ hasText: /^3/ }), 1500);
+    await scroll(page, 500);
+    await click(page, page.locator(".explore .option").first(), 400);
+    await click(page, page.getByRole("button", { name: /Lock in/ }), 800);
+    for (let i = 0; i < 7; i++) await click(page, page.getByRole("button", { name: /Next step/ }), 700);
+    await scroll(page, 400); await wait(3500);
+    const n = page.locator("input.num");
+    await click(page, n, 200); await n.pressSequentially("3", { delay: 120 });
+    await click(page, btn(page, "Check"), 2200);
+    await click(page, btn(page, "Approve module"), 1200);
+    await click(page, btn(page, "Approve anyway"), 1500);
+    await click(page, page.locator("nav.steps button").filter({ hasText: "Sign off" }), 1500);
+    await click(page, page.locator("section.signoff").getByRole("button", { name: "Sign off" }), 1200);
+    await click(page, btn(page, "Yes, sign off"), 2500);
+  });
+
+  // Shot: a student finds the new subject and plays the lesson: a wrong sort and the hint for
+  // that mistake, then right; the stepper with a wrong prediction; the check after it.
+  await clip(browser, "c10-hanoi-student", {}, async (page) => {
+    await page.goto(BASE + "/"); await wait(2200);
+    await click(page, page.getByRole("link", { name: /Algorithms, by Jeff Erickson/ }), 2000);
+    await click(page, page.locator("a.card").first(), 1500);
+    await type(page, page.getByLabel("Your name"), STUDENT);
+    await click(page, btn(page, "Start"), 2000);
+    const c = await hanoiContent(page);
+    await click(page, page.getByRole("button", { name: /Start|Continue/ }).last(), 1500);
+    await scroll(page, 450);
+    await firstChip(page);
+    await sortAll(page, ["Allowed", "Allowed", "Not allowed", "Allowed", "Allowed", "Allowed"]);
+    await click(page, btn(page, "Check"), 1500);
+    await scroll(page, 450); await wait(3000);
+    // The hint's simpler question, if there is one, answered right; else "Try the question again".
+    const w = c.modules[0].check.wrongAnswers.find((x) => x.match.itemId === "i4");
+    const sq = w?.fallback.simplerQuestion?.enabled ? w.fallback.simplerQuestion.check : null;
+    if (sq && sq.type === "select") {
+      await click(page, page.locator(".fallback .option").filter({ hasText: sq.options.find((o) => o.id === sq.answer).text }), 400);
+      await click(page, page.locator(".fallback").getByRole("button", { name: "Check" }), 1500);
+    } else {
+      await click(page, page.getByRole("button", { name: /Try the question again/ }), 1200);
+    }
+    await scroll(page, -400);
+    await firstChip(page);
+    await sortAll(page, ["Allowed", "Allowed", "Not allowed", "Not allowed", "Allowed", "Allowed"]);
+    await click(page, btn(page, "Check"), 2500);
+    await click(page, page.getByRole("button", { name: /Continue/ }), 1500);
+    // Module 2, right.
+    const m2 = c.modules[1].check;
+    await scroll(page, 450);
+    await click(page, page.locator(".option").filter({ hasText: m2.options.find((o) => o.id === m2.answer).text }), 400);
+    await click(page, btn(page, "Check"), 2000);
+    await click(page, page.getByRole("button", { name: /Continue/ }), 1500);
+    // Module 3: the stepper, predicting wrong.
+    await scroll(page, 500);
+    await click(page, page.locator(".explore .option").first(), 400);
+    await click(page, page.getByRole("button", { name: /Lock in/ }), 800);
+    for (let i = 0; i < 7; i++) await click(page, page.getByRole("button", { name: /Next step/ }), 650);
+    await scroll(page, 400); await wait(4000);
+  });
+
+  // Shot: statistics too. The sampling exploration in OpenIntro 5.1 (the session draft, shown to
+  // students in the copy).
+  await clip(browser, "c11-sampling", { "acu:lastName": "Tendo" }, async (page) => {
+    await page.goto(BASE + CHAPTER); await wait(1800);
+    const draft = page.locator("button.row").filter({ hasText: "5.1 Point" });
+    await click(page, draft, 1200);
+    await click(page, page.getByRole("button", { name: /Start|Continue/ }).last(), 1200);
+    const c = await page.evaluate(async () => (await fetch("/api/chapters/openintro-sampling").then((x) => x.json())).lessons.find((l) => (l.title ?? l.content.title).startsWith("5.1")).content);
+    const m1 = c.modules[0].check;
+    await click(page, page.locator(".option").nth(m1.options.findIndex((o) => o.id === m1.answer)), 200);
+    await click(page, btn(page, "Check"), 600);
+    await click(page, page.getByRole("button", { name: /Continue/ }), 900);
+    await firstChip(page);
+    const m2 = c.modules[1].check;
+    await sortAll(page, m2.items.map((i) => m2.categories.find((x) => x.id === i.category).label));
+    await click(page, btn(page, "Check"), 700);
+    await click(page, page.getByRole("button", { name: /Continue/ }), 1200);
+    await scroll(page, 450);
+    await click(page, page.locator(".explore .option").first(), 400);
+    await click(page, page.getByRole("button", { name: /Lock in/ }), 800);
+    await click(page, page.getByRole("button", { name: /Draw/ }), 1500);
+    await click(page, page.locator(".explore .value").filter({ hasText: /^1000$/ }), 400);
+    await click(page, page.getByRole("button", { name: /Draw/ }), 2500);
+    await scroll(page, 450); await wait(4500);
+  });
+
+  // Shot: the author sees Amina's path through the Erickson lesson.
+  await clip(browser, "c12-hanoi-log", author, async (page) => {
+    await page.goto(BASE + "/author/chapters/recursion/students"); await wait(2000);
+    await click(page, page.locator("li, tr").filter({ hasText: STUDENT }).getByRole("link").first(), 2500);
+    await scroll(page, 450); await wait(1800); await scroll(page, 450); await wait(2200);
+  });
+
+  // Shot: start from a book, then draft one section for real. The PDF is handed to the file
+  // input from the page (the native picker can't be driven); it's served from dist/client for
+  // the recording only.
+  if (only.includes(PAID_CLIP))
+    await clip(browser, PAID_CLIP, author, async (page) => {
+      await page.goto(BASE + "/author"); await wait(2000);
+      await click(page, page.getByRole("link", { name: /Start from a book/ }), 1800);
+      await page.evaluate(async (b) => {
+        const blob = await fetch(b.path).then((r) => r.blob());
+        const input = document.querySelector("input[type=file]");
+        const dt = new DataTransfer();
+        dt.items.add(new File([blob], b.name, { type: "application/pdf" }));
+        input.files = dt.files;
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      }, BOOK);
+      await page.locator(".chapters").waitFor({ timeout: 60000 }); await wait(1500);
+      const title = page.locator(".field input").first();
+      await click(page, title, 200);
+      await title.fill(""); await title.pressSequentially(BOOK.title, { delay: 60 }); await wait(600);
+      await scroll(page, 500); await wait(1200);
+      await click(page, page.locator(".chapters > li").filter({ hasText: BOOK.chapter }).first().locator("summary"), 2500);
+      await scroll(page, 700); await wait(1000);
+      await click(page, page.locator(".preset").first(), 1200);
+      await click(page, page.getByRole("button", { name: /Create the subject/ }), 2500);
+      // The new subject is last on the author home.
+      const chapterId = await page.evaluate(async (b) => {
+        const r = await fetch("/api/author/subjects", { headers: { "x-author-passphrase": localStorage.getItem("acu:authorPassphrase") } }).then((x) => x.json());
+        const subject = r.subjects.filter((x) => x.title === b.title).at(-1);
+        return subject.chapters.find((c) => c.title === b.chapter).id;
+      }, BOOK);
+      await click(page, page.locator(`a[href="/author/chapters/${chapterId}/draft"]`), 2500);
+      const row = page.locator(".sections li").filter({ hasText: BOOK.section });
+      await click(page, row.getByRole("button"), 1500);
+      await click(page, page.getByRole("button", { name: "Draft", exact: true }), 1000);
+      await page.getByRole("link", { name: /Review it step by step/ }).waitFor({ timeout: 20 * 60 * 1000 });
+      await wait(3000);
+      await click(page, page.getByRole("link", { name: /Review it step by step/ }), 3000);
+    });
 
   await browser.close();
 })();

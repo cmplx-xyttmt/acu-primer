@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Narration shot list</title>
+<style>
+:root{--text:#24312a;--heading:#17492f;--muted:rgba(26,40,28,.72);--hr:rgba(23,73,47,.15);--surface:rgba(255,255,255,.55);--surface-border:rgba(255,255,255,.78);--shadow:0 20px 48px -24px rgba(23,73,47,.45);--bg:linear-gradient(165deg,#f5f0de 0%,#e9ebd0 52%,#dce4c7 100%);--amber:#e4882e;--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,monospace}
+@media (prefers-color-scheme:dark){:root{--text:#d4dae3;--heading:#eef3fa;--muted:rgba(212,218,227,.7);--hr:rgba(255,255,255,.12);--surface:rgba(255,255,255,.05);--surface-border:rgba(255,255,255,.12);--shadow:0 20px 48px -24px rgba(0,0,0,.6);--bg:linear-gradient(165deg,#1a2028 0%,#151a21 55%,#11151a 100%)}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);background-attachment:fixed;color:var(--text);font:15px/1.6 var(--sans)}
+main{max-width:860px;margin:0 auto;padding:28px 16px 70px;display:grid;gap:16px}
+h1{font-family:var(--serif);color:var(--heading);font-weight:600;margin:0}
+p{margin:0}
+video{width:100%;border-radius:1rem;background:#000}
+.card{background:var(--surface);backdrop-filter:blur(18px);border:1px solid var(--surface-border);border-radius:1.1rem;box-shadow:var(--shadow);padding:14px 16px;display:grid;gap:8px}
+.hd{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px}
+.n{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--amber)}
+.t{font-family:var(--serif);font-size:1.15rem;color:var(--heading);font-weight:600}
+.d{margin-left:auto;font-size:12.5px;color:var(--muted)}
+.label{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+ul{margin:0;padding-left:1.2rem}
+textarea{width:100%;min-height:80px;font:inherit;border:1px solid var(--hr);border-radius:12px;padding:9px 11px;background:var(--surface);color:var(--text);resize:vertical}
+.note{font-size:13.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>Narration shot list</h1>
+<p>The rough cut (2:54, no sound) is below. For each shot: what's on screen, the points to cover, and a box for your words. The words are yours: the hackathon's rules say the narration must be written by you. At a relaxed pace, people speak about 2 to 2.5 words a second, so each shot shows a rough word budget. What you type stays in this browser only; copy it somewhere safe when you're done.</p>
+<video src="../media/concept-b/rough-cut.mp4" controls preload="metadata"></video>
+<p class="note">To change the cuts, edit the times in <code>devpost/demo-video/concept-b/rough-cut.sh</code> and run it again. To record your voice over it: QuickTime → New Audio Recording while the rough cut plays, or record straight into iMovie's voiceover tool.</p>
+<section class="card"><div class="hd"><span class="n">01</span><span class="t">0:00–0:20</span><span class="d">20 s · about 46 spoken words</span></div>
+<p class="screen"><b>On screen.</b> The opener: two real pages of Erickson&#x27;s Algorithms (Tower of Hanoi) turn into a six-module lesson; module 3 opens into its paths (the right answer, each wrong answer with its hint); the review ticks run down and Draft becomes Reviewed by a person.</p>
+<p class="label">Points to cover</p><ul><li>What a lecturer or self-learner starts with (a book) and what they want (short lessons that respond to mistakes, that they can trust).</li><li>In a sentence: what acu-primer is.</li></ul>
+<textarea data-k="shot1" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">02</span><span class="t">0:20–0:45</span><span class="d">25 s · about 57 spoken words</span></div>
+<p class="screen"><b>On screen.</b> Start from a book: the Erickson PDF is picked; its bookmarks become 13 chapters with their sections; the Recursion chapter&#x27;s sections are listed; a learner profile is picked; the subject is created.</p>
+<p class="label">Points to cover</p><ul><li>Who you are, and why you built it (your own learning, students with poor connections, or both).</li><li>The book stays on the laptop; chapters and sections come from the book itself.</li></ul>
+<textarea data-k="shot2" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">03</span><span class="t">0:45–1:12</span><span class="d">27 s · about 62 spoken words</span></div>
+<p class="screen"><b>On screen.</b> The draft: Tower of Hanoi chosen, Draft pressed, Claude thinking then writing (sped up 25×), Drafted in 354 s for $1.08, two attempts.</p>
+<p class="label">Points to cover</p><ul><li>What goes to Claude (only the section&#x27;s pages and the learner brief) and what comes back.</li><li>The checks a draft has to pass before it&#x27;s saved, and the second attempt when it didn&#x27;t (this one needed it).</li></ul>
+<textarea data-k="shot3" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">04</span><span class="t">1:12–1:40</span><span class="d">28 s · about 64 spoken words</span></div>
+<p class="screen"><b>On screen.</b> Review by playing, in the violet review frame: the sort check played with a known mistake, its hint; the paths ticking; approving early asks once; Sign off.</p>
+<p class="label">Points to cover</p><ul><li>Nothing reaches students until a person signs it off.</li><li>Reviewing by playing it as a student, every path a student can take.</li></ul>
+<textarea data-k="shot4" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">05</span><span class="t">1:40–2:19</span><span class="d">39 s · about 89 spoken words</span></div>
+<p class="screen"><b>On screen.</b> A student (Amina) finds the subject, gives her name once, makes the same sorting mistake and gets the hint for that mistake, then predicts wrong in the stepper and gets what really happens and why.</p>
+<p class="label">Points to cover</p><ul><li>Help aimed at the specific mistake, not a red X.</li><li>The exploration: predict first, then see it; why predicting first matters.</li></ul>
+<textarea data-k="shot5" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">06</span><span class="t">2:19–2:36</span><span class="d">17 s · about 39 spoken words</span></div>
+<p class="screen"><b>On screen.</b> Statistics too: the sampling exploration in OpenIntro 5.1, drawing samples of 10 and of 1,000 and comparing the spreads.</p>
+<p class="label">Points to cover</p><ul><li>The same tool works across subjects; the explorations come from a library of widgets the model configures.</li></ul>
+<textarea data-k="shot6" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">07</span><span class="t">2:36–2:48</span><span class="d">12 s · about 27 spoken words</span></div>
+<p class="screen"><b>On screen.</b> The author&#x27;s view of Amina&#x27;s path: each answer, the misconception it hit, the hint she got, her prediction.</p>
+<p class="label">Points to cover</p><ul><li>What the author learns from the log.</li></ul>
+<textarea data-k="shot7" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">08</span><span class="t">2:48–2:54</span><span class="d">6 s · about 13 spoken words</span></div>
+<p class="screen"><b>On screen.</b> End card: Book → Lessons → Review → Students → Log, and the repo link.</p>
+<p class="label">Points to cover</p><ul><li>What&#x27;s next, and where to find the code.</li></ul>
+<textarea data-k="shot8" placeholder="Your words for this shot"></textarea></section>
+</main>
+<script>
+  var KEY='acu-narration-2026-10-23';
+  var state={}; try{state=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+  document.querySelectorAll('textarea[data-k]').forEach(function(t){t.value=state[t.dataset.k]||'';t.addEventListener('input',function(){state[t.dataset.k]=t.value;try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}});});
+</script>
+</body>
+</html>

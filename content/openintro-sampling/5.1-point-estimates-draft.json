@@ -560,7 +560,7 @@
           ],
           "answer": "b"
         },
-        "thinkAbout": "Picture one poll of 10 people and one of 1,000. One unusual person moves the first poll's $\\hat{p}$ by 0.1, and the second's by 0.001. Which poll can land far from 0.88?",
+        "thinkAbout": "In a sample of 10, one unusual person moves $\\hat{p}$ by 0.1; in a sample of 1,000, by only 0.001. So small samples land all over the place, while big ones can't stray far from 0.88. The center doesn't move: every sample size is aiming at the same $p$.",
         "notice": "Each bar counts the samples that gave that $\\hat{p}$. With $n = 10$ they range widely; with $n = 1000$ they pile up near 0.88. The center stays at $p$ either way: a bigger sample makes $\\hat{p}$ more precise, it doesn't move it.",
         "widget": {
           "kind": "sampling",
@@ -857,7 +857,7 @@
           ],
           "answer": "b"
         },
-        "thinkAbout": "$n$ sits inside a square root. If $n$ is four times bigger, what happens to $\\sqrt{n}$?",
+        "thinkAbout": "$n$ sits inside a square root. Four times the people makes $\\sqrt{n}$ twice as big, so the standard error is divided by 2, not by 4. To halve the error you need four times the sample; to cut it by four, sixteen times.",
         "notice": "From 100 to 400 the standard error halves, and from 400 to 1600 it halves again. The curve flattens: each extra person helps less than the one before.",
         "widget": {
           "kind": "formula",

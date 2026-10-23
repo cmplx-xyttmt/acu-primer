@@ -96,6 +96,10 @@ export const sectionsOverview = (sections: Section[]) =>
 // --- When the bookmarks don't list sections: the contents pages, read by Claude ----------
 
 export const Contents = z.strictObject({
+  // One page among those sent that shows an ordinary (arabic) printed page number: its position
+  // in what was sent (1 = the first page sent) and that number. Lets the app work out the gap
+  // between printed and PDF page numbers when no bookmark matches. null if none shows one.
+  pageNumberSeen: z.strictObject({ position: z.number(), printed: z.number() }).nullable(),
   chapters: z.array(
     z.strictObject({
       title: z.string(), // with its number, as printed ("5 Foundations for inference")

@@ -24,7 +24,7 @@ An exploration is a small interactive piece inside a module: the student locks i
 If any of these fails, add no exploration; most modules have none, and a lesson with none is fine. At most 2 per lesson. In "why", say what the student changes, what they should see, and the misconception it targets. If you can't say all three, leave it out.
 
 Put it in a module's "exploreJson" as a JSON string with these fields:
-{"why": "...", "prompt": "what to do", "prediction": {"prompt": "...", "options": [{"id": "a", "text": "..."}, ...2 to 5], "answer": "<the id of the option that matches what the student will see>"}, "thinkAbout": "a nudge shown if the prediction didn't match: a question or hint that makes them think, not the answer", "notice": "what to notice, shown once they've changed something", "widget": <one of the widgets below>}
+{"why": "...", "prompt": "what to do", "prediction": {"prompt": "...", "options": [{"id": "a", "text": "..."}, ...2 to 5], "answer": "<the id of the option that matches what the student will see>"}, "thinkAbout": "shown if the prediction didn't match, after the app says what really happens: a short explanation of why, aimed at the thinking behind the wrong predictions", "notice": "what to notice, shown once they've changed something", "widget": <one of the widgets below>}
 
 The widgets (the app draws them; you only configure them):
 - Formula: {"kind": "formula", "inputs": [{"id": "n", "label": "Sample size $n$", "values": [25, 100, 400, 1600], "start": 100}], "expression": "sqrt(p * (1 - p) / n)", "result": {"label": "Standard error", "unit": "", "decimals": 3}, "plotOver": "n"}. 1 to 3 inputs, each with 2 to 12 values; "start" is one of them. The expression may use only the input ids, numbers, + - * / ^, parentheses, pi, e, and sqrt abs exp ln log10 log2 sin cos tan floor ceil round min max. Every input must change the result. "plotOver" (optional) is an input id to plot the result across. Use it for anything with a formula.
@@ -317,12 +317,13 @@ import { Contents } from "../shared/bookPlan.ts";
 
 const CONTENTS_FORMAT = zodOutputFormat(Contents);
 
-const CONTENTS_SYSTEM = `You read the table of contents of a book from PDF pages and list its chapters and their numbered sections, in order, exactly as printed.
+const CONTENTS_SYSTEM = `You are given pages from the start of a book, as a PDF. Find its table of contents among them, and list its chapters and their numbered sections, in order, exactly as printed. If the pages contain no table of contents, return an empty list of chapters.
 - Each chapter: its title with its number if it has one ("5 Foundations for inference"), and the page number printed next to it.
 - Each section: its title with its number ("5.1 Point estimates and sampling variability") and its printed page.
 - Leave out sub-sections below the first level (5.1.1), exercises and chapter reviews. Include front and back matter (Preface, Index, Appendix) as chapters with no sections, so the author can untick them.
 - Use the printed page numbers as numbers. If a page number is a roman numeral or missing, use null.
-- Copy titles; don't rephrase or invent anything.`;
+- Copy titles; don't rephrase or invent anything.
+- Also report "pageNumberSeen": one page among those you were given that has an ordinary (arabic, not roman) page number printed on it, as its position among the given pages (the first page given is 1) and the number printed on it. Prefer a page after the table of contents. Use null if no given page shows one.`;
 
 /** Read a book's contents pages (a small cut PDF) into chapters and sections, with printed pages. */
 export function readContents(client: Anthropic, model: string, pdf: Uint8Array): Promise<CallResult<Contents>> {
@@ -338,14 +339,14 @@ export function readContents(client: Anthropic, model: string, pdf: Uint8Array):
         role: "user",
         content: [
           { type: "document", source: { type: "base64", media_type: "application/pdf", data: btoa(binary) } },
-          { type: "text", text: "List the chapters and sections in these contents pages." },
+          { type: "text", text: "Find the table of contents in these pages and list its chapters and sections." },
         ],
       },
     ],
+    // An empty list means "no contents in these pages": the author is asked instead, with no retry.
     validate: (raw) => {
       const c = Contents.safeParse(raw);
-      if (!c.success) return { ok: false, problems: issues(c.error) };
-      return c.data.chapters.length > 0 ? { ok: true, value: c.data } : { ok: false, problems: ["no chapters found"] };
+      return c.success ? { ok: true, value: c.data } : { ok: false, problems: issues(c.error) };
     },
   });
 }

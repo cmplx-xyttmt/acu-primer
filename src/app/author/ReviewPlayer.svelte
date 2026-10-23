@@ -119,7 +119,7 @@
           <input type="checkbox" checked={e.enabled} disabled={busy} onchange={() => setExploreOn(mod.id, !e.enabled)} />
           Exploration shown to students
         </label>
-        <p class="muted">Try it twice: once predicting right, once predicting wrong, to see the "think about it" note.</p>
+        <p class="muted">Try it twice: once predicting right, once predicting wrong, to see the explanation a wrong prediction gets.</p>
       </div>
       <Part margin label="Exploration" suggestions={partSuggestions("explore")} onSuggest={suggestFor("explore", "Exploration")} {onWithdraw}>
         {#key exploreRun}
@@ -135,7 +135,11 @@
           {#if coach.kind === "right"}
             Answer as a student would. Start with the right answer to see the explanation students get.
           {:else if coach.kind === "wrong"}
-            Now {check.type === "select" ? "pick" : "type"} a wrong answer from the list to see its hint.
+            {check.type === "select"
+              ? "Now pick a wrong answer from the list to see its hint."
+              : check.type === "sort"
+                ? "Now sort with one of the mistakes in the list (put that item in the wrong category) to see its hint."
+                : "Now type a wrong answer from the list to see its hint."}
             {coach.left === 1 ? "One more to go." : `${coach.left} more to go.`}
           {:else if coach.kind === "other"}
             Last one: an answer nobody planned for.

@@ -93,12 +93,13 @@ export async function postBook({ env, request }: Ctx): Promise<Response> {
   return json(await createBook(env.DB, parsed.data));
 }
 
-// POST /api/author/books/contents — body: the book's contents pages as a small PDF. Claude
-// lists the chapters and sections with their printed pages (low effort, a few cents).
+// POST /api/author/books/contents — body: the book's contents pages, or its first pages, as a
+// small PDF. Claude finds the contents and lists the chapters and sections with their printed
+// pages (low effort; about $0.07 for 4 pages, around $0.20 to $0.50 for 15).
 export async function postContents({ env, request }: Ctx): Promise<Response> {
   if (!(request.headers.get("content-type") ?? "").includes("application/pdf")) return json({ error: "Send the contents pages as a PDF." }, 415);
   const pdf = new Uint8Array(await request.arrayBuffer());
-  if (pdf.length === 0 || pdf.length > 4_000_000) return json({ error: "Send only the contents pages (up to about 10 pages)." }, 413);
+  if (pdf.length === 0 || pdf.length > 20_000_000) return json({ error: "Send only the first pages of the book (up to about 20)." }, 413);
   const ready = await readyToSpend(env);
   if (!ready.ok) return ready.res;
   const result = await readContents(ready.client, env.DRAFT_MODEL, pdf);

@@ -2,8 +2,8 @@
   // An exploration (slice 8): predict, then change something and see what happens. The student
   // locks in a prediction before the widget wakes up (delMas, Garfield & Chance 1999: a
   // prediction that turns out wrong is what makes the result stick). Once they've changed
-  // something, "what to notice" appears, and if the prediction didn't match, a "think about
-  // why" note too. The prediction is never marked wrong.
+  // something, it says whether the prediction was right; if not, what happens and why (Isaac,
+  // Oct 23: no second prediction, just the explanation). Then "what to notice".
   import { fly } from "svelte/transition";
   import type { Explore } from "../../../shared/lesson.ts";
   import { renderInline, renderReading } from "../../lib/math.ts";
@@ -14,6 +14,7 @@
   import FlaskConical from "@lucide/svelte/icons/flask-conical";
   import Lock from "@lucide/svelte/icons/lock";
   import Lightbulb from "@lucide/svelte/icons/lightbulb";
+  import CircleCheck from "@lucide/svelte/icons/circle-check";
   import Eye from "@lucide/svelte/icons/eye";
 
   let {
@@ -39,6 +40,7 @@
   const rise = { y: 10, duration: reduceMotion ? 0 : 220 };
   const pickedText = $derived(explore.prediction.options.find((o) => o.id === picked)?.text ?? "");
   const matched = $derived(picked === explore.prediction.answer);
+  const answerText = $derived(explore.prediction.options.find((o) => o.id === explore.prediction.answer)?.text ?? "");
 
   function lockIn() {
     if (!picked) return;
@@ -87,9 +89,14 @@
   </div>
 
   {#if done}
-    {#if picked && !matched}
+    {#if picked && matched}
+      <p class="verdict right" in:fly={rise}>
+        <span class="pop"><CircleCheck size={20} aria-hidden="true" /></span>Your prediction was right: {@html renderInline(answerText)}.
+      </p>
+    {:else if picked}
       <aside class="margin-note think" in:fly={rise}>
-        <span class="label"><Lightbulb size={14} aria-hidden="true" />Think about it</span>
+        <span class="label"><Lightbulb size={14} aria-hidden="true" />Not what happens</span>
+        <p class="what">You predicted “{@html renderInline(pickedText)}”. In fact: {@html renderInline(answerText)}.</p>
         {@html renderReading(explore.thinkAbout)}
       </aside>
     {/if}
@@ -159,6 +166,23 @@
   .wait {
     margin: 0 0 0.6rem;
     font-size: 0.9rem;
+  }
+  .verdict {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+    font-weight: 700;
+    margin: 0;
+  }
+  .verdict.right {
+    color: var(--right);
+  }
+  .verdict .pop {
+    display: inline-flex;
+  }
+  .what {
+    font-weight: 600;
   }
   .think,
   .notice {

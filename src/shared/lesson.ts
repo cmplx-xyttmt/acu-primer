@@ -154,7 +154,10 @@ export const Explore = z.strictObject({
   why: text,
   prompt: text, // what to do, shown above the widget
   prediction: z.strictObject({ prompt: text, options: z.array(z.strictObject({ id, text })).min(2).max(5), answer: id }),
-  thinkAbout: text, // shown when the prediction didn't match what happened; never marked wrong
+  // Shown when the prediction didn't match: why the result is what it is, aimed at the wrong
+  // prediction's thinking (the app says the prediction didn't match and what happens; Isaac,
+  // Oct 23). The field kept its first name, from when it was a nudge to think again.
+  thinkAbout: text,
   notice: text, // what to notice, shown once the student has changed something
   widget: Widget,
 });

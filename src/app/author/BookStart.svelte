@@ -1,8 +1,9 @@
 <script lang="ts">
   // Start from a book (Oct 23): pick a PDF and the app makes a subject with a chapter for each
   // of the book's chapters, and each chapter's sections as lessons to draft. The plan comes
-  // from the PDF's bookmarks (free, instant). When they don't list sections, Claude reads the
-  // contents pages instead (a few cents). Nothing is drafted here: each section is drafted
+  // from the PDF's bookmarks (free, instant). When they don't list sections, Claude finds the
+  // contents by itself (the pages of a "Contents" bookmark, or else the book's first 15 pages)
+  // and lists them, for cents; typing the contents pages is only asked for if that fails. Nothing is drafted here: each section is drafted
   // with one click later, because a draft costs about $1.30. The PDF stays in this browser.
   import { BRIEF_PRESETS } from "../../shared/briefPresets.ts";
   import { pageOffset, planFromContents, planFromOutline, sectionsOverview, type Contents, type OutlineItem, type PlannedChapter } from "../../shared/bookPlan.ts";
@@ -29,6 +30,8 @@
 
   // Reading the contents pages with Claude, when the bookmarks don't list sections.
   let contentsPages = $state("");
+  let contentsStart = 1; // the PDF page the pages sent to Claude start at
+  let notFound = $state(false); // Claude found no contents in the pages sent
   let readingContents = $state(false);
   let contents = $state<Contents | null>(null);
   let contentsCost = $state<number | null>(null);
@@ -57,10 +60,14 @@
       outline = book.outline;
       title = book.title && book.title.length > 3 ? book.title : fromFileName(f.name);
       setPlan(planFromOutline(book.outline, book.pageCount));
-      // Guess the contents pages from a "Contents" bookmark, for the Claude fallback.
-      const toc = chapters.find((c) => /contents/i.test(c.title));
-      contentsPages = toc ? toc.pages : "";
       phase = "plan";
+      // No sections in the bookmarks: find the contents with Claude, without asking. A
+      // "Contents" bookmark says where they are; otherwise they're somewhere in the first pages.
+      if (!chapters.some((c) => c.likelyChapter && c.sections.length > 0)) {
+        const toc = chapters.find((c) => /contents/i.test(c.title));
+        contentsPages = toc ? toc.pages : `1-${Math.min(15, book.pageCount)}`;
+        await readContentsPages();
+      }
     } catch (err) {
       phase = "pick";
       fail(err instanceof Error ? new Error(`Couldn't read that PDF: ${err.message}`) : err);
@@ -78,9 +85,16 @@
     try {
       const { cutPages } = await import("../lib/pdfPages.ts");
       const cut = await cutPages(await file.arrayBuffer(), contentsPages);
+      contentsStart = Number(contentsPages.match(/\d+/)?.[0] ?? 1);
       const r = await authorApi.readContents(cut);
+      contentsCost = (contentsCost ?? 0) + r.usage.costUsd;
+      if (r.contents.chapters.length === 0) {
+        notFound = true;
+        contentsPages = "";
+        return;
+      }
+      notFound = false;
       contents = r.contents;
-      contentsCost = r.usage.costUsd;
       applyContents();
     } catch (err) {
       fail(err);
@@ -89,13 +103,20 @@
     }
   }
 
+  // The gap between printed and PDF page numbers: from bookmarks that match the contents, else
+  // from a printed page number Claude saw, else asked.
+  function autoGap(c: Contents): number | null {
+    const fromBookmarks = pageOffset(c, outline);
+    if (fromBookmarks !== null) return fromBookmarks;
+    return c.pageNumberSeen ? contentsStart + c.pageNumberSeen.position - 1 - c.pageNumberSeen.printed : null;
+  }
   function applyContents() {
     if (!contents) return;
-    let gap = pageOffset(contents, outline);
+    let gap = autoGap(contents);
     if (gap === null && firstPrinted !== null && Number(pdfPageOfPrinted) > 0) gap = Number(pdfPageOfPrinted) - firstPrinted;
     if (gap !== null) setPlan(planFromContents(contents, gap, pageCount));
   }
-  const needsGap = $derived(!!contents && pageOffset(contents, outline) === null);
+  const needsGap = $derived(!!contents && autoGap(contents) === null);
 
   async function create() {
     if (!file || picked.length === 0 || !title.trim()) return;
@@ -174,25 +195,30 @@
         </ul>
       {/if}
 
-      {#if withSections === 0 || contents}
+      {#if readingContents || notFound || contents}
         <div class="contents card">
-          {#if !contents}
+          {#if readingContents}
             <p>
-              <strong>Find the sections from the contents pages.</strong> The bookmarks don't list sections{chapters.length === 0 ? " (there are none)" : ""}. Claude can read the book's
-              contents pages and list every chapter and section, for a few cents.
+              <WandSparkles size={15} aria-hidden="true" /> The bookmarks don't list sections{chapters.length === 0 ? " (there are none)" : ""}, so Claude is looking for the
+              table of contents in pages {contentsPages} (usually $0.20 to $0.50)…
             </p>
-          {:else}
+          {:else if notFound}
             <p>
-              Read from the contents pages: {contents.chapters.length} chapters{contentsCost !== null ? `, for $${contentsCost.toFixed(3)}` : ""}.
+              Claude didn't find a table of contents in those pages{contentsCost !== null ? ` ($${contentsCost.toFixed(3)})` : ""}. If you know where it is, type its pages
+              and it will try there.
+            </p>
+          {:else if contents}
+            <p>
+              Read from the table of contents: {contents.chapters.length} chapters{contentsCost !== null ? `, for $${contentsCost.toFixed(3)}` : ""}.
             </p>
           {/if}
-          {#if !contents}
+          {#if notFound}
             <label class="field">
               Contents pages, as your PDF viewer numbers them
               <input type="text" bind:value={contentsPages} placeholder="3-6" />
             </label>
             <button class="btn-secondary" disabled={readingContents || !contentsPages.trim()} onclick={readContentsPages}>
-              <WandSparkles size={16} aria-hidden="true" />{readingContents ? "Claude is reading the contents…" : "Read the contents pages"}
+              <WandSparkles size={16} aria-hidden="true" />Read those pages
             </button>
           {:else if needsGap}
             <p>

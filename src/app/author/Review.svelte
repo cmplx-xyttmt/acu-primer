@@ -338,7 +338,7 @@
                 </ul>
                 <span class="tag">Widget</span>
                 <p class="muted">{widgetSummary(e.widget)}</p>
-                <span class="tag">If the prediction didn't match: think about it</span>
+                <span class="tag">If the prediction didn't match: why</span>
                 {@html renderReading(e.thinkAbout)}
                 <span class="tag">What to notice</span>
                 {@html renderReading(e.notice)}

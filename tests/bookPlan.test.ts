@@ -72,6 +72,7 @@ it("writes a plain overview from the sections, and the request shape checks", ()
 
 describe("from contents pages", () => {
   const contents = {
+    pageNumberSeen: null,
     chapters: [
       { title: "Preface", printedPage: null, sections: [] },
       { title: "5 Foundations for inference", printedPage: 168, sections: [{ title: "5.1 Point estimates", printedPage: 170 }, { title: "5.2 Confidence intervals", printedPage: 181 }] },

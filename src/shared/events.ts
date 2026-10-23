@@ -11,6 +11,8 @@ export const EVENT_TYPES = [
   "material.suggested",
   "module.skipped",
   "lesson.completed",
+  "explore.predicted", // slice 8: the prediction a student locked in
+  "explore.done", // slice 8: they changed something and saw what happens
 ] as const;
 
 export const StudentEvent = z.strictObject({
@@ -52,6 +54,14 @@ export interface ModulePayload {
   moduleId: string;
   moduleTitle: string;
   index: number;
+}
+
+export interface ExplorePayload {
+  moduleId: string;
+  moduleTitle: string;
+  predictionText: string; // the option the student locked in, as they saw it
+  matched: boolean; // whether it matched what the exploration shows
+  tries?: number; // explore.done: how many settings or steps they tried
 }
 
 // The author's view of the students in a chapter.

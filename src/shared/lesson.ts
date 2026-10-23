@@ -23,8 +23,8 @@ export const Misconception = z.strictObject({
   source: MisconceptionSource,
 });
 
-// The fields each check type needs to show and grade itself. New types (categorize,
-// predict_simulate) join these unions in slice 8.
+// The fields each check type needs to show and grade itself. Slice 8 added "sort" (put each
+// item in its category); simpler questions stay select or number.
 const selectFields = {
   type: z.literal("select"),
   prompt: text,
@@ -38,6 +38,14 @@ const numberFields = {
   answer: z.number(),
   tolerance: z.number().min(0), // right if |given - answer| <= tolerance
   unit: z.string().optional(),
+};
+
+const sortFields = {
+  type: z.literal("sort"),
+  prompt: text,
+  categories: z.array(z.strictObject({ id, label: text })).min(2),
+  // Each item with the category it belongs in. Shown to students in this order.
+  items: z.array(z.strictObject({ id, text, category: id })).min(2),
 };
 
 // Why the right answer is right, shown under "Right." so a student who guessed (or wasn't
@@ -69,17 +77,86 @@ const numberHelp = {
   generalFallback: Fallback,
 };
 
+const sortHelp = {
+  // A common misplacement: this item put in this (wrong) category.
+  wrongAnswers: z.array(wrongAnswer(z.strictObject({ itemId: id, categoryId: id }))),
+  generalFallback: Fallback,
+};
+
 // A full check minus alternatives. Alternatives are checks of this shape, so an author can
 // swap one in without the tool writing its fallbacks again.
 export const AlternativeCheck = z.discriminatedUnion("type", [
   z.strictObject({ id, ...selectFields, ...explanation, ...selectHelp }),
   z.strictObject({ id, ...numberFields, ...explanation, ...numberHelp }),
+  z.strictObject({ id, ...sortFields, ...explanation, ...sortHelp }),
 ]);
 
 export const Check = z.discriminatedUnion("type", [
   z.strictObject({ id, ...selectFields, ...explanation, ...selectHelp, alternatives: z.array(AlternativeCheck) }),
   z.strictObject({ id, ...numberFields, ...explanation, ...numberHelp, alternatives: z.array(AlternativeCheck) }),
+  z.strictObject({ id, ...sortFields, ...explanation, ...sortHelp, alternatives: z.array(AlternativeCheck) }),
 ]);
+
+// Explorations (slice 8): the student locks in a prediction, then changes something in a
+// widget and sees what happens. The widgets are built by hand and the lesson only configures
+// them; nothing the model writes runs as code (a formula goes through src/shared/formula.ts,
+// which only knows arithmetic). Four general widgets, so any subject can use them:
+//   formula    inputs (each a short list of values) feed a formula; the result shows as a
+//              number, and optionally as a line plot over one input
+//   sampling   draws many random samples of size n from a population with proportion p, and
+//              plots the sample proportions (statistics)
+//   stepper    a sequence of states the lesson writes (a row of labelled cells and a caption),
+//              stepped through one at a time: an algorithm on an array, a process's states
+//   scenarios  pick an option for each input and see the outcome the lesson wrote for it
+const varName = z.string().regex(/^[a-z][a-z0-9_]*$/, "lowercase letters, digits and _");
+const FormulaWidget = z.strictObject({
+  kind: z.literal("formula"),
+  inputs: z
+    .array(z.strictObject({ id: varName, label: text, values: z.array(z.number()).min(2).max(12), start: z.number() }))
+    .min(1)
+    .max(3),
+  expression: text, // e.g. "sqrt(p * (1 - p) / n)"
+  result: z.strictObject({ label: text, unit: z.string().optional(), decimals: z.number().int().min(0).max(6) }),
+  plotOver: varName.optional(), // an input id: plot the result across that input's values
+});
+const SamplingWidget = z.strictObject({
+  kind: z.literal("sampling"),
+  p: z.number().gt(0).lt(1),
+  sizes: z.array(z.number().int().min(1).max(5000)).min(2).max(6),
+  start: z.number().int(), // one of sizes
+  draws: z.number().int().min(100).max(5000), // samples per run
+});
+const StepperWidget = z.strictObject({
+  kind: z.literal("stepper"),
+  frames: z
+    .array(
+      z.strictObject({
+        caption: text,
+        cells: z.array(z.strictObject({ label: z.string().optional(), value: z.string(), mark: z.boolean().optional() })).min(1).max(12),
+      }),
+    )
+    .min(2)
+    .max(16),
+});
+const ScenariosWidget = z.strictObject({
+  kind: z.literal("scenarios"),
+  inputs: z.array(z.strictObject({ id: varName, label: text, options: z.array(z.strictObject({ id, label: text })).min(2).max(5) })).min(1).max(3),
+  // One outcome per combination of options: "when" maps every input id to an option id.
+  outcomes: z.array(z.strictObject({ when: z.record(z.string(), id), text })).min(2),
+});
+export const Widget = z.discriminatedUnion("kind", [FormulaWidget, SamplingWidget, StepperWidget, ScenariosWidget]);
+
+export const Explore = z.strictObject({
+  enabled: z.boolean(), // the author's switch, like a hint's
+  // For the author: what the student changes, and the misconception it targets. Required, so
+  // an exploration has to justify itself.
+  why: text,
+  prompt: text, // what to do, shown above the widget
+  prediction: z.strictObject({ prompt: text, options: z.array(z.strictObject({ id, text })).min(2).max(5), answer: id }),
+  thinkAbout: text, // shown when the prediction didn't match what happened; never marked wrong
+  notice: text, // what to notice, shown once the student has changed something
+  widget: Widget,
+});
 
 export const Module = z.strictObject({
   id,
@@ -87,6 +164,7 @@ export const Module = z.strictObject({
   // Short paragraphs separated by blank lines. $...$ is inline math, $$...$$ is display
   // math, **bold** and *italic* work. Rendered by src/app/lib/math.ts.
   reading: text,
+  explore: Explore.optional(), // comes before the check, if both
   check: Check.optional(),
 });
 
@@ -108,6 +186,8 @@ export type AlternativeCheck = z.infer<typeof AlternativeCheck>;
 export type Check = z.infer<typeof Check>;
 export type Module = z.infer<typeof Module>;
 export type Lesson = z.infer<typeof Lesson>;
+export type Explore = z.infer<typeof Explore>;
+export type Widget = z.infer<typeof Widget>;
 
 // What GET /api/chapters/:slug returns: the chapter and every visible lesson in full.
 export type LessonStatus = "unreviewed" | "reviewed";

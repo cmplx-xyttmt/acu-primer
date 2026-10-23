@@ -4,7 +4,10 @@
 
 import type { Check, SimpleCheck } from "./lesson.ts";
 
-export type Answer = { type: "select"; optionId: string } | { type: "number"; value: number };
+export type Answer =
+  | { type: "select"; optionId: string }
+  | { type: "number"; value: number }
+  | { type: "sort"; placements: Record<string, string> }; // item id → category id
 
 export type Grade =
   | { kind: "right" }
@@ -19,6 +22,7 @@ export function isRight(check: Check | SimpleCheck, answer: Answer): boolean {
   if (check.type === "select" && answer.type === "select") return answer.optionId === check.answer;
   if (check.type === "number" && answer.type === "number")
     return Math.abs(answer.value - check.answer) <= check.tolerance + EPSILON;
+  if (check.type === "sort" && answer.type === "sort") return check.items.every((i) => answer.placements[i.id] === i.category);
   return false;
 }
 
@@ -33,6 +37,9 @@ export function grade(check: Check | SimpleCheck, answer: Answer): Grade {
         ? check.wrongAnswers.findIndex(
             (w) => answer.value >= w.match.min - EPSILON && answer.value <= w.match.max + EPSILON,
           )
-        : -1;
+        : check.type === "sort" && answer.type === "sort"
+          ? // The first anticipated misplacement the student made, in the author's order.
+            check.wrongAnswers.findIndex((w) => answer.placements[w.match.itemId] === w.match.categoryId)
+          : -1;
   return index >= 0 ? { kind: "known-wrong", index } : { kind: "unplanned" };
 }

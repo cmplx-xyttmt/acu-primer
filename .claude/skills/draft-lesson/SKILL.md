@@ -28,8 +28,11 @@ Book PDFs never go in this repo.
    `content/drafts/pages/` (gitignored). Read that file with the Read tool (use `pages` for
    more than 10 pages). For a web reading, save its text under `content/drafts/` instead.
 2. **Read the rules.** `DRAFT_RULES` in `src/worker/claude.ts` is the system prompt the app sends
-   to the API. Follow it exactly; it's the single source of truth. Read the schema in
-   `src/shared/lesson.ts`.
+   to the API. Follow it exactly; it's the single source of truth. It includes `EXPLORE_RULES`
+   (slice 8): when an exploration is worth adding, and the four widgets. Read the schema in
+   `src/shared/lesson.ts`. In a lesson file, an exploration is a module's `explore` object (with
+   `"enabled": true`) and a sort check has `categories` and `items`, not the wire format's JSON
+   strings.
 3. **Read the misconception catalogue** for the topic in `catalogues/` if there is one. Label a
    misconception `{"kind": "catalogue", "reference": ...}` only when it comes from an entry there,
    copying the entry's `reference`; everything else is `{"kind": "model"}`. If there's no

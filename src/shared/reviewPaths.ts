@@ -21,6 +21,12 @@ export function reviewPaths(check: Check): ReviewPath[] {
       const optionId = w.match.optionId;
       return { id, label: `Picks "${check.options.find((o) => o.id === optionId)?.text ?? optionId}"` };
     }
+    if ("itemId" in w.match && check.type === "sort") {
+      const m = w.match;
+      const item = check.items.find((x) => x.id === m.itemId)?.text ?? m.itemId;
+      const cat = check.categories.find((x) => x.id === m.categoryId)?.label ?? m.categoryId;
+      return { id, label: `Puts "${item}" in "${cat}"` };
+    }
     if ("min" in w.match)
       return { id, label: w.match.min === w.match.max ? `Types ${num(w.match.min)}` : `Types ${num(w.match.min)} to ${num(w.match.max)}` };
     return { id, label: `Wrong answer ${i + 1}` };
@@ -28,7 +34,9 @@ export function reviewPaths(check: Check): ReviewPath[] {
   const right =
     check.type === "select"
       ? `Picks "${check.options.find((o) => o.id === check.answer)?.text ?? check.answer}" (right)`
-      : `Types ${num(check.answer)}${check.unit ? ` ${check.unit}` : ""} (right, ± ${num(check.tolerance)})`;
+      : check.type === "sort"
+        ? "Sorts every item into its category (right)"
+        : `Types ${num(check.answer)}${check.unit ? ` ${check.unit}` : ""} (right, ± ${num(check.tolerance)})`;
   return [{ id: "right", label: right }, ...wrong, { id: "other", label: "Any other answer" }];
 }
 

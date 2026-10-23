@@ -70,6 +70,10 @@
               <span class="bad">Told to go back through the material</span>
             {:else if e.type === "module.skipped"}
               <span class="bad">Skipped</span> module {Number(p.index) + 1}: {str(p.moduleTitle)}
+            {:else if e.type === "explore.predicted"}
+              Predicted “{@html renderInline(str(p.predictionText))}”{p.matched ? "" : ", which the exploration then showed otherwise"}
+            {:else if e.type === "explore.done"}
+              Explored{p.tries ? ` (${p.tries} settings or steps tried)` : ""}
             {:else if e.type === "lesson.completed"}
               <strong class="ok">Completed</strong> {str(p.title)}
             {:else}

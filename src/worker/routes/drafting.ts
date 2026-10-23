@@ -20,7 +20,7 @@ import {
 } from "../db.ts";
 import { json } from "../http.ts";
 import type { Ctx } from "../index.ts";
-import { changedParts, setFallbackPart, swapAlternative, type EditResult } from "../../shared/lessonEdits.ts";
+import { changedParts, setExplore, setFallbackPart, swapAlternative, type EditResult } from "../../shared/lessonEdits.ts";
 import { lessonProblems } from "../../shared/lessonChecks.ts";
 import { keepSwitches } from "../../shared/wire.ts";
 import { OUTCOMES_STEP } from "../../shared/review.ts";
@@ -227,7 +227,8 @@ export async function postRevise({ env }: Ctx, lessonId: string, stepId: string)
 }
 
 // POST /api/author/lessons/:id/edits — { kind: "swap", moduleId, alternativeId }
-//   or { kind: "switch", moduleId, which: number | "general", part, enabled }. No Claude call.
+//   or { kind: "switch", moduleId, which: number | "general", part, enabled }
+//   or { kind: "explore", moduleId, enabled }. No Claude call.
 export async function postEdit({ env, request }: Ctx, lessonId: string): Promise<Response> {
   const lesson = await authorLesson(env.DB, lessonId);
   if (!lesson) return json({ error: "No lesson with that id." }, 404);
@@ -243,6 +244,8 @@ export async function postEdit({ env, request }: Ctx, lessonId: string): Promise
     typeof b.enabled === "boolean"
   ) {
     result = setFallbackPart(lesson.content, b.moduleId, b.which, b.part, b.enabled);
+  } else if (b?.kind === "explore" && typeof b.moduleId === "string" && typeof b.enabled === "boolean") {
+    result = setExplore(lesson.content, b.moduleId, b.enabled);
   } else {
     return json({ error: "Send a swap or a switch edit." }, 400);
   }

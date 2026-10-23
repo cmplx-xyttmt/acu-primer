@@ -9,7 +9,7 @@
 // The converter turns a wire lesson into a lesson, or says what's wrong so Claude can retry.
 
 import { z } from "zod";
-import type { AlternativeCheck, Check, Fallback, Lesson, Misconception, Module, SimpleCheck } from "./lesson.ts";
+import { Explore, type AlternativeCheck, type Check, type Fallback, type Lesson, type Misconception, type Module, type SimpleCheck } from "./lesson.ts";
 
 const text = z.string();
 
@@ -34,7 +34,7 @@ const WireFallback = z.strictObject({
 });
 
 const WireWrongAnswer = z.strictObject({
-  optionId: text.nullable(), // select: the wrong option
+  optionId: text.nullable(), // select: the wrong option; sort: "<item id>:<category id>"
   min: z.number().nullable(), // number: the wrong value's range
   max: z.number().nullable(),
   misconception: WireMisconception,
@@ -42,6 +42,10 @@ const WireWrongAnswer = z.strictObject({
 });
 
 export const WireCheck = WireSimpleCheck.extend({
+  type: z.enum(["select", "number", "sort"]),
+  // Sort only: {"categories": [...], "items": [...]} as a JSON string. Separate fields would make
+  // the grammar too large again (found when sort was added in slice 8).
+  sortJson: text.nullable(),
   id: text,
   explanation: text,
   wrongAnswers: z.array(WireWrongAnswer),
@@ -52,6 +56,9 @@ export const WireModule = z.strictObject({
   id: text,
   title: text,
   reading: text,
+  // An exploration as a JSON string (or null): its shape has many either-or parts, which would
+  // make the grammar too large, so it's checked against the Explore schema after parsing.
+  exploreJson: text.nullable(),
   check: WireCheck.nullable(),
   alternatives: z.array(WireCheck), // empty when the module has no check
 });
@@ -76,9 +83,24 @@ export const WIRE_NOTES = `How to fill in the JSON format:
 - A wrong answer on a select check fills "optionId" and sets "min" and "max" to null; on a number check it fills "min" and "max" and sets "optionId" to null.
 - A misconception from the catalogue has source {"kind": "catalogue", "reference": <the entry's reference>}; your own has {"kind": "model", "reference": null}.
 - A fallback's "reExplanation" or "simplerQuestion" is null when there isn't one.
-- A module without a check has "check": null and "alternatives": [].`;
+- A "sort" check fills "sortJson" with a JSON string {"categories": [{"id": "...", "label": "..."}], "items": [{"id": "...", "text": "...", "category": "<category id>"}]}, and sets "options", "answerOption", "answerNumber", "tolerance" and "unit" to null. Its wrong answers set "optionId" to "<item id>:<category id>" (that item put in that wrong category) and "min" and "max" to null. Select and number checks set "sortJson" to null.
+- A simpler question is always "select" or "number", never "sort".
+- A module without a check has "check": null and "alternatives": [].
+- "exploreJson" is null, or one exploration as a JSON string (see the exploration rules).`;
 
 // --- wire → lesson ----------------------------------------------------------------------
+
+const SortParts = z.strictObject({
+  categories: z.array(z.strictObject({ id: text, label: text })),
+  items: z.array(z.strictObject({ id: text, text, category: text })),
+});
+function parseJson(s: string | null): unknown {
+  try {
+    return s === null ? undefined : JSON.parse(s);
+  } catch {
+    return undefined;
+  }
+}
 
 type Problems = string[];
 
@@ -121,7 +143,24 @@ function fallback(w: z.infer<typeof WireFallback>, where: string, p: Problems): 
 }
 
 function check(w: WireCheck, where: string, p: Problems): AlternativeCheck | null {
-  const base = simple(w, where, p);
+  if (w.type === "sort") {
+    const parts = SortParts.safeParse(parseJson(w.sortJson));
+    if (!parts.success) {
+      p.push(`${where}: a sort check needs "sortJson" with "categories" and "items" (${parts.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")})`);
+      return null;
+    }
+    const wrongAnswers = w.wrongAnswers.flatMap((a, i) => {
+      const [itemId, categoryId] = (a.optionId ?? "").split(":");
+      if (!itemId || !categoryId) {
+        p.push(`${where} wrong answer ${i + 1}: a sort check's wrong answer needs "optionId" as "<item id>:<category id>"`);
+        return [];
+      }
+      return [{ match: { itemId, categoryId }, misconception: misconception(a.misconception), fallback: fallback(a.fallback, `${where} wrong answer ${i + 1}`, p) }];
+    });
+    const general = fallback(w.generalFallback, `${where} general fallback`, p);
+    return { id: w.id, type: "sort", prompt: w.prompt, ...parts.data, explanation: w.explanation, wrongAnswers, generalFallback: general };
+  }
+  const base = simple(w as z.infer<typeof WireSimpleCheck>, where, p);
   if (!base) return null;
   const general = fallback(w.generalFallback, `${where} general fallback`, p);
   if (base.type === "select") {
@@ -146,6 +185,19 @@ function check(w: WireCheck, where: string, p: Problems): AlternativeCheck | nul
 
 export function moduleFromWire(w: WireModule, p: Problems): Module {
   const m: Module = { id: w.id, title: w.title, reading: w.reading };
+  if (w.exploreJson) {
+    let raw: unknown;
+    try {
+      raw = JSON.parse(w.exploreJson);
+    } catch {
+      p.push(`module ${w.id} exploreJson: not valid JSON`);
+    }
+    if (raw !== undefined) {
+      const e = Explore.safeParse({ enabled: true, ...(raw as object) });
+      if (e.success) m.explore = e.data;
+      else p.push(...e.error.issues.map((i) => `module ${w.id} exploration ${i.path.join(".")}: ${i.message}`));
+    }
+  }
   if (w.check) {
     const c = check(w.check, `module ${w.id} check`, p);
     const alternatives = w.alternatives.flatMap((a) => {
@@ -171,7 +223,7 @@ export function lessonFromWire(w: WireLesson): { ok: true; lesson: Lesson } | { 
 
 // --- lesson → wire (for sending a lesson back to Claude, and for the round-trip test) ----
 
-function simpleToWire(c: SimpleCheck): z.infer<typeof WireSimpleCheck> {
+function simpleToWire(c: SimpleCheck | Extract<Check, { type: "select" | "number" }>): z.infer<typeof WireSimpleCheck> {
   return c.type === "select"
     ? { type: "select", prompt: c.prompt, options: c.options, answerOption: c.answer, answerNumber: null, tolerance: null, unit: null }
     : { type: "number", prompt: c.prompt, options: null, answerOption: null, answerNumber: c.answer, tolerance: c.tolerance, unit: c.unit ?? null };
@@ -185,12 +237,16 @@ function fallbackToWire(f: Fallback): z.infer<typeof WireFallback> {
 }
 
 function checkToWire(c: Check | AlternativeCheck): WireCheck {
+  const base =
+    c.type === "sort"
+      ? { type: "sort" as const, prompt: c.prompt, options: null, answerOption: null, answerNumber: null, tolerance: null, unit: null, sortJson: JSON.stringify({ categories: c.categories, items: c.items }) }
+      : { ...simpleToWire(c), sortJson: null };
   return {
-    ...simpleToWire(c),
+    ...base,
     id: c.id,
     explanation: c.explanation,
     wrongAnswers: c.wrongAnswers.map((a) => ({
-      optionId: "optionId" in a.match ? a.match.optionId : null,
+      optionId: "optionId" in a.match ? a.match.optionId : "itemId" in a.match ? `${a.match.itemId}:${a.match.categoryId}` : null,
       min: "min" in a.match ? a.match.min : null,
       max: "max" in a.match ? a.match.max : null,
       misconception: {
@@ -208,6 +264,7 @@ export function moduleToWire(m: Module): WireModule {
     id: m.id,
     title: m.title,
     reading: m.reading,
+    exploreJson: m.explore ? JSON.stringify((({ enabled: _, ...rest }) => rest)(m.explore)) : null,
     check: m.check ? checkToWire(m.check) : null,
     alternatives: m.check ? m.check.alternatives.map(checkToWire) : [],
   };
@@ -222,6 +279,7 @@ export function lessonToWire(l: Lesson): WireLesson {
  * stays off in the revised module wherever the same wrong answer (same position) still has it.
  */
 export function keepSwitches(before: Module, after: Module): Module {
+  if (before.explore && after.explore && !before.explore.enabled) after = { ...after, explore: { ...after.explore, enabled: false } };
   if (!before.check || !after.check) return after;
   const copy = (from: Fallback, to: Fallback) => {
     if (from.reExplanation && to.reExplanation) to.reExplanation.enabled = from.reExplanation.enabled;

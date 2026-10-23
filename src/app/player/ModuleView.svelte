@@ -8,6 +8,8 @@
   import { renderReading } from "../lib/math.ts";
   import Select from "./checks/Select.svelte";
   import NumberInput from "./checks/NumberInput.svelte";
+  import Sort from "./checks/Sort.svelte";
+  import ExploreView from "./explore/ExploreView.svelte";
   import ThemeSwitch from "./ThemeSwitch.svelte";
   import Fallback from "./Fallback.svelte";
   import ArrowLeft from "@lucide/svelte/icons/arrow-left";
@@ -19,7 +21,7 @@
   import LessonOutline from "./LessonOutline.svelte";
   import { record } from "../lib/eventQueue.ts";
   import type { AnsweredPayload, FallbackPayload } from "../../shared/events.ts";
-  import type { SimpleCheck } from "../../shared/lesson.ts";
+  import type { Check, SimpleCheck } from "../../shared/lesson.ts";
   import type { LessonProgress } from "../lib/progress.ts";
 
   let {
@@ -65,6 +67,9 @@
     end: "none",
   });
   let checks = $state<Record<string, CheckState>>({});
+  // Modules whose exploration the student finished on this visit (slice 8). The check waits
+  // until then.
+  let explored = $state<Record<string, boolean>>({});
 
   const mod = $derived(lesson.modules[index]);
   const total = $derived(lesson.modules.length);
@@ -82,7 +87,8 @@
         ? "wrong"
         : null,
   );
-  const canMoveOn = $derived(!mod.check || end === "right" || end === "saved");
+  const exploring = $derived(!!mod.explore?.enabled && !reread && !explored[mod.id]);
+  const canMoveOn = $derived(!exploring && (!mod.check || end === "right" || end === "saved"));
 
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const move = { y: 12, duration: reduceMotion ? 0 : 180 };
@@ -92,14 +98,18 @@
   }
 
   // What the student picked or typed, as they saw it, for the author's log.
-  const answerText = (c: SimpleCheck, a: Answer) =>
+  const answerText = (c: SimpleCheck | Check, a: Answer) =>
     a.type === "select" && c.type === "select"
       ? (c.options.find((o) => o.id === a.optionId)?.text ?? a.optionId)
       : a.type === "number"
         ? String(a.value)
-        : "";
+        : a.type === "sort" && c.type === "sort"
+          ? c.categories
+              .map((cat) => `${cat.label}: ${c.items.filter((i) => a.placements[i.id] === cat.id).map((i) => i.text).join(", ") || "nothing"}`)
+              .join("; ")
+          : "";
 
-  function log(type: "check.answered" | "fallback.shown" | "material.suggested", payload: object) {
+  function log(type: "check.answered" | "fallback.shown" | "material.suggested" | "explore.predicted" | "explore.done", payload: object) {
     record(type, lesson.id, { moduleId: mod.id, moduleTitle: mod.title, ...payload });
   }
 
@@ -109,7 +119,7 @@
     log("check.answered", {
       checkId: mod.check.id,
       level: cs.level === "main" ? "main" : "retry",
-      answerText: answerText(mod.check as SimpleCheck, a),
+      answerText: answerText(mod.check, a),
       result: g.kind,
       misconception: g.kind === "known-wrong" ? mod.check.wrongAnswers[g.index].misconception.text : undefined,
     } satisfies Omit<AnsweredPayload, "moduleId" | "moduleTitle">);
@@ -198,13 +208,27 @@
       <h2>{mod.title}</h2>
       <div class="reading">{@html renderReading(mod.reading)}</div>
 
-      {#if mod.check}
+      {#if mod.explore?.enabled}
+        <ExploreView
+          explore={mod.explore}
+          shownBefore={reread}
+          onPredicted={(predictionText, matched) => log("explore.predicted", { predictionText, matched })}
+          onDone={(tries) => {
+            explored[mod.id] = true;
+            log("explore.done", { tries });
+          }}
+        />
+      {/if}
+
+      {#if mod.check && !exploring}
         <section class="check">
           {#key cs.attempt}
             {#if mod.check.type === "select"}
               <Select check={mod.check} locked={mainLocked} shown={showSaved} {mark} onAnswer={answerMain} />
             {:else if mod.check.type === "number"}
               <NumberInput check={mod.check} locked={mainLocked} shown={showSaved} {mark} onAnswer={answerMain} />
+            {:else if mod.check.type === "sort"}
+              <Sort check={mod.check} locked={mainLocked} shown={showSaved} {mark} onAnswer={answerMain} />
             {/if}
           {/key}
 

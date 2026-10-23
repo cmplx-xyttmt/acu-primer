@@ -13,6 +13,8 @@
   import { renderInline, renderReading } from "../lib/math.ts";
   import Select from "../player/checks/Select.svelte";
   import NumberInput from "../player/checks/NumberInput.svelte";
+  import Sort from "../player/checks/Sort.svelte";
+  import ExploreView from "../player/explore/ExploreView.svelte";
   import Fallback from "../player/Fallback.svelte";
   import Part from "./Part.svelte";
   import CircleCheck from "@lucide/svelte/icons/circle-check";
@@ -28,6 +30,7 @@
     suggestFor,
     onWithdraw,
     setPart,
+    setExploreOn,
   }: {
     mod: Module;
     seen: PathId[];
@@ -37,7 +40,10 @@
     suggestFor: (part: string, partLabel: string) => (text: string) => Promise<void>;
     onWithdraw: (id: string) => Promise<void>;
     setPart: (moduleId: string, which: number | "general", part: "reExplanation" | "simplerQuestion", enabled: boolean) => void;
+    setExploreOn: (moduleId: string, enabled: boolean) => void;
   } = $props();
+  // The exploration plays first, as for students; "Play it again" starts it over.
+  let exploreRun = $state(0);
 
   const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const check = $derived(mod.check);
@@ -104,6 +110,25 @@
       <div class="reading">{@html renderReading(mod.reading)}</div>
     </Part>
 
+    {#if mod.explore}
+      {@const e = mod.explore}
+      <div class="author-view">
+        <span class="badge badge-review">Author's view</span>
+        <p><strong>Why it's here:</strong> {@html renderInline(e.why)}</p>
+        <label class="switch">
+          <input type="checkbox" checked={e.enabled} disabled={busy} onchange={() => setExploreOn(mod.id, !e.enabled)} />
+          Exploration shown to students
+        </label>
+        <p class="muted">Try it twice: once predicting right, once predicting wrong, to see the "think about it" note.</p>
+      </div>
+      <Part margin label="Exploration" suggestions={partSuggestions("explore")} onSuggest={suggestFor("explore", "Exploration")} {onWithdraw}>
+        {#key exploreRun}
+          <ExploreView explore={e} onDone={() => {}} />
+        {/key}
+      </Part>
+      <button class="btn-quiet btn-sm again" onclick={() => (exploreRun += 1)}><RotateCcw size={15} aria-hidden="true" />Play the exploration again</button>
+    {/if}
+
     {#if check}
       {#key `${coach.kind}-${seen.length}`}
         <p class="coach" in:fade={{ duration: reduceMotion ? 0 : 220 }}>
@@ -126,6 +151,8 @@
           {#key attempt}
             {#if check.type === "select"}
               <Select {check} locked={!!result} shown={false} {mark} onAnswer={answer} />
+            {:else if check.type === "sort"}
+              <Sort {check} locked={!!result} shown={false} {mark} onAnswer={answer} />
             {:else}
               <NumberInput {check} locked={!!result} shown={false} {mark} onAnswer={answer} />
             {/if}

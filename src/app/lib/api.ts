@@ -111,6 +111,8 @@ export const authorApi = {
     author<AuthorLesson>(`/api/author/lessons/${id}/edits`, { method: "POST", body: JSON.stringify({ kind: "swap", moduleId, alternativeId }) }),
   setPart: (id: string, moduleId: string, which: number | "general", part: "reExplanation" | "simplerQuestion", enabled: boolean) =>
     author<AuthorLesson>(`/api/author/lessons/${id}/edits`, { method: "POST", body: JSON.stringify({ kind: "switch", moduleId, which, part, enabled }) }),
+  setExplore: (id: string, moduleId: string, enabled: boolean) =>
+    author<AuthorLesson>(`/api/author/lessons/${id}/edits`, { method: "POST", body: JSON.stringify({ kind: "explore", moduleId, enabled }) }),
   withdraw: (suggestionId: string) =>
     author<AuthorLesson>(`/api/author/suggestions/${suggestionId}/withdraw`, { method: "POST" }),
   setShowUnreviewed: (chapterId: string, showUnreviewed: boolean) =>

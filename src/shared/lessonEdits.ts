@@ -48,6 +48,15 @@ export function setFallbackPart(
   });
 }
 
+/** Switch a module's exploration on or off (slice 8). Off, students don't see it. */
+export function setExplore(lesson: Lesson, moduleId: string, enabled: boolean): EditResult {
+  return withModule(lesson, moduleId, (m) => {
+    if (!m.explore) return "This module has no exploration.";
+    m.explore.enabled = enabled;
+    return m;
+  });
+}
+
 /** Which parts of a module differ between two versions, in the review screen's words. */
 export function changedParts(before: Module | undefined, after: Module): string[] {
   if (!before) return ["the whole module"];
@@ -55,6 +64,7 @@ export function changedParts(before: Module | undefined, after: Module): string[
   const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
   if (before.title !== after.title) parts.push("title");
   if (before.reading !== after.reading) parts.push("reading");
+  if (!same(before.explore, after.explore)) parts.push("exploration");
   const b = before.check;
   const a = after.check;
   if (!b || !a) {

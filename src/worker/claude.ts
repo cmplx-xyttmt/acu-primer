@@ -15,6 +15,24 @@ import { lessonProblems } from "../shared/lessonChecks.ts";
 import { WIRE_NOTES, WireLesson, WireModule, lessonFromWire, moduleFromWire, moduleToWire } from "../shared/wire.ts";
 
 // Kept byte-for-byte stable so the prompt cache can reuse it across drafts.
+// When and how to add an exploration (slice 8). Shared with the draft-lesson skill.
+export const EXPLORE_RULES = `Explorations:
+An exploration is a small interactive piece inside a module: the student locks in a prediction, then changes something and sees what happens. It is only worth adding where all three hold:
+1. There is something the student can change (a number, a choice, the next step) and a consequence they can see.
+2. Seeing that consequence teaches one of the lesson's outcomes better than reading about it would.
+3. Students commonly get the consequence wrong, so a prediction can surprise them.
+If any of these fails, add no exploration; most modules have none, and a lesson with none is fine. At most 2 per lesson. In "why", say what the student changes, what they should see, and the misconception it targets. If you can't say all three, leave it out.
+
+Put it in a module's "exploreJson" as a JSON string with these fields:
+{"why": "...", "prompt": "what to do", "prediction": {"prompt": "...", "options": [{"id": "a", "text": "..."}, ...2 to 5], "answer": "<the id of the option that matches what the student will see>"}, "thinkAbout": "a nudge shown if the prediction didn't match: a question or hint that makes them think, not the answer", "notice": "what to notice, shown once they've changed something", "widget": <one of the widgets below>}
+
+The widgets (the app draws them; you only configure them):
+- Formula: {"kind": "formula", "inputs": [{"id": "n", "label": "Sample size $n$", "values": [25, 100, 400, 1600], "start": 100}], "expression": "sqrt(p * (1 - p) / n)", "result": {"label": "Standard error", "unit": "", "decimals": 3}, "plotOver": "n"}. 1 to 3 inputs, each with 2 to 12 values; "start" is one of them. The expression may use only the input ids, numbers, + - * / ^, parentheses, pi, e, and sqrt abs exp ln log10 log2 sin cos tan floor ceil round min max. Every input must change the result. "plotOver" (optional) is an input id to plot the result across. Use it for anything with a formula.
+- Sampling: {"kind": "sampling", "p": 0.88, "sizes": [10, 100, 1000], "start": 10, "draws": 1000}. Draws "draws" random samples of each size from a population where a share p says yes, and plots the sample proportions. For sampling variability in statistics only.
+- Stepper: {"kind": "stepper", "frames": [{"caption": "...", "cells": [{"label": "PC", "value": "0x10", "mark": true}, ...]}, ...]}. 2 to 16 steps the student moves through, each a row of up to 12 labelled cells and a caption; cells that change are highlighted for them. Use it for a process over time: an algorithm on an array, a process changing state, a sequence of events. Every frame must be right: check each one against the pages.
+- Scenarios: {"kind": "scenarios", "inputs": [{"id": "policy", "label": "Scheduler", "options": [{"id": "fifo", "label": "First come"}, {"id": "sjf", "label": "Shortest first"}]}], "outcomes": [{"when": {"policy": "fifo"}, "text": "..."}, ...]}. 1 to 3 inputs with 2 to 5 options each, and exactly one outcome for every combination. Use it for "what if" comparisons with no formula, in any subject.
+Prefer formula or sampling when the result can be computed, so the app computes it; use stepper or scenarios only when it can't. The prediction's answer must be what the widget really shows: work it out from the widget's settings before you write it.`;
+
 export const DRAFT_RULES = `You write interactive lessons for acu-primer, from pages of a textbook or another reading. A chapter author will review and edit every lesson before any student sees it.
 
 Who reads the lesson: the chapter brief, if there is one, says who the learner is and how they want to learn; follow it. Without a brief, assume first-year university students working alone, often on a phone.
@@ -25,13 +43,14 @@ Outcomes first. Write 3 to 5 outcomes: what a student can do by the end, one lin
 
 Modules:
 - One idea per module. Reading is short: at most about 150 words, in 1 to 3 paragraphs.
-- A check at least every other module. Never two modules in a row without a check, except the last module, which may be a short summary.
+- A check or an exploration at least every other module. Never two modules in a row without a check, except the last module, which may be a short summary.
 - If a stretch of text has no sensible check, split it into more modules instead of writing a trivial check.
 - Define every term and symbol in plain words where it's first used, and say again what each symbol means wherever a formula appears.
 - Stay with what the pages teach. You may explain it differently, but don't add new methods or facts.
 
 Checks:
-- Use only the check types in the schema: "select" (pick one option) and "number" (type a number).
+- Use only the check types in the schema: "select" (pick one option), "number" (type a number) and "sort" (put each item in its category).
+- Sort checks: 2 to 4 categories and 4 to 8 short items, for ideas that come in kinds (which error is which, which state a process is in, which case of a rule applies). Each wrong answer is one item a student would put in a particular wrong category.
 - Mostly checks that ask the student to explain why, compare, predict or apply; recall at most a third.
 - Number checks: say in the prompt how to round. Set "tolerance" to cover that rounding. Make every wrong-answer range reachable at that rounding, and never overlapping the right answer plus or minus the tolerance.
 - Select checks: 3 or 4 options. Wrong options must be things a real student might believe, never jokes. Put the right option in a different position from check to check.
@@ -49,7 +68,9 @@ Text format:
 - Remember that LaTeX backslashes must be escaped in JSON ("\\\\hat{p}").
 - A dollar sign that isn't math must be written \\\\$.
 
-Ids: modules m1, m2, ...; checks c1, c2, ... in order, alternatives c1a, c1b, ...; options a, b, c, d.`;
+Ids: modules m1, m2, ...; checks c1, c2, ... in order, alternatives c1a, c1b, ...; options a, b, c, d.
+
+${EXPLORE_RULES}`;
 
 export interface DraftRequest {
   fileId: string; // the cut pages, uploaded with the Files API

@@ -5,7 +5,7 @@
   // is approved and no suggestion is open.
   // Slice 11: a module is reviewed by playing it (ReviewPlayer), inside a violet frame;
   // "Every branch" shows all its branches at once instead.
-  import type { AuthorLesson, Check, AlternativeCheck, Fallback, SimpleCheck } from "../../shared/lesson.ts";
+  import type { AuthorLesson, Check, AlternativeCheck, Fallback, SimpleCheck, Widget } from "../../shared/lesson.ts";
   import { OUTCOMES_STEP, canApprove, reviewState, type Suggestion } from "../../shared/review.ts";
   import { authorApi, ApiError } from "../lib/api.ts";
   import { renderInline, renderReading } from "../lib/math.ts";
@@ -139,12 +139,25 @@
     run(() => authorApi.swap(lessonId, moduleId, altId)).then(() => delete seenByStep[moduleId]);
   const setPart = (moduleId: string, which: number | "general", part: "reExplanation" | "simplerQuestion", enabled: boolean) =>
     run(() => authorApi.setPart(lessonId, moduleId, which, part, enabled));
+  const setExploreOn = (moduleId: string, enabled: boolean) => run(() => authorApi.setExplore(lessonId, moduleId, enabled));
+
+  // One line on how an exploration's widget is set up, for the Every branch view.
+  const widgetSummary = (w: Widget) =>
+    w.kind === "formula"
+      ? `Formula ${w.expression}, inputs ${w.inputs.map((i) => `${i.id} in {${i.values.join(", ")}}`).join("; ")}${w.plotOver ? `, plotted over ${w.plotOver}` : ""}`
+      : w.kind === "sampling"
+        ? `Sampling: p = ${w.p}, sample sizes ${w.sizes.join(", ")}, ${w.draws} samples a run`
+        : w.kind === "stepper"
+          ? `Stepper: ${w.frames.length} steps`
+          : `Scenarios: ${w.inputs.map((i) => i.label).join(" × ")}, ${w.outcomes.length} outcomes`;
 
 
   const answerText = (c: Check | AlternativeCheck | SimpleCheck) =>
     c.type === "select"
       ? (c.options.find((o) => o.id === c.answer)?.text ?? c.answer)
-      : `${c.answer}${c.unit ? ` ${c.unit}` : ""} (± ${c.tolerance})`;
+      : c.type === "sort"
+        ? "every item in its category"
+        : `${c.answer}${c.unit ? ` ${c.unit}` : ""} (± ${c.tolerance})`;
 
   // Plain text, stored with a suggestion so the revision knows which branch it was about.
   const wrongLabelText = (c: Check | AlternativeCheck, i: number) => {
@@ -154,13 +167,23 @@
       return `Wrong answer: picks "${c.options.find((o) => o.id === id)?.text ?? id}"`;
     }
     if ("min" in w.match) return `Wrong answer: types between ${w.match.min} and ${w.match.max}`;
+    if (c.type === "sort" && "itemId" in w.match) {
+      const m = w.match;
+      return `Wrong answer: puts "${c.items.find((x) => x.id === m.itemId)?.text ?? m.itemId}" in "${c.categories.find((x) => x.id === m.categoryId)?.label ?? m.categoryId}"`;
+    }
     return `Wrong answer ${i + 1}`;
   };
 </script>
 
-{#snippet simpleCheck(c: SimpleCheck)}
+{#snippet simpleCheck(c: SimpleCheck | Check | AlternativeCheck)}
   <p class="q">{@html renderInline(c.prompt)}</p>
-  {#if c.type === "select"}
+  {#if c.type === "sort"}
+    <ul class="options">
+      {#each c.categories as cat (cat.id)}
+        <li><strong>{@html renderInline(cat.label)}</strong>: {@html c.items.filter((i) => i.category === cat.id).map((i) => renderInline(i.text)).join(", ")}</li>
+      {/each}
+    </ul>
+  {:else if c.type === "select"}
     <ul class="options">
       {#each c.options as o (o.id)}
         <li class:right={o.id === c.answer}>{@html renderInline(o.text)}</li>
@@ -280,6 +303,7 @@
         {:else if mod && view === "play"}
           {#key mod.id}
             <ReviewPlayer
+              {setExploreOn}
               {mod}
               {busy}
               seen={seenByStep[mod.id] ?? []}
@@ -295,6 +319,32 @@
             <div class="reading">{@html renderReading(mod.reading)}</div>
           </Part>
 
+          {#if mod.explore}
+            {@const e = mod.explore}
+            <Part label="Exploration" suggestions={partSuggestions("explore")} onSuggest={suggestFor("explore", "Exploration")} onWithdraw={withdraw}>
+              <div class="sub" class:off={!e.enabled}>
+                <label class="toggle">
+                  <input type="checkbox" checked={e.enabled} disabled={busy} onchange={() => setExploreOn(mod.id, !e.enabled)} />
+                  shown to students
+                </label>
+                <span class="tag">Why it's here (authors only)</span>
+                <p>{@html renderInline(e.why)}</p>
+                <span class="tag">What the student does</span>
+                {@html renderReading(e.prompt)}
+                <span class="tag">Prediction</span>
+                <p class="q">{@html renderInline(e.prediction.prompt)}</p>
+                <ul class="options">
+                  {#each e.prediction.options as o (o.id)}<li class:right={o.id === e.prediction.answer}>{@html renderInline(o.text)}</li>{/each}
+                </ul>
+                <span class="tag">Widget</span>
+                <p class="muted">{widgetSummary(e.widget)}</p>
+                <span class="tag">If the prediction didn't match: think about it</span>
+                {@html renderReading(e.thinkAbout)}
+                <span class="tag">What to notice</span>
+                {@html renderReading(e.notice)}
+              </div>
+            </Part>
+          {/if}
           {#if mod.check}
             {@const c = mod.check}
             <Part label="Check" suggestions={partSuggestions("check")} onSuggest={suggestFor("check", "Check")} onWithdraw={withdraw}>

@@ -170,28 +170,47 @@
       "title": "Two kinds of error",
       "reading": "The **error** in an estimate is the gap between $\\hat{p}$ and $p$. It has two parts.\n\n**Sampling error** is the luck of the draw: one random sample comes out a bit high, another a bit low. It shrinks as the sample size $n$ grows.\n\n**Bias** is a tendency to miss in the same direction every time, for example because of how a question is worded or who gets asked. A bigger sample doesn't fix bias. Careful data collection does.",
       "check": {
-        "id": "c2",
-        "type": "select",
-        "prompt": "A student poll asks: \"Do you support your school by supporting funding for the new stadium?\" What kind of error is the wording most likely to cause?",
-        "options": [
+        "id": "c2s",
+        "type": "sort",
+        "prompt": "Sort each problem by the kind of error it causes.",
+        "categories": [
           {
-            "id": "a",
-            "text": "Sampling error, which asking more students would fix"
+            "id": "samp",
+            "label": "Sampling error (a bigger sample shrinks it)"
           },
           {
-            "id": "b",
-            "text": "Bias, pushing the estimate up however many students are asked"
-          },
-          {
-            "id": "c",
-            "text": "No error, as long as the students are picked at random"
+            "id": "bias",
+            "label": "Bias (a bigger sample won't fix it)"
           }
         ],
-        "answer": "b",
+        "items": [
+          {
+            "id": "lead",
+            "text": "The question asks \"Don't you agree the stadium is a great idea?\"",
+            "category": "bias"
+          },
+          {
+            "id": "gym",
+            "text": "A survey about exercise asks only people at a gym",
+            "category": "bias"
+          },
+          {
+            "id": "two",
+            "text": "Two random polls of 100 people give 0.86 and 0.91",
+            "category": "samp"
+          },
+          {
+            "id": "luck",
+            "text": "A random sample of 50 happens to include more students than usual",
+            "category": "samp"
+          }
+        ],
+        "explanation": "Bias pushes every sample the same way, so asking more people only gives a more precise wrong answer. Sampling error is the luck of the draw, which averages out as the sample grows.",
         "wrongAnswers": [
           {
             "match": {
-              "optionId": "a"
+              "itemId": "lead",
+              "categoryId": "samp"
             },
             "misconception": {
               "text": "Treats a systematic error from question wording as sampling error that a bigger sample would remove.",
@@ -202,7 +221,7 @@
             "fallback": {
               "reExplanation": {
                 "enabled": true,
-                "text": "The wording nudges every respondent toward \"yes\", so the poll overestimates support in every sample. Asking 10,000 students instead of 100 would just give a very precise wrong answer. That's bias."
+                "text": "A leading question nudges every respondent toward yes, in every sample. Ask 10,000 people instead of 100 and you get a very precise estimate of the wrong number. That's bias."
               },
               "simplerQuestion": {
                 "enabled": true,
@@ -226,10 +245,11 @@
           },
           {
             "match": {
-              "optionId": "c"
+              "itemId": "gym",
+              "categoryId": "samp"
             },
             "misconception": {
-              "text": "Believes random selection alone guarantees an unbiased estimate, ignoring measurement problems such as leading questions.",
+              "text": "Believes a large enough sample cancels out who was chosen, even when the choosing isn't random.",
               "source": {
                 "kind": "model"
               }
@@ -237,7 +257,7 @@
             "fallback": {
               "reExplanation": {
                 "enabled": true,
-                "text": "Random selection protects against one source of bias: who gets asked. It does nothing about **what** they're asked. A leading question biases the answers even from a perfectly random sample."
+                "text": "People at a gym exercise more than most people, and every gym sample has that lean. More gym-goers won't add the people who never go."
               }
             }
           }
@@ -245,10 +265,91 @@
         "generalFallback": {
           "reExplanation": {
             "enabled": true,
-            "text": "Ask: does the problem push the answer the same way every time (bias), or does it vary by luck from sample to sample (sampling error)?"
+            "text": "Ask of each problem: would it still be there if we asked 10 times as many people the same way? If yes, it's bias. If it would shrink, it's sampling error."
           }
         },
         "alternatives": [
+          {
+            "id": "c2",
+            "type": "select",
+            "prompt": "A student poll asks: \"Do you support your school by supporting funding for the new stadium?\" What kind of error is the wording most likely to cause?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Sampling error, which asking more students would fix"
+              },
+              {
+                "id": "b",
+                "text": "Bias, pushing the estimate up however many students are asked"
+              },
+              {
+                "id": "c",
+                "text": "No error, as long as the students are picked at random"
+              }
+            ],
+            "answer": "b",
+            "wrongAnswers": [
+              {
+                "match": {
+                  "optionId": "a"
+                },
+                "misconception": {
+                  "text": "Treats a systematic error from question wording as sampling error that a bigger sample would remove.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "The wording nudges every respondent toward \"yes\", so the poll overestimates support in every sample. Asking 10,000 students instead of 100 would just give a very precise wrong answer. That's bias."
+                  },
+                  "simplerQuestion": {
+                    "enabled": true,
+                    "check": {
+                      "type": "select",
+                      "prompt": "If every sample tends to come out too high, will a bigger sample fix it?",
+                      "options": [
+                        {
+                          "id": "a",
+                          "text": "Yes"
+                        },
+                        {
+                          "id": "b",
+                          "text": "No"
+                        }
+                      ],
+                      "answer": "b"
+                    }
+                  }
+                }
+              },
+              {
+                "match": {
+                  "optionId": "c"
+                },
+                "misconception": {
+                  "text": "Believes random selection alone guarantees an unbiased estimate, ignoring measurement problems such as leading questions.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "Random selection protects against one source of bias: who gets asked. It does nothing about **what** they're asked. A leading question biases the answers even from a perfectly random sample."
+                  }
+                }
+              }
+            ],
+            "generalFallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Ask: does the problem push the answer the same way every time (bias), or does it vary by luck from sample to sample (sampling error)?"
+              }
+            },
+            "explanation": "The wording leans every respondent toward yes, so every sample overestimates support. That's bias. Asking more students the same leading question only makes the wrong answer more precise."
+          },
           {
             "id": "c2a",
             "type": "select",
@@ -295,8 +396,7 @@
             },
             "explanation": "Sampling error comes from the luck of who's in the sample, so asking more people shrinks it. Bias comes from how or whom we ask, and asking more people the same way keeps it."
           }
-        ],
-        "explanation": "The wording leans every respondent toward yes, so every sample overestimates support. That's bias. Asking more students the same leading question only makes the wrong answer more precise."
+        ]
       }
     },
     {
@@ -433,6 +533,47 @@
           }
         ],
         "explanation": "Each sample gives one $\\hat{p}$. The sampling distribution is the pattern of all the $\\hat{p}$ values you'd get from many random samples of the same size: how much $\\hat{p}$ varies from poll to poll."
+      },
+      "explore": {
+        "enabled": true,
+        "why": "The student changes the sample size and sees the histogram of p-hat narrow around p. It targets the belief that a bigger sample moves the estimate, or that sample size doesn't matter.",
+        "prompt": "A population where 88% say yes ($p = 0.88$). Pick a sample size, draw 1,000 samples, and look at where their $\\hat{p}$ values land. Then pick another size and draw again.",
+        "prediction": {
+          "prompt": "If each sample has 1,000 people instead of 10, the $\\hat{p}$ values will…",
+          "options": [
+            {
+              "id": "a",
+              "text": "spread out more"
+            },
+            {
+              "id": "b",
+              "text": "bunch more tightly around 0.88"
+            },
+            {
+              "id": "c",
+              "text": "spread about the same"
+            },
+            {
+              "id": "d",
+              "text": "center on a different value"
+            }
+          ],
+          "answer": "b"
+        },
+        "thinkAbout": "Picture one poll of 10 people and one of 1,000. One unusual person moves the first poll's $\\hat{p}$ by 0.1, and the second's by 0.001. Which poll can land far from 0.88?",
+        "notice": "Each bar counts the samples that gave that $\\hat{p}$. With $n = 10$ they range widely; with $n = 1000$ they pile up near 0.88. The center stays at $p$ either way: a bigger sample makes $\\hat{p}$ more precise, it doesn't move it.",
+        "widget": {
+          "kind": "sampling",
+          "p": 0.88,
+          "sizes": [
+            10,
+            50,
+            200,
+            1000
+          ],
+          "start": 10,
+          "draws": 1000
+        }
       }
     },
     {
@@ -689,6 +830,66 @@
           }
         ],
         "explanation": "With $n = 50$ the SE is $\\sqrt{p(1-p)/50}$, which is larger than $\\sqrt{p(1-p)/1000}$. A small sample is more at the mercy of who happens to be in it, so its $\\hat{p}$ is more likely to land far from $p$."
+      },
+      "explore": {
+        "enabled": true,
+        "why": "The student changes n in the standard error formula and sees that four times the sample only halves the error. It targets the belief that the error shrinks in proportion to n.",
+        "prompt": "This computes $SE_{\\hat{p}} = \\sqrt{p(1-p)/n}$. Change $n$ and watch the standard error and the curve.",
+        "prediction": {
+          "prompt": "Going from $n = 100$ to $n = 400$ (four times the people), the standard error…",
+          "options": [
+            {
+              "id": "a",
+              "text": "becomes a quarter of what it was"
+            },
+            {
+              "id": "b",
+              "text": "halves"
+            },
+            {
+              "id": "c",
+              "text": "stays the same"
+            },
+            {
+              "id": "d",
+              "text": "doubles"
+            }
+          ],
+          "answer": "b"
+        },
+        "thinkAbout": "$n$ sits inside a square root. If $n$ is four times bigger, what happens to $\\sqrt{n}$?",
+        "notice": "From 100 to 400 the standard error halves, and from 400 to 1600 it halves again. The curve flattens: each extra person helps less than the one before.",
+        "widget": {
+          "kind": "formula",
+          "inputs": [
+            {
+              "id": "p",
+              "label": "Population proportion $p$",
+              "values": [
+                0.5,
+                0.88
+              ],
+              "start": 0.88
+            },
+            {
+              "id": "n",
+              "label": "Sample size $n$",
+              "values": [
+                25,
+                100,
+                400,
+                1600
+              ],
+              "start": 100
+            }
+          ],
+          "expression": "sqrt(p * (1 - p) / n)",
+          "result": {
+            "label": "Standard error $SE_{\\hat{p}}$",
+            "decimals": 4
+          },
+          "plotOver": "n"
+        }
       }
     },
     {

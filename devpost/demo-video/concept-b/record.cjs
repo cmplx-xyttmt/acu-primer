@@ -87,7 +87,7 @@ async function clip(browser, name, storage, run, theme = "light") {
 (async () => {
   fs.mkdirSync(outDir, { recursive: true });
   const browser = await chromium.launch();
-  const author = { "acu:authorPassphrase": PASS };
+  const author = { "acu:authorPassphrase": PASS, "acu:recording": "1" };
   const student = { "acu:lastName": STUDENT };
 
   // Shot: a student finds the subject and the chapter, and gives their name once.
@@ -102,7 +102,7 @@ async function clip(browser, name, storage, run, theme = "light") {
 
   // Shot: the author opens the drafted lesson and reviews it by playing, then signs it off.
   // (Modules 3-10 were approved beforehand in the copy, to keep the clip short.)
-  await clip(browser, "c02-review-play", {}, async (page) => {
+  await clip(browser, "c02-review-play", { "acu:recording": "1" }, async (page) => {
     await page.goto(BASE + "/author"); await wait(1200);
     await type(page, page.locator("input[type=password]"), PASS);
     await click(page, btn(page, "Open"), 2200);

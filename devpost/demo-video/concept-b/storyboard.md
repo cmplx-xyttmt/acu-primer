@@ -52,7 +52,8 @@ How they were made: `render.cjs` renders the motion pages frame by frame; `recor
 ## Still to do
 
 - **Shot 3 needs one paid draft** (about $1.30 and 10 minutes, from the Oct 16 draft). Record it yourself with Cmd+Shift+5 on the draft screen, or tell me to record it with `record.cjs` (I'd add a clip for it). A short reading (3 to 5 pages) would be faster and cheaper. Set a learner brief on the subject first: the copy used for c07 has none, so the screen says "drafts assume first-year university students".
-- **The author home shows "Claude this month: $1.37 of $15"** in c02, c05 and c07. Keep it (it shows the budget guard) or say so and I'll hide it for recording.
+- **The spend line is hidden for recording** (Isaac, Oct 23). Open any page with `?recording=1` once and the "Claude this month" lines stay hidden on that browser; `?recording=0` brings them back. `record.cjs` sets it. The clips made on Oct 22 still show it.
+- **On hold (Isaac, Oct 23):** the final recordings wait until slice 8 and the visuals work are in, since the lessons and screens will change.
 - **Three lessons in the sampling chapter have nearly the same title** (the hand-written one, the session draft "5.1 …", and the in-app draft). It reads oddly on the overview and the author home. Renaming or hiding two before the final recording would help.
 - **Trim the clip ends.** c03 ends with a stray click on module 2's first option after Continue.
 - **Your edit:** cut to your narration in iMovie or DaVinci Resolve; all files are 1920x1080 H.264.

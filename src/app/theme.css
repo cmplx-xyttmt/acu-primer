@@ -404,3 +404,8 @@ textarea:focus {
 .pop {
   animation: acu-pop 260ms ease-out;
 }
+
+/* Recording mode (see main.ts): no spend figures on screen in the demo video. */
+:root[data-recording] .budget {
+  display: none;
+}

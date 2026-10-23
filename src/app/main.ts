@@ -15,6 +15,15 @@ import { registerSW } from "virtual:pwa-register";
 // Apply the saved light/dark choice before the first render, so the page doesn't flash.
 applyTheme(loadTheme());
 
+// Recording mode for the demo video: ?recording=1 hides the Claude spend lines on the author
+// side, on this browser, until ?recording=0.
+try {
+  const r = new URLSearchParams(location.search).get("recording");
+  if (r === "1") localStorage.setItem("acu:recording", "1");
+  if (r === "0") localStorage.removeItem("acu:recording");
+  if (localStorage.getItem("acu:recording")) document.documentElement.dataset.recording = "";
+} catch {}
+
 mount(App, { target: document.getElementById("app")! });
 
 // The service worker keeps the app and every opened chapter for offline use. Not in `npm run

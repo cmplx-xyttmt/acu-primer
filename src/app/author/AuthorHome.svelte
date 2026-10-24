@@ -16,6 +16,7 @@
   import PenLine from "@lucide/svelte/icons/pen-line";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import Trash2 from "@lucide/svelte/icons/trash-2";
+  import ChevronRight from "@lucide/svelte/icons/chevron-right";
   import DeleteDialog from "./DeleteDialog.svelte";
   import { forgetBook } from "../lib/bookStore.ts";
 
@@ -112,6 +113,32 @@
     await load();
   }
 
+  // Collapsible subjects (Oct 24): the list grows quickly once a book brings 13 chapters. Closed
+  // at first; which ones are open is remembered on this browser only, as a convenience.
+  const OPEN_KEY = "acu-author-open-subjects";
+  let open = $state<Record<string, boolean>>(readOpen());
+  function readOpen(): Record<string, boolean> {
+    try {
+      return JSON.parse(localStorage.getItem(OPEN_KEY) ?? "{}") ?? {};
+    } catch {
+      return {};
+    }
+  }
+  function setOpen(key: string, value: boolean) {
+    open[key] = value;
+    try {
+      localStorage.setItem(OPEN_KEY, JSON.stringify(open));
+    } catch {
+      // private window or blocked storage: it just won't be remembered
+    }
+  }
+  const keyOf = (s: AuthorSubject) => s.id || "loose";
+  function summary(s: AuthorSubject) {
+    const lessons = s.chapters.flatMap((c) => c.lessons);
+    const toReview = lessons.filter((l) => l.status !== "reviewed").length;
+    return [plural(s.chapters.length, "chapter"), plural(lessons.length, "lesson"), ...(toReview ? [`${toReview} to review`] : [])].join(" · ");
+  }
+
   function go(e: MouseEvent, to: string) {
     e.preventDefault();
     navigate(to);
@@ -165,10 +192,20 @@
     <p class="muted">No subjects yet. Start one with New subject.</p>
   {:else}
     {#each subjects as s (s.id || "loose")}
+      {@const isOpen = !!open[keyOf(s)] || !!(s.id && editing[s.id])}
       <section class="subject card">
         <div class="subject-head">
-          <h2><BookOpen size={20} aria-hidden="true" />{s.title}</h2>
-          {#if s.id && !editing[s.id]}
+          <h2>
+            <button class="toggle" aria-expanded={isOpen} aria-controls="subject-{keyOf(s)}" onclick={() => setOpen(keyOf(s), !isOpen)}>
+              <ChevronRight class="chevron" size={20} aria-hidden="true" />
+              <BookOpen size={20} aria-hidden="true" />
+              <span class="subject-title">
+                {s.title}
+                <span class="summary muted">{summary(s)}{isOpen ? "" : " · click to open"}</span>
+              </span>
+            </button>
+          </h2>
+          {#if isOpen && s.id && !editing[s.id]}
             <span class="links">
               <button class="btn-quiet btn-sm" onclick={() => startEdit(s)}><PenLine size={15} aria-hidden="true" />Edit overview and brief</button>
               <button class="btn-quiet btn-sm danger" onclick={() => askDeleteSubject(s)}><Trash2 size={15} aria-hidden="true" />Delete subject</button>
@@ -176,6 +213,8 @@
           {/if}
         </div>
 
+        {#if isOpen}
+        <div class="subject-body" id="subject-{keyOf(s)}">
         {#if s.id && editing[s.id]}
           {@const e = editing[s.id]}
           <div class="form inner">
@@ -255,6 +294,8 @@
             <button class="btn-secondary btn-sm add" onclick={() => (newChapter[s.id] = { title: "", overview: "" })}><Plus size={15} aria-hidden="true" />New chapter</button>
           {/if}
         {/if}
+        </div>
+        {/if}
       </section>
     {/each}
   {/if}
@@ -317,7 +358,45 @@
   }
   h2 :global(svg) {
     color: var(--accent);
+    flex: none;
   }
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.2rem 0.4rem 0.2rem 0.15rem;
+    margin-left: -0.15rem;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .toggle:hover {
+    background: var(--accent-soft);
+  }
+  .toggle :global(.chevron) {
+    transition: transform 160ms ease;
+  }
+  .toggle[aria-expanded="true"] :global(.chevron) {
+    transform: rotate(90deg);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .toggle :global(.chevron) {
+      transition: none;
+    }
+  }
+  .subject-title {
+    display: grid;
+    gap: 0.1rem;
+  }
+  .summary {
+    font-size: 0.85rem;
+    font-weight: 400;
+  }
+
   h3 {
     margin: 0;
     font-size: 1rem;

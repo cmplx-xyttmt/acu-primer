@@ -33,9 +33,22 @@ describe("planFromOutline", () => {
     const book = [o("The Book", 1, [o("Part I", 2, [o("Ch 1", 3), o("Ch 2", 10)]), o("Part II", 20, [o("Ch 3", 21)])])];
     expect(planFromOutline(book, 30).map((c) => [c.title, c.pages])).toEqual([
       ["Ch 1", "3-9"],
-      ["Ch 2", "10-20"],
+      ["Ch 2", "10-19"],
       ["Ch 3", "21-30"],
     ]);
+  });
+
+  it("flattens parts that sit beside front matter, and a part's title page ends the chapter before", () => {
+    const book = [o("Cover", 1), o("Preface", 3, [o("Who should read", 3)]), o("Part I. Basics", 5, [o("Chapter 1", 7, [o("Intro", 7), o("Conclusion", 9)])]), o("Part II. More", 11, [o("Chapter 2", 13)]), o("Index", 20)];
+    const plan = planFromOutline(book, 22);
+    expect(plan.map((c) => [c.title, c.pages, c.likelyChapter])).toEqual([
+      ["Cover", "1-2", false],
+      ["Preface", "3-4", false],
+      ["Chapter 1", "7-10", true],
+      ["Chapter 2", "13-19", true],
+      ["Index", "20-22", false],
+    ]);
+    expect(plan[2].sections.map((s) => s.title)).toEqual(["Intro"]);
   });
 
   it("skips bookmarks without a page, and copes with one-page sections", () => {

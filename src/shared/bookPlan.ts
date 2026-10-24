@@ -47,7 +47,7 @@ export interface PlannedChapter {
 }
 
 // Sections that aren't something to teach from: left out of the plan.
-const NOT_A_LESSON = /^([\d.]+\s+)?(exercises|review questions|programming problems|chapter goals|chapter summary|summary|further reading|key terms|problems|review exercises|chapter review)$/i;
+const NOT_A_LESSON = /^([\d.]+\s+)?(exercises|review questions|programming problems|chapter goals|chapter summary|summary|conclusion|further reading|key terms|problems|review exercises|chapter review)$/i;
 // An appendix labelled with a letter ("A Exercise solutions") after numbered chapters.
 const LETTERED = /^[A-Z][.:]?\s/;
 
@@ -65,14 +65,17 @@ const NOT_A_CHAPTER = /^(contents|table of contents|preface|foreword|acknowledg|
 export function planFromOutline(outline: OutlineItem[], pageCount: number): PlannedChapter[] {
   let top = outline.filter((o) => o.page !== null);
   while (top.length === 1 && top[0].children.some((c) => c.page !== null)) top = top[0].children.filter((c) => c.page !== null);
-  // Parts ("Part I", "Part II") whose children are the chapters: flatten one level.
-  if (top.length > 0 && top.every((t) => /^part\b/i.test(t.title) && t.children.length > 0))
-    top = top.flatMap((t) => t.children.filter((c) => c.page !== null));
+  // Parts ("Part I", "Part II") whose children are the chapters: flatten one level. Front matter
+  // beside the parts (Cover, Preface) stays as it is (Oct 24, an O'Reilly book).
+  const isPart = (t: OutlineItem) => /^part\b/i.test(t.title) && t.children.some((c) => c.page !== null);
+  // The part's own pages (its title page) still end the chapter before it.
+  const partPages = top.filter(isPart).map((t) => t.page!);
+  if (top.some(isPart)) top = top.flatMap((t) => (isPart(t) ? t.children.filter((c) => c.page !== null) : [t]));
 
-  const starts = top.map((t) => t.page!);
+  const starts = [...top.map((t) => t.page!), ...partPages].sort((a, b) => a - b);
   return top.map((t, i) => {
     const start = t.page!;
-    const end = Math.max(start, (starts.slice(i + 1).find((p) => p > start) ?? pageCount + 1) - 1);
+    const end = Math.max(start, (starts.find((p) => p > start) ?? pageCount + 1) - 1);
     const kids = t.children.filter((c) => c.page !== null && c.page >= start && c.page <= end);
     const sections = kids
       .map((c, j) => {

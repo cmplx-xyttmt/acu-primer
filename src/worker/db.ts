@@ -147,13 +147,20 @@ export async function publicSubject(db: D1Database, slug: string): Promise<Subje
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50) || "untitled";
 
-// A slug not yet used in the table: "ostep", then "ostep-2", "ostep-3", ...
-async function freeSlug(db: D1Database, table: "subjects" | "chapters", base: string): Promise<string> {
-  const { results } = await db.prepare(`SELECT slug FROM ${table} WHERE slug = ? OR slug LIKE ?`).bind(base, `${base}-%`).all<{ slug: string }>();
-  const taken = new Set(results.map((r) => r.slug));
+// A slug not yet used in the table: "ostep", then "ostep-2", "ostep-3", ... No LIKE here: D1
+// refuses LIKE patterns over 50 bytes, and a slug can be 50 characters (Oct 24, a long chapter title).
+async function takenSlugs(db: D1Database, table: "subjects" | "chapters", base: string): Promise<Set<string>> {
+  const { results } = await db
+    .prepare(`SELECT slug FROM ${table} WHERE slug = ? OR substr(slug, 1, ?) = ?`)
+    .bind(base, base.length + 1, `${base}-`)
+    .all<{ slug: string }>();
+  return new Set(results.map((r) => r.slug));
+}
+const nextFree = (taken: ReadonlySet<string>, base: string) => {
   if (!taken.has(base)) return base;
   for (let i = 2; ; i++) if (!taken.has(`${base}-${i}`)) return `${base}-${i}`;
-}
+};
+const freeSlug = async (db: D1Database, table: "subjects" | "chapters", base: string) => nextFree(await takenSlugs(db, table, base), base);
 
 export async function createSubject(db: D1Database, s: { title: string; overview: string | null; brief: string | null }) {
   const slug = await freeSlug(db, "subjects", slugify(s.title));
@@ -186,15 +193,31 @@ export async function createChapter(db: D1Database, subjectId: string, c: { titl
   return { id: slug, slug };
 }
 
-/** A subject made from a book, with its chapters, in one batch (POST /api/author/books). */
+/** A subject made from a book, with its chapters, in one batch (POST /api/author/books), so a
+ *  failure leaves nothing half made. Slugs are worked out first, then everything is written at once. */
 export async function createBook(db: D1Database, b: NewBook): Promise<{ id: string; slug: string }> {
-  const subject = await createSubject(db, { title: b.subject.title, overview: b.subject.overview || null, brief: b.subject.brief || null });
-  await db.prepare("UPDATE subjects SET book = ? WHERE id = ?").bind(JSON.stringify(b.book), subject.id).run();
+  const slug = await freeSlug(db, "subjects", slugify(b.subject.title));
+  const pos = await db.prepare("SELECT COALESCE(MAX(position), 0) + 1 AS next FROM subjects").first<{ next: number }>();
+  const taken = new Set<string>();
+  const chapterSlugs: string[] = [];
   for (const c of b.chapters) {
-    const chapter = await createChapter(db, subject.id, { title: c.title, overview: c.overview || null });
-    if (chapter) await db.prepare("UPDATE chapters SET plan = ? WHERE id = ?").bind(JSON.stringify(c.plan), chapter.id).run();
+    const base = slugify(c.title);
+    for (const t of await takenSlugs(db, "chapters", base)) taken.add(t);
+    const s = nextFree(taken, base);
+    taken.add(s);
+    chapterSlugs.push(s);
   }
-  return subject;
+  await db.batch([
+    db
+      .prepare("INSERT INTO subjects (id, slug, title, overview, brief, position, created_at, book) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+      .bind(slug, slug, b.subject.title, b.subject.overview || null, b.subject.brief || null, pos?.next ?? 1, new Date().toISOString(), JSON.stringify(b.book)),
+    ...b.chapters.map((c, i) =>
+      db
+        .prepare("INSERT INTO chapters (id, slug, title, overview, subject_id, position, show_unreviewed, plan) VALUES (?, ?, ?, ?, ?, ?, 0, ?)")
+        .bind(chapterSlugs[i], chapterSlugs[i], c.title, c.overview || null, slug, i + 1, JSON.stringify(c.plan)),
+    ),
+  ]);
+  return { id: slug, slug };
 }
 
 // --- Deleting (Oct 24) ---------------------------------------------------------------------

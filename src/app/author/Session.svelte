@@ -149,7 +149,11 @@
               <span class="t">{s.title}</span>
               <span class="muted num">pp. {s.pages}</span>
               {#if drafted(s)}<span class="badge badge-done">Drafted</span>{/if}
-              <button class="btn-quiet btn-sm" onclick={() => useSection(s)}>{section === s.title && pages === s.pages ? "Chosen" : "Use this section"}</button>
+              {#if section === s.title && pages === s.pages}
+                <span class="chosen-mark"><CircleCheck size={15} aria-hidden="true" />Chosen</span>
+              {:else}
+                <button class="btn-secondary btn-sm" onclick={() => useSection(s)}>Use this section</button>
+              {/if}
             </li>
           {/each}
         </ul>
@@ -249,6 +253,14 @@
   .sections li.chosen {
     border-color: var(--accent);
     background: var(--accent-soft);
+  }
+  .chosen-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent);
   }
   .sections .t {
     font-weight: 600;

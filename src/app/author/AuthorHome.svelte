@@ -15,6 +15,9 @@
   import Eye from "@lucide/svelte/icons/eye";
   import PenLine from "@lucide/svelte/icons/pen-line";
   import BookOpen from "@lucide/svelte/icons/book-open";
+  import Trash2 from "@lucide/svelte/icons/trash-2";
+  import DeleteDialog from "./DeleteDialog.svelte";
+  import { forgetBook } from "../lib/bookStore.ts";
 
   let { onLocked }: { onLocked: () => void } = $props();
 
@@ -86,6 +89,29 @@
     }
   }
 
+  // Deleting (Oct 24): one dialog for subjects, chapters and lessons.
+  type Deleting = { kind: "subject" | "chapter" | "lesson"; id: string; title: string; takes: string; book?: boolean };
+  let deleting = $state<Deleting | null>(null);
+  const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
+  function askDeleteSubject(s: AuthorSubject) {
+    const lessons = s.chapters.reduce((n, c) => n + c.lessons.length, 0);
+    deleting = { kind: "subject", id: s.id, title: s.title, takes: `its ${plural(s.chapters.length, "chapter")} and ${plural(lessons, "lesson")}, their reviews, and students' answers in them`, book: !!s.book };
+  }
+  function askDeleteChapter(c: AuthorChapter) {
+    deleting = { kind: "chapter", id: c.id, title: c.title, takes: `its ${plural(c.lessons.length, "lesson")}, their reviews, and students' answers in them` };
+  }
+  function askDeleteLesson(l: { id: string; title: string }) {
+    deleting = { kind: "lesson", id: l.id, title: l.title, takes: "its reviews and suggestions, and students' answers in it" };
+  }
+  async function confirmDelete(typed: string) {
+    if (!deleting) return;
+    const d = deleting;
+    await authorApi.remove(`${d.kind}s` as "subjects" | "chapters" | "lessons", d.id, typed);
+    if (d.kind === "subject" && d.book) await forgetBook(d.id);
+    deleting = null;
+    await load();
+  }
+
   function go(e: MouseEvent, to: string) {
     e.preventDefault();
     navigate(to);
@@ -142,7 +168,12 @@
       <section class="subject card">
         <div class="subject-head">
           <h2><BookOpen size={20} aria-hidden="true" />{s.title}</h2>
-          {#if s.id && !editing[s.id]}<button class="btn-quiet btn-sm" onclick={() => startEdit(s)}><PenLine size={15} aria-hidden="true" />Edit overview and brief</button>{/if}
+          {#if s.id && !editing[s.id]}
+            <span class="links">
+              <button class="btn-quiet btn-sm" onclick={() => startEdit(s)}><PenLine size={15} aria-hidden="true" />Edit overview and brief</button>
+              <button class="btn-quiet btn-sm danger" onclick={() => askDeleteSubject(s)}><Trash2 size={15} aria-hidden="true" />Delete subject</button>
+            </span>
+          {/if}
         </div>
 
         {#if s.id && editing[s.id]}
@@ -178,6 +209,7 @@
                 <a class="btn-secondary btn-sm" href="/author/chapters/{c.id}/draft" onclick={(e) => go(e, `/author/chapters/${c.id}/draft`)}><WandSparkles size={15} aria-hidden="true" />Draft a lesson</a>
                 <a class="btn-quiet btn-sm" href="/author/chapters/{c.id}/students" onclick={(e) => go(e, `/author/chapters/${c.id}/students`)}><Users size={15} aria-hidden="true" />Students</a>
                 {#if s.slug}<a class="btn-quiet btn-sm" href="/s/{s.slug}/{c.slug}"><Eye size={15} aria-hidden="true" />As a student</a>{/if}
+                <button class="btn-quiet btn-sm danger" aria-label="Delete chapter {c.title}" title="Delete chapter" onclick={() => askDeleteChapter(c)}><Trash2 size={15} aria-hidden="true" /><span class="wide-only">Delete</span></button>
               </span>
             </div>
             {#if c.overview}<p class="muted small">{c.overview}</p>{/if}
@@ -199,6 +231,7 @@
                   >
                     {lesson.status === "reviewed" ? "View" : "Review"}
                   </a>
+                  <button class="btn-quiet btn-sm danger icon" aria-label="Delete lesson {lesson.title}" title="Delete lesson" onclick={() => askDeleteLesson(lesson)}><Trash2 size={15} aria-hidden="true" /></button>
                 </li>
               {:else}
                 <li class="muted">No lessons yet: use Draft a lesson.</li>
@@ -227,7 +260,23 @@
   {/if}
 </main>
 
+{#if deleting}
+  <DeleteDialog kind={deleting.kind} title={deleting.title} takes={deleting.takes} onConfirm={confirmDelete} onClose={() => (deleting = null)} />
+{/if}
+
 <style>
+  .lesson .lesson-title {
+    flex: 1 1 auto;
+  }
+  .icon {
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+  @media (max-width: 480px) {
+    .wide-only {
+      display: none;
+    }
+  }
   .starts {
     display: flex;
     flex-wrap: wrap;

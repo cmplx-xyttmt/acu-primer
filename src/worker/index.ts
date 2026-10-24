@@ -6,7 +6,7 @@ import { json } from "./http.ts";
 import { getChapter } from "./routes/chapters.ts";
 import { getSubject, getSubjects } from "./routes/subjects.ts";
 import { postEvents } from "./routes/events.ts";
-import { getBudget, putChapter, postSource, postDraft, postRevise, postEdit, postSubject, putSubject, postChapter, postBook, postContents } from "./routes/drafting.ts";
+import { getBudget, putChapter, postSource, postDraft, postRevise, postEdit, postSubject, putSubject, postChapter, postBook, postContents, deleteThing } from "./routes/drafting.ts";
 import {
   listSubjects,
   getLesson,
@@ -50,6 +50,9 @@ const routes: [method: string, pattern: RegExp, handler: Handler][] = [
   ["POST", new RegExp(`^/api/author/lessons/${id}/edits$`), postEdit],
   ["POST", new RegExp(`^/api/author/lessons/${id}/steps/${stepId}/approval$`), approve],
   ["DELETE", new RegExp(`^/api/author/lessons/${id}/steps/${stepId}/approval$`), unapprove],
+  ["DELETE", new RegExp(`^/api/author/subjects/${id}$`), deleteThing("subject")],
+  ["DELETE", new RegExp(`^/api/author/chapters/${id}$`), deleteThing("chapter")],
+  ["DELETE", new RegExp(`^/api/author/lessons/${id}$`), deleteThing("lesson")],
   ["POST", new RegExp(`^/api/author/lessons/${id}/suggestions$`), suggest],
   ["POST", new RegExp(`^/api/author/suggestions/${id}/withdraw$`), withdraw],
   ["GET", new RegExp(`^/api/author/chapters/${id}/students$`), students],

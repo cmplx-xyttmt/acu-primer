@@ -19,6 +19,10 @@ import {
   updateSubject,
   createChapter,
   createBook,
+  deletionSummary,
+  deleteLesson,
+  deleteChapter,
+  deleteSubject,
 } from "../db.ts";
 import { json } from "../http.ts";
 import type { Ctx } from "../index.ts";
@@ -281,3 +285,19 @@ export async function postEdit({ env, request }: Ctx, lessonId: string): Promise
   await saveLessonContent(env.DB, lessonId, result.lesson);
   return json(await authorLesson(env.DB, lessonId));
 }
+
+// DELETE /api/author/{subjects|chapters|lessons}/:id — { confirm: "<the exact title>" }. Takes
+// everything inside with it (see db.ts > Deleting). The typed title has to match, so a stray
+// request can't delete anything. (With real accounts, only the creator could delete; not yet.)
+export const deleteThing = (kind: "subject" | "chapter" | "lesson") =>
+  async function ({ env, request }: Ctx, id: string): Promise<Response> {
+    const found = await deletionSummary(env.DB, kind, id);
+    if (!found) return json({ error: `No ${kind} with that id.` }, 404);
+    const body = (await request.json().catch(() => null)) as { confirm?: unknown } | null;
+    if (typeof body?.confirm !== "string" || body.confirm.trim() !== found.title.trim())
+      return json({ error: `Type the ${kind}'s title exactly to delete it.` }, 400);
+    if (kind === "lesson") await deleteLesson(env.DB, id);
+    else if (kind === "chapter") await deleteChapter(env.DB, id);
+    else await deleteSubject(env.DB, id, found.chapterIds);
+    return json({ deleted: id });
+  };

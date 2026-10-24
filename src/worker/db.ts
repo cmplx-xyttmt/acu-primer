@@ -197,6 +197,52 @@ export async function createBook(db: D1Database, b: NewBook): Promise<{ id: stri
   return subject;
 }
 
+// --- Deleting (Oct 24) ---------------------------------------------------------------------
+// A delete takes everything inside with it: lessons, their approvals and suggestions, uploaded
+// sources, and students' events. The spend log stays, as the record of what Claude cost.
+
+/** What a delete would remove, for the confirmation, or null if there's no such thing. */
+export async function deletionSummary(db: D1Database, kind: "subject" | "chapter" | "lesson", id: string) {
+  const row = await db.prepare(`SELECT title FROM ${kind === "subject" ? "subjects" : kind === "chapter" ? "chapters" : "lessons"} WHERE id = ?`).bind(id).first<{ title: string }>();
+  if (!row) return null;
+  const chapterIds =
+    kind === "subject"
+      ? (await db.prepare("SELECT id FROM chapters WHERE subject_id = ?").bind(id).all<{ id: string }>()).results.map((r) => r.id)
+      : kind === "chapter"
+        ? [id]
+        : [];
+  return { title: row.title, chapterIds };
+}
+
+const lessonStatements = (db: D1Database, where: string, value: string) => [
+  db.prepare(`DELETE FROM step_approvals WHERE lesson_id IN (SELECT id FROM lessons WHERE ${where})`).bind(value),
+  db.prepare(`DELETE FROM suggestions WHERE lesson_id IN (SELECT id FROM lessons WHERE ${where})`).bind(value),
+];
+
+export async function deleteLesson(db: D1Database, id: string) {
+  await db.batch([
+    ...lessonStatements(db, "id = ?", id),
+    db.prepare("DELETE FROM events WHERE lesson_id = ?").bind(id),
+    db.prepare("DELETE FROM lessons WHERE id = ?").bind(id),
+  ]);
+}
+
+const chapterStatements = (db: D1Database, id: string) => [
+  ...lessonStatements(db, "chapter_id = ?", id),
+  db.prepare("DELETE FROM events WHERE chapter_id = ?").bind(id),
+  db.prepare("DELETE FROM lessons WHERE chapter_id = ?").bind(id),
+  db.prepare("DELETE FROM sources WHERE chapter_id = ?").bind(id),
+  db.prepare("DELETE FROM chapters WHERE id = ?").bind(id),
+];
+
+export async function deleteChapter(db: D1Database, id: string) {
+  await db.batch(chapterStatements(db, id));
+}
+
+export async function deleteSubject(db: D1Database, id: string, chapterIds: string[]) {
+  await db.batch([...chapterIds.flatMap((c) => chapterStatements(db, c)), db.prepare("DELETE FROM subjects WHERE id = ?").bind(id)]);
+}
+
 async function sha256(value: unknown): Promise<string> {
   const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify(value)));
   return [...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, "0")).join("");

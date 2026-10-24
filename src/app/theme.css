@@ -409,3 +409,21 @@ textarea:focus {
 :root[data-recording] .budget {
   display: none;
 }
+
+/* A delete button (Oct 24): the pressable button, in the wrong-answer red. */
+.btn.btn-danger:not(:disabled) {
+  background: var(--wrong);
+  color: #fff;
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--wrong) 70%, black);
+}
+:root[data-theme="dark"] .btn.btn-danger:not(:disabled) {
+  color: #17150f;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .btn.btn-danger:not(:disabled) {
+    color: #17150f;
+  }
+}
+.btn-quiet.danger {
+  color: var(--wrong);
+}

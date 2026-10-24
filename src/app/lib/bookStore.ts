@@ -41,3 +41,13 @@ export async function keptBook(subjectId: string): Promise<File | null> {
     return null;
   }
 }
+
+/** Forget a subject's book, when the subject is deleted. */
+export async function forgetBook(subjectId: string): Promise<void> {
+  try {
+    const db = await open();
+    db.transaction(STORE, "readwrite").objectStore(STORE).delete(subjectId);
+  } catch {
+    // Nothing kept, or storage unavailable: nothing to forget.
+  }
+}

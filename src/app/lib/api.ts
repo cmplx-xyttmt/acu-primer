@@ -112,6 +112,8 @@ export const authorApi = {
     author<AuthorLesson>(`/api/author/lessons/${id}/edits`, { method: "POST", body: JSON.stringify({ kind: "swap", moduleId, alternativeId }) }),
   setPart: (id: string, moduleId: string, which: number | "general", part: "reExplanation" | "simplerQuestion", enabled: boolean) =>
     author<AuthorLesson>(`/api/author/lessons/${id}/edits`, { method: "POST", body: JSON.stringify({ kind: "switch", moduleId, which, part, enabled }) }),
+  remove: (kind: "subjects" | "chapters" | "lessons", id: string, confirm: string) =>
+    author<{ deleted: string }>(`/api/author/${kind}/${id}`, { method: "DELETE", body: JSON.stringify({ confirm }) }),
   createBook: (b: NewBook) => author<{ id: string; slug: string }>("/api/author/books", { method: "POST", body: JSON.stringify(b) }),
   readContents: (pdf: Uint8Array) =>
     request<{ contents: Contents; usage: { costUsd: number } }>("/api/author/books/contents", {

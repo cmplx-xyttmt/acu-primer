@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:fake": "FAKE_DRAFTS=1 vite",
+    "dev:fake-failures": "FAKE_DRAFTS=some-fail vite",
     "build": "vite build",
     "preview": "npm run build && vite preview",
     "deploy": "npm run build && wrangler deploy",

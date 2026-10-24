@@ -31,6 +31,7 @@ import { lessonProblems } from "../../shared/lessonChecks.ts";
 import { keepSwitches } from "../../shared/wire.ts";
 import { OUTCOMES_STEP } from "../../shared/review.ts";
 import catalogue from "../../../catalogues/sampling-distributions.json";
+import { fakeDraft, fakeMode } from "../fakeDraft.ts";
 
 const budget = (env: Env) => Number(env.MONTHLY_BUDGET_USD) || 15;
 
@@ -53,8 +54,9 @@ const log = (env: Env, kind: "draft" | "revise" | "contents", lessonId: string |
   recordSpend(env.DB, { kind, model: env.DRAFT_MODEL, lessonId, ...u });
 
 // GET /api/author/budget — what's been spent on Claude this month, against the limit.
-export async function getBudget({ env }: Ctx): Promise<Response> {
-  return json({ spentUsd: await monthSpend(env.DB), budgetUsd: budget(env), model: env.DRAFT_MODEL, hasKey: !!apiKey(env) });
+export async function getBudget({ env, url }: Ctx): Promise<Response> {
+  const fake = fakeMode(env, url) !== "off";
+  return json({ spentUsd: await monthSpend(env.DB), budgetUsd: budget(env), model: env.DRAFT_MODEL, hasKey: fake || !!apiKey(env), fake });
 }
 
 // PUT /api/author/chapters/:id — { showUnreviewed?: boolean, brief?: string | null }
@@ -144,6 +146,11 @@ export async function postSource({ env, request, url }: Ctx): Promise<Response> 
   const pages = (url.searchParams.get("pages") ?? "").trim();
   if (!chapterId || !title || !pages) return json({ error: "Give ?chapterId=, &title= and &pages=." }, 400);
   if (!(await chapterForDrafting(env.DB, chapterId))) return json({ error: "No chapter with that id." }, 404);
+  if (fakeMode(env, url) !== "off") {
+    // Fake drafting: nothing goes to Claude, so the pages aren't uploaded.
+    const kb = Math.round((await request.arrayBuffer()).byteLength / 1024);
+    return json({ sourceId: await saveSource(env.DB, { chapterId, title, pages, fileId: "fake" }), kb });
+  }
   const c = client(env);
   if (!c) return json({ error: "No Claude API key on this server." }, 503);
   const bytes = await request.arrayBuffer();
@@ -158,7 +165,7 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(
 // POST /api/author/drafts — { sourceId, section }. Streams progress as one JSON object per
 // line ({ chars }), then { done: lessonId, usage } or { error }. The lesson is saved, unreviewed,
 // only when it passes every check. A tab closed mid-draft loses that draft (spec failure mode).
-export async function postDraft({ env, request }: Ctx): Promise<Response> {
+export async function postDraft({ env, request, url }: Ctx): Promise<Response> {
   const body = (await request.json().catch(() => null)) as { sourceId?: unknown; section?: unknown } | null;
   const sourceId = typeof body?.sourceId === "string" ? body.sourceId : "";
   const section = typeof body?.section === "string" ? body.section.trim() : "";
@@ -167,10 +174,20 @@ export async function postDraft({ env, request }: Ctx): Promise<Response> {
   if (!source) return json({ error: "No source with that id. Upload the pages first." }, 404);
   const chapter = await chapterForDrafting(env.DB, source.chapter_id);
   if (!chapter) return json({ error: "That source's chapter is gone." }, 404);
+  const lessonId = `${chapter.id}-${slug(section)}-${crypto.randomUUID().slice(0, 6)}`;
+  const fake = fakeMode(env, url);
+  if (fake !== "off") {
+    const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
+    const writer = writable.getWriter();
+    const send = (obj: object) => writer.write(new TextEncoder().encode(JSON.stringify(obj) + "\n"));
+    fakeDraft(fake, { lessonId, section, book: source.title, pages: source.pages }, send, (l) => insertDraft(env.DB, chapter.id, source.id, l))
+      .catch(async (err) => (console.error(err), send({ error: "The fake draft failed on the server." })))
+      .finally(() => writer.close());
+    return new Response(readable, { headers: { "content-type": "application/x-ndjson", "cache-control": "no-store" } });
+  }
   const ready = await readyToSpend(env);
   if (!ready.ok) return ready.res;
 
-  const lessonId = `${chapter.id}-${slug(section)}-${crypto.randomUUID().slice(0, 6)}`;
   // The only catalogue so far is for sampling distributions; other topics draft without one.
   const useCatalogue = /sampl|estimat|standard error|proportion/i.test(`${chapter.title} ${section}`);
   const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();

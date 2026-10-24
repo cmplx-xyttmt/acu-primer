@@ -61,6 +61,7 @@ interface AuthorLessonRow {
   status: LessonStatus;
   updated_at: string;
   signed_off_at: string | null;
+  source_pages?: string | null; // "pp. 32-35", from the pages it was drafted from
 }
 
 const lessonSummary = (row: AuthorLessonRow) => ({
@@ -71,6 +72,7 @@ const lessonSummary = (row: AuthorLessonRow) => ({
   status: row.status,
   updatedAt: row.updated_at,
   signedOffAt: row.signed_off_at,
+  sourcePages: row.source_pages ?? null,
 });
 
 // Every subject with its chapters, their lessons and marks, for the author's home screen.
@@ -79,7 +81,10 @@ export async function authorSubjects(db: D1Database): Promise<AuthorSubject[]> {
   const [subjects, chapters, lessons] = await db.batch([
     db.prepare("SELECT id, slug, title, overview, brief, book FROM subjects ORDER BY position, title"),
     db.prepare("SELECT id, slug, title, overview, subject_id, show_unreviewed, plan FROM chapters ORDER BY position, title"),
-    db.prepare("SELECT id, chapter_id, position, title, status, updated_at, signed_off_at FROM lessons ORDER BY position"),
+    db.prepare(
+      `SELECT l.id, l.chapter_id, l.position, l.title, l.status, l.updated_at, l.signed_off_at, s.pages AS source_pages
+       FROM lessons l LEFT JOIN sources s ON s.id = l.source_id ORDER BY l.position`,
+    ),
   ]);
   const lessonRows = lessons.results as unknown as AuthorLessonRow[];
   const chapterRows = chapters.results as unknown as (ChapterRow & { overview: string | null; subject_id: string | null; plan: string | null })[];

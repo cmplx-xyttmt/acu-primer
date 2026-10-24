@@ -100,7 +100,7 @@ export const authorApi = {
     author<{ events: LoggedEvent[] }>(
       `/api/author/chapters/${chapterId}/student-events?name=${encodeURIComponent(name)}&device=${encodeURIComponent(device)}`,
     ).then((r) => r.events),
-  budget: () => author<{ spentUsd: number; budgetUsd: number; model: string; hasKey: boolean }>("/api/author/budget"),
+  budget: () => author<{ spentUsd: number; budgetUsd: number; model: string; hasKey: boolean; fake?: boolean }>("/api/author/budget"),
   uploadSource: (chapterId: string, title: string, pages: string, pdf: Uint8Array) =>
     request<{ sourceId: string; kb: number }>(
       `/api/author/sources?chapterId=${encodeURIComponent(chapterId)}&title=${encodeURIComponent(title)}&pages=${encodeURIComponent(pages)}`,

@@ -6,7 +6,8 @@ import { VitePWA } from "vite-plugin-pwa";
 export default defineConfig({
   plugins: [
     svelte(),
-    cloudflare(),
+    // `npm run dev:fake` turns on fake drafting (src/worker/fakeDraft.ts): no Claude calls.
+    cloudflare(process.env.FAKE_DRAFTS ? { config: { vars: { FAKE_DRAFTS: process.env.FAKE_DRAFTS } } } : {}),
     // The service worker (spec.md > Components > Offline support). It stores the app, fonts
     // and KaTeX when the app first loads, and a copy of every course response, so a course
     // opened once keeps working without a connection. Nothing on the author side is cached.

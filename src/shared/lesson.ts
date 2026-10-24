@@ -235,6 +235,7 @@ export interface AuthorLessonSummary {
   status: LessonStatus;
   updatedAt: string;
   signedOffAt: string | null;
+  sourcePages: string | null; // "pp. 32-35" for a lesson drafted from pages, else null
 }
 
 export interface AuthorLesson extends AuthorLessonSummary {

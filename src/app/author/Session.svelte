@@ -16,6 +16,7 @@
   import CircleX from "@lucide/svelte/icons/circle-x";
   import CircleDashed from "@lucide/svelte/icons/circle-dashed";
   import LoaderCircle from "@lucide/svelte/icons/loader-circle";
+  import ExternalLink from "@lucide/svelte/icons/external-link";
   import { keepBook, keptBook } from "../lib/bookStore.ts";
   import type { Section } from "../../shared/bookPlan.ts";
 
@@ -23,7 +24,7 @@
 
   let chapter = $state<AuthorChapter | null>(null);
   let subject = $state<AuthorSubject | null>(null);
-  let budget = $state<{ spentUsd: number; budgetUsd: number; model: string; hasKey: boolean } | null>(null);
+  let budget = $state<{ spentUsd: number; budgetUsd: number; model: string; hasKey: boolean; fake?: boolean } | null>(null);
   let file = $state<File | null>(null);
   let book = $state("");
   let pages = $state(""); // typed by hand, when no section is ticked
@@ -58,9 +59,11 @@
     error = err instanceof Error ? err.message : "Something went wrong.";
   }
 
-  // A section was drafted already if a lesson in the chapter carries its title (without the number).
+  // A section was drafted already if a lesson in the chapter was drafted from its pages. The
+  // title match is for older lessons; it alone missed sections Claude renamed (Oct 24).
   const bare = (s: string) => s.toLowerCase().replace(/^[\d.]+\s*/, "").replace(/[^a-z0-9]+/g, " ").trim();
-  const drafted = (s: Section) => !!chapter?.lessons.some((l) => bare(l.title).includes(bare(s.title)));
+  const drafted = (s: Section) =>
+    !!chapter?.lessons.some((l) => l.sourcePages === `pp. ${s.pages}` || bare(l.title).includes(bare(s.title)));
   const keyOf = (s: Section) => `${s.pages} ${s.title}`;
   const sections = $derived(chapter?.plan?.sections ?? []);
 
@@ -195,6 +198,12 @@
     </p>
   {/if}
 
+  {#if budget?.fake}
+    <p class="fake">
+      <strong>Fake drafting is on</strong> (started with <code>npm run dev:fake</code>). Nothing goes to Claude and nothing is spent: each draft takes about
+      12 seconds and saves a copy of the OSTEP 4.4 sample lesson, titled "[Fake]" and the section's name. Delete them from the author home when you're done.
+    </p>
+  {/if}
   {#if budget}
     <p class="budget" class:low={left < 2}>
       Claude this month: <span class="num">${budget.spentUsd.toFixed(2)}</span> of <span class="num">${budget.budgetUsd}</span> spent.
@@ -306,7 +315,7 @@
         {/if}
       </h2>
       {#if phase === "running"}
-        <p class="muted">Keep this tab open: closing it loses the lesson being drafted. Each one is saved as soon as it's done, as "written by the model, not yet reviewed".</p>
+        <p class="muted">Keep this tab open: closing it loses the lesson being drafted. Each one is saved as soon as it's done, as "written by the model, not yet reviewed". Review opens in a new tab, so the drafting carries on here.</p>
       {:else}
         <p class="muted">Each is saved as "written by the model, not yet reviewed", and students won't see it until you sign it off.</p>
       {/if}
@@ -335,7 +344,12 @@
               </span>
             </span>
             {#if item.state === "done" && item.lessonId}
-              <a class="btn btn-sm" href="/author/lessons/{item.lessonId}" onclick={(e) => go(e, `/author/lessons/${item.lessonId}`)}>Review</a>
+              {#if phase === "running"}
+                <!-- A new tab while drafting, so this screen (and the drafts it's running) stays open. -->
+                <a class="btn btn-sm" href="/author/lessons/{item.lessonId}" target="_blank" rel="noopener">Review<ExternalLink size={14} aria-hidden="true" /></a>
+              {:else}
+                <a class="btn btn-sm" href="/author/lessons/{item.lessonId}" onclick={(e) => go(e, `/author/lessons/${item.lessonId}`)}>Review</a>
+              {/if}
             {/if}
           </li>
         {/each}
@@ -346,7 +360,17 @@
         </button>
       {/if}
       {#if phase === "finished"}
-        <button class="btn-secondary" onclick={() => ((phase = "form"), (queue = []))}>Draft more from this chapter</button>
+        <!-- Only when there's something left to draft: sections without a lesson (failed or
+             stopped ones included), or any chapter whose pages are typed by hand. -->
+        {#if notDrafted.length > 0}
+          <button class="btn-secondary" onclick={() => ((phase = "form"), (queue = []), tickAll())}>
+            Draft the {notDrafted.length === 1 ? "section" : `${notDrafted.length} sections`} not drafted yet
+          </button>
+        {:else if sections.length === 0}
+          <button class="btn-secondary" onclick={() => ((phase = "form"), (queue = []))}>Draft another lesson from this chapter</button>
+        {:else}
+          <p class="muted">Every section in this chapter has a lesson now.</p>
+        {/if}
       {/if}
     </section>
   {/if}
@@ -494,6 +518,13 @@
   }
   .brief-note {
     font-size: 0.88rem;
+  }
+  .fake {
+    padding: 0.7rem 0.9rem;
+    border: 1px dashed var(--accent);
+    border-radius: var(--radius);
+    background: var(--accent-soft);
+    font-size: 0.92rem;
   }
   .budget {
     padding: 0.6rem 0.9rem;

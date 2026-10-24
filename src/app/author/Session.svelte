@@ -10,6 +10,7 @@
   import FileUp from "@lucide/svelte/icons/file-up";
   import WandSparkles from "@lucide/svelte/icons/wand-sparkles";
   import BookOpen from "@lucide/svelte/icons/book-open";
+  import CircleCheck from "@lucide/svelte/icons/circle-check";
   import { keepBook, keptBook } from "../lib/bookStore.ts";
   import type { Section } from "../../shared/bookPlan.ts";
 
@@ -174,9 +175,16 @@
     >
       <label>
         Book or reading (PDF, stays on this laptop)
+        {#if file && keptName === file.name}
+          <!-- The book kept from Start from a book: nothing to upload (Oct 24, Isaac read the old
+               "Choose PDF" button as being asked for the file again). -->
+          <span class="kept"><CircleCheck size={16} aria-hidden="true" />Using the book kept in this browser: {file.name} ({(file.size / 1048576).toFixed(1)} MB). Nothing to upload.</span>
+        {/if}
         <span class="picker">
-          <span class="btn-secondary btn-sm"><FileUp size={15} aria-hidden="true" />Choose PDF</span>
-          <span class="muted">{file ? `${file.name} (${Math.round(file.size / 1024)} KB)${keptName === file.name ? ", kept in this browser" : ""}` : subject?.book ? `Pick ${subject.book.fileName} again (it isn't kept in this browser)` : "No file chosen"}</span>
+          <span class={file && keptName === file.name ? "btn-quiet btn-sm" : "btn-secondary btn-sm"}><FileUp size={15} aria-hidden="true" />{file && keptName === file.name ? "Use a different PDF" : "Choose PDF"}</span>
+          {#if !(file && keptName === file.name)}
+            <span class="muted">{file ? `${file.name} (${Math.round(file.size / 1024)} KB)` : subject?.book ? `Pick ${subject.book.fileName} again (it isn't kept in this browser)` : "No file chosen"}</span>
+          {/if}
           <input type="file" accept="application/pdf" onchange={(e) => pickFile((e.currentTarget as HTMLInputElement).files?.[0] ?? null)} />
         </span>
       </label>
@@ -193,6 +201,9 @@
         <input type="text" bind:value={section} placeholder="5.1 Point estimates and sampling variability" />
       </label>
       <button class="btn" type="submit" disabled={!ready || (budget ? left <= 0 || !budget.hasKey : true)}><WandSparkles size={17} aria-hidden="true" />Draft</button>
+      {#if file && !(pages.trim() && section.trim()) && phase === "form"}
+        <p class="muted hint">{chapter?.plan?.sections.length ? "Pick a section above to fill in the pages and the section." : "Fill in the pages and the section to draft."}</p>
+      {/if}
     </form>
 
     {#if phase === "cutting"}<p class="muted">Cutting the pages…</p>{/if}
@@ -279,6 +290,22 @@
     align-items: center;
     gap: 0.7rem;
     font-weight: 400;
+  }
+  .kept {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    font-weight: 400;
+    color: var(--text-2);
+  }
+  .kept :global(svg) {
+    flex: none;
+    margin-top: 0.15rem;
+    color: var(--right);
+  }
+  .hint {
+    margin: -0.3rem 0 0;
+    font-size: 0.88rem;
   }
   .picker input[type="file"] {
     position: absolute;

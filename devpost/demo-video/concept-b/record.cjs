@@ -203,7 +203,7 @@ async function clip(browser, name, storage, run, theme = "light") {
   // draft himself, or approves it).
   await clip(browser, "c07-draft-screen", author, async (page) => {
     await page.goto(BASE + "/author"); await wait(1500);
-    await click(page, page.getByRole("link", { name: /Draft a lesson/ }).first(), 2500);
+    await click(page, page.getByRole("link", { name: /Draft (a lesson|lessons)/ }).first(), 2500);
     await scroll(page, 300); await wait(2000);
   });
 
@@ -368,11 +368,11 @@ async function clip(browser, name, storage, run, theme = "light") {
       }, BOOK);
       await click(page, page.locator(`a[href="/author/chapters/${chapterId}/draft"]`), 2500);
       const row = page.locator(".sections li").filter({ hasText: BOOK.section });
-      await click(page, row.getByRole("button"), 1500);
+      await click(page, row.getByRole("checkbox"), 1500);
       await click(page, page.getByRole("button", { name: "Draft", exact: true }), 1000);
-      await page.getByRole("link", { name: /Review it step by step/ }).waitFor({ timeout: 20 * 60 * 1000 });
+      await page.locator(".queue li.done").getByRole("link", { name: "Review" }).waitFor({ timeout: 20 * 60 * 1000 });
       await wait(3000);
-      await click(page, page.getByRole("link", { name: /Review it step by step/ }), 3000);
+      await click(page, page.locator(".queue li.done").getByRole("link", { name: "Review" }), 3000);
     });
 
   await browser.close();

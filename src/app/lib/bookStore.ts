@@ -1,4 +1,4 @@
-// Books kept in this browser (IndexedDB), by subject id, so "Draft a lesson" on a chapter made
+// Books kept in this browser (IndexedDB), by subject id, so "Draft lessons" on a chapter made
 // from a book doesn't ask for the PDF again. The book never leaves this laptop; only the cut
 // pages of a section are sent when drafting. On another device, or after clearing site data,
 // the draft screen asks for the file once more. Every call fails quietly to "not kept".

@@ -1,8 +1,10 @@
 <script lang="ts">
   // The authoring session (slice 3b): pick the book PDF and a page range, and Claude drafts a
   // lesson from just those pages. For a chapter made from a book (Oct 23), its sections are
-  // listed: picking one fills in the pages and title, and the PDF kept in this browser is used. The PDF stays on this laptop; only the cut pages are sent.
-  // The draft is saved unreviewed and then goes through the step-by-step review.
+  // listed. Since Oct 24 the author ticks any number of them (or all not yet drafted) and they
+  // draft one after another in this tab, each saved as soon as it's done; a failed one doesn't
+  // stop the rest. The PDF stays on this laptop; only the cut pages are sent. Drafting on the
+  // server, so the tab can close, is noted for later in devpost/checklist.md.
   import type { AuthorChapter, AuthorSubject } from "../../shared/lesson.ts";
   import { authorApi, streamDraft, ApiError } from "../lib/api.ts";
   import { navigate } from "../router.svelte.ts";
@@ -11,6 +13,9 @@
   import WandSparkles from "@lucide/svelte/icons/wand-sparkles";
   import BookOpen from "@lucide/svelte/icons/book-open";
   import CircleCheck from "@lucide/svelte/icons/circle-check";
+  import CircleX from "@lucide/svelte/icons/circle-x";
+  import CircleDashed from "@lucide/svelte/icons/circle-dashed";
+  import LoaderCircle from "@lucide/svelte/icons/loader-circle";
   import { keepBook, keptBook } from "../lib/bookStore.ts";
   import type { Section } from "../../shared/bookPlan.ts";
 
@@ -21,46 +26,49 @@
   let budget = $state<{ spentUsd: number; budgetUsd: number; model: string; hasKey: boolean } | null>(null);
   let file = $state<File | null>(null);
   let book = $state("");
-  let pages = $state("");
+  let pages = $state(""); // typed by hand, when no section is ticked
   let section = $state("");
-
-  let phase = $state<"form" | "cutting" | "uploading" | "drafting" | "done" | "failed">("form");
-  let chars = $state(0);
-  let attempt = $state(1);
-  let seconds = $state(0);
-  let result = $state<{ lessonId: string; cost: number; seconds: number; attempts: number } | null>(null);
   let error = $state("");
-  let timer: ReturnType<typeof setInterval> | undefined;
+
+  // What a draft has cost and taken so far (Oct 16 to 23: $1.08 to $1.30, 6 to 10½ minutes).
+  const EACH_USD = 1.2;
+  const EACH_MIN = 8;
+  // Below this much left in the month, the next draft isn't started.
+  const MIN_LEFT_USD = 1.5;
+
+  // svelte-ignore state_referenced_locally (App.svelte re-creates this per chapter)
+  let keptName = $state(""); // the PDF found in this browser, if any
+  const loadSubjects = () =>
+    authorApi.subjects().then(async (subjects) => {
+      subject = subjects.find((s) => s.chapters.some((c) => c.id === chapterId)) ?? null;
+      chapter = subject?.chapters.find((c) => c.id === chapterId) ?? null;
+      if (subject?.book && !file) {
+        book = subject.book.title;
+        const kept = await keptBook(subject.id);
+        if (kept) {
+          file = kept;
+          keptName = kept.name;
+        }
+      }
+    }, fail);
+  loadSubjects();
 
   function fail(err: unknown) {
     if (err instanceof ApiError && err.status === 401) return onLocked();
     error = err instanceof Error ? err.message : "Something went wrong.";
-    phase = "failed";
-    clearInterval(timer);
   }
-
-  // svelte-ignore state_referenced_locally (App.svelte re-creates this per chapter)
-  let keptName = $state(""); // the PDF found in this browser, if any
-  authorApi.subjects().then(async (subjects) => {
-    subject = subjects.find((s) => s.chapters.some((c) => c.id === chapterId)) ?? null;
-    chapter = subject?.chapters.find((c) => c.id === chapterId) ?? null;
-    if (subject?.book) {
-      book = subject.book.title;
-      const kept = await keptBook(subject.id);
-      if (kept) {
-        file = kept;
-        keptName = kept.name;
-      }
-    }
-  }, fail);
 
   // A section was drafted already if a lesson in the chapter carries its title (without the number).
   const bare = (s: string) => s.toLowerCase().replace(/^[\d.]+\s*/, "").replace(/[^a-z0-9]+/g, " ").trim();
   const drafted = (s: Section) => !!chapter?.lessons.some((l) => bare(l.title).includes(bare(s.title)));
-  function useSection(s: Section) {
-    section = s.title;
-    pages = s.pages;
-  }
+  const keyOf = (s: Section) => `${s.pages} ${s.title}`;
+  const sections = $derived(chapter?.plan?.sections ?? []);
+
+  let ticked = $state<string[]>([]);
+  const toggle = (s: Section) => (ticked = ticked.includes(keyOf(s)) ? ticked.filter((k) => k !== keyOf(s)) : [...ticked, keyOf(s)]);
+  const notDrafted = $derived(sections.filter((s) => !drafted(s)));
+  const tickAll = () => (ticked = notDrafted.map(keyOf));
+
   function pickFile(f: File | null) {
     file = f;
     keptName = "";
@@ -69,47 +77,106 @@
   }
   const loadBudget = () => authorApi.budget().then((b) => (budget = b), fail);
   loadBudget();
-
-  const ready = $derived(!!file && book.trim() && pages.trim() && section.trim() && phase !== "cutting" && phase !== "uploading" && phase !== "drafting");
   const left = $derived(budget ? budget.budgetUsd - budget.spentUsd : 0);
 
-  async function draft() {
-    if (!file) return;
-    error = "";
-    chars = 0;
-    attempt = 1;
-    seconds = 0;
+  // What Draft will do: the ticked sections in book order, or the one typed by hand.
+  const planned = $derived<{ title: string; pages: string }[]>(
+    ticked.length > 0
+      ? sections.filter((s) => ticked.includes(keyOf(s)))
+      : pages.trim() && section.trim()
+        ? [{ title: section.trim(), pages: pages.trim() }]
+        : [],
+  );
+  const canDraft = $derived(!!file && !!book.trim() && planned.length > 0 && !!budget?.hasKey && left > 0);
+
+  // --- The queue ------------------------------------------------------------------------
+  type Item = {
+    title: string;
+    pages: string;
+    state: "waiting" | "cutting" | "uploading" | "drafting" | "done" | "failed" | "skipped";
+    chars: number;
+    attempt: number;
+    seconds: number;
+    lessonId?: string;
+    cost?: number;
+    attempts?: number;
+    note?: string; // why it failed or was skipped
+  };
+  let queue = $state<Item[]>([]);
+  let phase = $state<"form" | "running" | "finished">("form");
+  let stopAfterThis = $state(false);
+
+  async function draftOne(item: Item, bytes: ArrayBuffer) {
+    item.state = "cutting";
+    const { cutPages } = await import("../lib/pdfPages.ts"); // only loaded here, never for students
+    const cut = await cutPages(bytes, item.pages);
+    item.state = "uploading";
+    const { sourceId } = await authorApi.uploadSource(chapterId, book.trim(), `pp. ${item.pages}`, cut);
+    item.state = "drafting";
+    const started = Date.now();
+    const timer = setInterval(() => (item.seconds = Math.round((Date.now() - started) / 1000)), 1000);
     try {
-      phase = "cutting";
-      const { cutPages } = await import("../lib/pdfPages.ts"); // only loaded here, never for students
-      const cut = await cutPages(await file.arrayBuffer(), pages);
-      phase = "uploading";
-      const { sourceId } = await authorApi.uploadSource(chapterId, book.trim(), `pp. ${pages.trim()}`, cut);
-      phase = "drafting";
-      const started = Date.now();
-      timer = setInterval(() => (seconds = Math.round((Date.now() - started) / 1000)), 1000);
-      await streamDraft(sourceId, section.trim(), (e) => {
+      await streamDraft(sourceId, item.title, (e) => {
         if ("alive" in e) {
-          seconds = e.alive;
+          item.seconds = e.alive;
         } else if ("chars" in e) {
-          chars = e.chars;
-          attempt = e.attempt;
+          item.chars = e.chars;
+          item.attempt = e.attempt;
         } else if ("done" in e) {
-          result = { lessonId: e.done, cost: e.usage.costUsd, seconds: e.seconds, attempts: e.attempts };
-          phase = "done";
+          Object.assign(item, { state: "done", lessonId: e.done, cost: e.usage.costUsd, seconds: e.seconds, attempts: e.attempts });
         } else {
-          error = e.error + (e.usage ? ` (this attempt cost $${e.usage.costUsd.toFixed(3)})` : "");
-          phase = "failed";
+          Object.assign(item, { state: "failed", cost: e.usage?.costUsd, note: e.error + (e.usage ? ` (this attempt cost $${e.usage.costUsd.toFixed(2)})` : "") });
         }
       });
-      if (phase === "drafting") throw new Error("The connection closed before the draft finished.");
-    } catch (err) {
-      fail(err);
+      if (item.state === "drafting") throw new Error("The connection closed before the draft finished.");
     } finally {
       clearInterval(timer);
-      loadBudget();
     }
   }
+
+  async function run() {
+    if (!file || !canDraft) return;
+    error = "";
+    stopAfterThis = false;
+    queue = planned.map((p) => ({ ...p, state: "waiting", chars: 0, attempt: 1, seconds: 0 }));
+    phase = "running";
+    const bytes = await file.arrayBuffer();
+    for (const item of queue) {
+      if (stopAfterThis) {
+        Object.assign(item, { state: "skipped", note: "Stopped before it started." });
+        continue;
+      }
+      await loadBudget();
+      if (left < MIN_LEFT_USD) {
+        Object.assign(item, { state: "skipped", note: `Less than $${MIN_LEFT_USD.toFixed(2)} left of this month's Claude budget.` });
+        continue;
+      }
+      try {
+        await draftOne(item, bytes);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 401) return onLocked();
+        Object.assign(item, { state: "failed", note: err instanceof Error ? err.message : "Something went wrong." });
+      }
+    }
+    phase = "finished";
+    ticked = [];
+    pages = "";
+    section = "";
+    loadBudget();
+    loadSubjects(); // so the sections just drafted show as Drafted
+  }
+
+  // Closing the tab loses the draft in progress; the browser asks first while the queue runs.
+  $effect(() => {
+    if (phase !== "running") return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    addEventListener("beforeunload", warn);
+    return () => removeEventListener("beforeunload", warn);
+  });
+
+  const doneItems = $derived(queue.filter((i) => i.state === "done"));
+  const spent = $derived(queue.reduce((n, i) => n + (i.cost ?? 0), 0)); // failed attempts cost too
+  const minutes = (n: number) => (n < 60 ? `${n} min` : `${Math.floor(n / 60)} h ${n % 60 ? `${n % 60} min` : ""}`.trim());
 
   const go = (e: MouseEvent, to: string) => {
     e.preventDefault();
@@ -120,7 +187,7 @@
 <AuthorBar back={{ href: "/author", label: "Your subjects" }} />
 
 <main class="page wide">
-  <h1>Draft a lesson</h1>
+  <h1>Draft lessons</h1>
   <p class="muted">{subject?.title ? `${subject.title} · ` : ""}{chapter ? chapter.title : "…"}</p>
   {#if subject}
     <p class="muted brief-note">
@@ -131,50 +198,45 @@
   {#if budget}
     <p class="budget" class:low={left < 2}>
       Claude this month: <span class="num">${budget.spentUsd.toFixed(2)}</span> of <span class="num">${budget.budgetUsd}</span> spent.
-      The first real draft (11 pages, {budget.model}, high effort) took 10½ minutes and cost $1.28.
+      A draft has cost $1.10 to $1.30 and taken 6 to 10 minutes ({budget.model}, high effort).
       {#if !budget.hasKey}<strong>No API key on this server, so drafting won't work.</strong>{/if}
     </p>
   {/if}
 
-  {#if chapter?.plan && phase !== "done"}
-    <section class="sections">
-      <h2><BookOpen size={18} aria-hidden="true" />Sections in this chapter</h2>
-      {#if chapter.plan.sections.length === 0}
-        <p class="muted">The book's contents didn't list sections for this chapter, which runs over pp. {chapter.plan.pages}. Type the pages for one lesson below.</p>
-      {:else}
-        <p class="muted">Each section becomes one lesson. Pick one to fill in the form below.</p>
-        <ul>
-          {#each chapter.plan.sections as s (s.title + s.pages)}
-            <li class:chosen={section === s.title && pages === s.pages}>
-              <span class="t">{s.title}</span>
-              <span class="muted num">pp. {s.pages}</span>
-              {#if drafted(s)}<span class="badge badge-done">Drafted</span>{/if}
-              {#if section === s.title && pages === s.pages}
-                <span class="chosen-mark"><CircleCheck size={15} aria-hidden="true" />Chosen</span>
-              {:else}
-                <button class="btn-secondary btn-sm" onclick={() => useSection(s)}>Use this section</button>
-              {/if}
-            </li>
-          {/each}
-        </ul>
-      {/if}
-    </section>
-  {/if}
+  {#if phase === "form"}
+    {#if chapter?.plan}
+      <section class="sections">
+        <h2><BookOpen size={18} aria-hidden="true" />Sections in this chapter</h2>
+        {#if sections.length === 0}
+          <p class="muted">The book's contents didn't list sections for this chapter, which runs over pp. {chapter.plan.pages}. Type the pages for one lesson below.</p>
+        {:else}
+          <div class="pick-head">
+            <p class="muted">Each section becomes one lesson. Tick the ones to draft.</p>
+            <span class="pick-all">
+              {#if notDrafted.length > 0}<button class="btn-secondary btn-sm" onclick={tickAll}>Tick all not yet drafted ({notDrafted.length})</button>{/if}
+              {#if ticked.length > 0}<button class="btn-quiet btn-sm" onclick={() => (ticked = [])}>Clear</button>{/if}
+            </span>
+          </div>
+          <ul>
+            {#each sections as s (keyOf(s))}
+              <li class:chosen={ticked.includes(keyOf(s))}>
+                <label class="row-pick">
+                  <input type="checkbox" checked={ticked.includes(keyOf(s))} onchange={() => toggle(s)} />
+                  <span class="t">{s.title}</span>
+                </label>
+                <span class="muted num">pp. {s.pages}</span>
+                {#if drafted(s)}<span class="badge badge-done">Drafted</span>{/if}
+              </li>
+            {/each}
+          </ul>
+        {/if}
+      </section>
+    {/if}
 
-  {#if phase === "done" && result}
-    <section class="done">
-      <h2>Drafted</h2>
-      <p>
-        In {result.seconds} s{result.attempts > 1 ? ` (${result.attempts} attempts)` : ""}, for about
-        <span class="num">${result.cost.toFixed(2)}</span>. It's saved as "written by the model, not yet reviewed", and students won't see it until you sign it off.
-      </p>
-      <a class="btn" href="/author/lessons/{result.lessonId}" onclick={(e) => go(e, `/author/lessons/${result!.lessonId}`)}>Review it step by step</a>
-    </section>
-  {:else}
     <form
       onsubmit={(e) => {
         e.preventDefault();
-        if (ready) draft();
+        run();
       }}
     >
       <label>
@@ -196,33 +258,97 @@
         Book title, as students should see it
         <input type="text" bind:value={book} placeholder="OpenIntro Statistics, 4th ed." />
       </label>
-      <label>
-        Pages, as your PDF viewer numbers them
-        <input type="text" bind:value={pages} placeholder="170-180" />
-      </label>
-      <label>
-        Section
-        <input type="text" bind:value={section} placeholder="5.1 Point estimates and sampling variability" />
-      </label>
-      <button class="btn" type="submit" disabled={!ready || (budget ? left <= 0 || !budget.hasKey : true)}><WandSparkles size={17} aria-hidden="true" />Draft</button>
-      {#if file && !(pages.trim() && section.trim()) && phase === "form"}
-        <p class="muted hint">{chapter?.plan?.sections.length ? "Pick a section above to fill in the pages and the section." : "Fill in the pages and the section to draft."}</p>
+      {#if ticked.length === 0}
+        {#snippet byHand()}
+          <label>
+            Pages, as your PDF viewer numbers them
+            <input type="text" bind:value={pages} placeholder="170-180" />
+          </label>
+          <label>
+            Section
+            <input type="text" bind:value={section} placeholder="5.1 Point estimates and sampling variability" />
+          </label>
+        {/snippet}
+        {#if sections.length > 0}
+          <details class="by-hand">
+            <summary>Or type the pages for one lesson yourself</summary>
+            <div class="by-hand-fields">{@render byHand()}</div>
+          </details>
+        {:else}
+          {@render byHand()}
+        {/if}
+      {/if}
+
+      {#if planned.length > 0}
+        <p class="estimate">
+          {planned.length === 1 ? "One lesson" : `${planned.length} lessons`}: about <span class="num">${(planned.length * EACH_USD).toFixed(2)}</span>
+          and {minutes(planned.length * EACH_MIN)}{planned.length > 1 ? ", drafted one after another" : ""}. Keep this tab open until {planned.length > 1 ? "they're" : "it's"} done.
+          {#if planned.length * EACH_USD > left}
+            <strong>That's more than the ${left.toFixed(2)} left this month, so the last ones will be skipped.</strong>
+          {/if}
+        </p>
+      {/if}
+      <button class="btn" type="submit" disabled={!canDraft}>
+        <WandSparkles size={17} aria-hidden="true" />{planned.length > 1 ? `Draft ${planned.length} lessons` : "Draft"}
+      </button>
+      {#if file && planned.length === 0}
+        <p class="muted hint">{sections.length ? "Tick a section above, or type the pages for one lesson." : "Fill in the pages and the section to draft."}</p>
       {/if}
     </form>
-
-    {#if phase === "cutting"}<p class="muted">Cutting the pages…</p>{/if}
-    {#if phase === "uploading"}<p class="muted">Sending the pages…</p>{/if}
-    {#if phase === "drafting"}
-      <p class="progress">
-        {#if chars === 0}
-          Claude is thinking about the pages ({seconds} s). At high effort this can take several minutes before any of the lesson appears.
-        {:else}
-          Claude is writing the lesson: <span class="num">{chars.toLocaleString()}</span> characters so far, {seconds} s{attempt > 1 ? ", second attempt after fixing problems" : ""}.
-        {/if}
-        Keep this tab open: closing it loses the draft. A draft of about ten pages has taken around 10 minutes.
-      </p>
-    {/if}
     {#if error}<p class="error">{error}</p>{/if}
+  {:else}
+    <section class="queue">
+      <h2>
+        {#if phase === "running"}
+          Drafting {queue.length === 1 ? "one lesson" : `${queue.length} lessons`}
+        {:else}
+          Drafted {doneItems.length} of {queue.length}, for about <span class="num">${spent.toFixed(2)}</span>
+        {/if}
+      </h2>
+      {#if phase === "running"}
+        <p class="muted">Keep this tab open: closing it loses the lesson being drafted. Each one is saved as soon as it's done, as "written by the model, not yet reviewed".</p>
+      {:else}
+        <p class="muted">Each is saved as "written by the model, not yet reviewed", and students won't see it until you sign it off.</p>
+      {/if}
+      <ol>
+        {#each queue as item (item.pages + item.title)}
+          <li class="item {item.state}">
+            <span class="icon" aria-hidden="true">
+              {#if item.state === "done"}<CircleCheck size={18} />
+              {:else if item.state === "failed"}<CircleX size={18} />
+              {:else if item.state === "waiting" || item.state === "skipped"}<CircleDashed size={18} />
+              {:else}<LoaderCircle size={18} class="spin" />{/if}
+            </span>
+            <span class="what">
+              <span class="t">{item.title} <span class="muted num">pp. {item.pages}</span></span>
+              <span class="muted small">
+                {#if item.state === "waiting"}Waiting
+                {:else if item.state === "cutting"}Cutting the pages…
+                {:else if item.state === "uploading"}Sending the pages…
+                {:else if item.state === "drafting"}
+                  {item.chars === 0
+                    ? `Claude is thinking about the pages (${item.seconds} s)`
+                    : `Writing: ${item.chars.toLocaleString()} characters, ${item.seconds} s${item.attempt > 1 ? ", second attempt after fixing problems" : ""}`}
+                {:else if item.state === "done"}
+                  Drafted in {Math.round((item.seconds ?? 0) / 60)} min{(item.attempts ?? 1) > 1 ? ` (${item.attempts} attempts)` : ""}, about ${(item.cost ?? 0).toFixed(2)}
+                {:else}{item.note}{/if}
+              </span>
+            </span>
+            {#if item.state === "done" && item.lessonId}
+              <a class="btn btn-sm" href="/author/lessons/{item.lessonId}" onclick={(e) => go(e, `/author/lessons/${item.lessonId}`)}>Review</a>
+            {/if}
+          </li>
+        {/each}
+      </ol>
+      {#if phase === "running" && queue.filter((i) => i.state === "waiting").length > 0}
+        <button class="btn-quiet" disabled={stopAfterThis} onclick={() => (stopAfterThis = true)}>
+          {stopAfterThis ? "Stopping after this one" : "Stop after this one"}
+        </button>
+      {/if}
+      {#if phase === "finished"}
+        <button class="btn-secondary" onclick={() => ((phase = "form"), (queue = []))}>Draft more from this chapter</button>
+      {/if}
+    </section>
   {/if}
 </main>
 
@@ -230,7 +356,7 @@
   .wide {
     max-width: 52rem;
   }
-  a {
+  a:not(.btn) {
     color: var(--accent);
   }
   .sections ul {
@@ -254,17 +380,110 @@
     border-color: var(--accent);
     background: var(--accent-soft);
   }
-  .chosen-mark {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--accent);
-  }
   .sections .t {
     font-weight: 600;
+  }
+  .row-pick {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
     flex: 1 1 14rem;
+    cursor: pointer;
+  }
+  .row-pick input {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--accent);
+    flex: none;
+  }
+  .pick-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem 1rem;
+  }
+  .pick-head p {
+    margin: 0.3rem 0;
+  }
+  .pick-all {
+    display: flex;
+    gap: 0.4rem;
+  }
+  .by-hand summary {
+    cursor: pointer;
+    color: var(--accent);
+    font-size: 0.92rem;
+  }
+  .by-hand-fields {
+    display: grid;
+    gap: 0.9rem;
+    margin-top: 0.8rem;
+  }
+  .estimate {
+    margin: 0;
+    font-size: 0.92rem;
+  }
+  .queue h2 {
+    font-size: 1.15rem;
+    margin: 1.4rem 0 0.3rem;
+  }
+  .queue ol {
+    list-style: none;
+    padding: 0;
+    margin: 0.8rem 0 1rem;
+    display: grid;
+    gap: 0.4rem;
+  }
+  .item {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+  }
+  .item .icon {
+    display: flex;
+    flex: none;
+    color: var(--text-3, var(--text-2));
+  }
+  .item.done .icon {
+    color: var(--right);
+  }
+  .item.failed .icon {
+    color: var(--wrong);
+  }
+  .item.cutting .icon,
+  .item.uploading .icon,
+  .item.drafting .icon {
+    color: var(--accent);
+  }
+  .item.drafting {
+    border-color: var(--accent);
+  }
+  .what {
+    display: grid;
+    gap: 0.1rem;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .small {
+    font-size: 0.85rem;
+  }
+  .item :global(.spin) {
+    animation: spin 1.2s linear infinite;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .item :global(.spin) {
+      animation: none;
+    }
   }
   .sections h2 {
     display: flex;
@@ -332,12 +551,6 @@
   .btn {
     justify-self: start;
     text-decoration: none;
-  }
-  .progress {
-    margin-top: 1rem;
-  }
-  .done {
-    margin-top: 1rem;
   }
   .error {
     color: var(--wrong);

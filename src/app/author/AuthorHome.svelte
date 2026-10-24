@@ -245,7 +245,7 @@
             <div class="chapter-head">
               <h3>{c.title}</h3>
               <span class="links">
-                <a class="btn-secondary btn-sm" href="/author/chapters/{c.id}/draft" onclick={(e) => go(e, `/author/chapters/${c.id}/draft`)}><WandSparkles size={15} aria-hidden="true" />Draft a lesson</a>
+                <a class="btn-secondary btn-sm" href="/author/chapters/{c.id}/draft" onclick={(e) => go(e, `/author/chapters/${c.id}/draft`)}><WandSparkles size={15} aria-hidden="true" />Draft lessons</a>
                 <a class="btn-quiet btn-sm" href="/author/chapters/{c.id}/students" onclick={(e) => go(e, `/author/chapters/${c.id}/students`)}><Users size={15} aria-hidden="true" />Students</a>
                 {#if s.slug}<a class="btn-quiet btn-sm" href="/s/{s.slug}/{c.slug}"><Eye size={15} aria-hidden="true" />As a student</a>{/if}
                 <button class="btn-quiet btn-sm danger" aria-label="Delete chapter {c.title}" title="Delete chapter" onclick={() => askDeleteChapter(c)}><Trash2 size={15} aria-hidden="true" /><span class="wide-only">Delete</span></button>
@@ -273,7 +273,7 @@
                   <button class="btn-quiet btn-sm danger icon" aria-label="Delete lesson {lesson.title}" title="Delete lesson" onclick={() => askDeleteLesson(lesson)}><Trash2 size={15} aria-hidden="true" /></button>
                 </li>
               {:else}
-                <li class="muted">No lessons yet: use Draft a lesson.</li>
+                <li class="muted">No lessons yet: use Draft lessons.</li>
               {/each}
             </ul>
           </div>

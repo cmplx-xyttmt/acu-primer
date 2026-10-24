@@ -37,7 +37,12 @@ export function reviewPaths(check: Check): ReviewPath[] {
       : check.type === "sort"
         ? "Sorts every item into its category (right)"
         : `Types ${num(check.answer)}${check.unit ? ` ${check.unit}` : ""} (right, ± ${num(check.tolerance)})`;
-  return [{ id: "right", label: right }, ...wrong, { id: "other", label: "Any other answer" }];
+  // A select check whose options are all planned for (the right one plus a wrong answer for each
+  // of the rest) leaves a student no unplanned answer to give, so there's no such path.
+  const allPlanned =
+    check.type === "select" &&
+    check.options.every((o) => o.id === check.answer || check.wrongAnswers.some((w) => "optionId" in w.match && w.match.optionId === o.id));
+  return [{ id: "right", label: right }, ...wrong, ...(allPlanned ? [] : [{ id: "other" as const, label: "Any other answer" }])];
 }
 
 /** The path an answer took, from its grade. */

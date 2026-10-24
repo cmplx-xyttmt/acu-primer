@@ -5,11 +5,16 @@ import { check } from "./fixture.ts";
 
 describe("reviewPaths", () => {
   it("lists the right answer, each anticipated wrong answer, then any other answer", () => {
-    const c = check("m1");
+    const c = check("m5");
     const paths = reviewPaths(c);
     expect(paths.map((p) => p.id)).toEqual(["right", ...c.wrongAnswers.map((_, i) => `wrong.${i}`), "other"]);
     expect(paths[0].label).toMatch(/^Picks ".+" \(right\)$/);
     expect(paths[1].label).toMatch(/^Picks "/);
+  });
+
+  it("has no unplanned path when every option of a select check is planned for", () => {
+    const c = check("m1");
+    expect(reviewPaths(c).map((p) => p.id)).toEqual(["right", ...c.wrongAnswers.map((_, i) => `wrong.${i}`)]);
   });
 
   it("names a number check's wrong answers by their range", () => {
@@ -30,7 +35,7 @@ describe("pathOf", () => {
 });
 
 describe("untried and coachStep", () => {
-  const paths = reviewPaths(check("m1"));
+  const paths = reviewPaths(check("m5"));
   const wrongs = paths.filter((p) => p.id.startsWith("wrong.")).length;
 
   it("starts with the right answer", () => {

@@ -415,7 +415,7 @@
                 : `${pathsTotal - pathsLeft.length} of ${pathsTotal} paths seen.`}
             </p>
           {/if}
-          {#if asking}
+          {#if asking && pathsLeft.length > 0}
             <p class="asking">
               You haven't tried {pathsLeft.length === 1 ? "one path" : `${pathsLeft.length} paths`} yet:
               {pathsLeft.map((p) => p.label).join("; ")}. Approve anyway?
@@ -441,7 +441,7 @@
         <div class="moves">
           <button class="btn-quiet" disabled={stepIndex === 0} onclick={() => goToStep(stepIndex - 1)}>Previous</button>
           <button class="btn-quiet" onclick={() => goToStep(stepIndex + 1)}>
-            {stepIndex + 1 >= rs.steps.length ? "To sign-off" : "Next, without approving"}
+            {stepIndex + 1 >= rs.steps.length ? "To sign-off" : step.approved ? "Next" : "Next, without approving"}
           </button>
         </div>
       </section>

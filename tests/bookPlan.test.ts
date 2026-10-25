@@ -29,6 +29,28 @@ describe("planFromOutline", () => {
     ]);
   });
 
+  it("flattens parts numbered with Roman numerals when they hold chapters, as in MIT's MCS", () => {
+    const mcs = [
+      o("I Proofs", 9, [o("1 What is a Proof?", 13, [o("1.1 Propositions", 13)]), o("2 The Well Ordering Principle", 37, [o("2.1 Well Ordering Proofs", 37)])]),
+      o("II Structures", 345, [o("9 Number Theory", 349, [o("9.1 Divisibility", 349)]), o("10 Directed Graphs", 429, [o("10.1 Vertex Degrees", 431)])]),
+      o("", 1027, [o("Bibliography", 1031), o("Index", 1039)]),
+    ];
+    const plan = planFromOutline(mcs, 1048);
+    expect(plan.map((c) => [c.title, c.pages, c.likelyChapter])).toEqual([
+      ["1 What is a Proof?", "13-36", true],
+      ["2 The Well Ordering Principle", "37-344", true],
+      ["9 Number Theory", "349-428", true],
+      ["10 Directed Graphs", "429-1026", true],
+      ["Untitled", "1027-1048", false],
+    ]);
+    // A part with a single chapter is still a part, and a bookmark per problem isn't a lesson.
+    const one = planFromOutline([o("I A", 1, [o("1 X", 2, [o("1.1 Y", 2), o("Problem 1.1", 5)])]), o("II B", 9, [o("2 Z", 10, [o("2.1 W", 10)])])], 20);
+    expect(one.map((c) => c.title)).toEqual(["1 X", "2 Z"]);
+    expect(one[0].sections).toEqual([{ title: "1.1 Y", pages: "2-4" }]);
+    // A chapter that merely starts with a numeral-like letter isn't a part.
+    expect(planFromOutline([o("C Programming", 1, [o("C.1 Basics", 2)]), o("D Tools", 10)], 20)[0].title).toBe("C Programming");
+  });
+
   it("drops leading symbols from titles, like Erickson's ♥ on advanced sections", () => {
     const plan = planFromOutline([o("1 Recursion", 1, [o("1.1 Reductions", 2), o("♥1.9 Linear-Time Selection", 5)]), o("2 Backtracking", 8)], 9);
     expect(plan[0].sections.map((s) => s.title)).toEqual(["1.1 Reductions", "1.9 Linear-Time Selection"]);
@@ -68,7 +90,7 @@ describe("planFromOutline", () => {
     const plan = planFromOutline([o("1 Data", 1, [o("1.1 Basics", 1), o("1.5 Exercises", 4), o("Review Questions", 5)]), o("A Exercise solutions", 6), o("A Tour of Python", 8)], 9);
     expect(plan[0].sections.map((s) => s.title)).toEqual(["1.1 Basics"]);
     expect(plan.map((c) => c.likelyChapter)).toEqual([true, false, false]);
-    expect(planFromOutline([o("A Tour of Python", 1), o("Basics", 3)], 5)[0].likelyChapter).toBe(true);
+    expect(planFromOutline([o("A Tour of Python", 1), o("Basics", 9)], 20)[0].likelyChapter).toBe(true);
   });
 
   it("returns nothing for a PDF without bookmarks", () => {

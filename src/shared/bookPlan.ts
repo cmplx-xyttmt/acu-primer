@@ -47,7 +47,7 @@ export interface PlannedChapter {
 }
 
 // Sections that aren't something to teach from: left out of the plan.
-const NOT_A_LESSON = /^([\d.]+\s+)?(exercises|review questions|programming problems|chapter goals|chapter summary|summary|conclusion|further reading|key terms|problems|review exercises|chapter review)$/i;
+const NOT_A_LESSON = /^([\d.]+\s+)?(exercises|review questions|programming problems|chapter goals|chapter summary|summary|conclusion|further reading|references|key terms|problems|review exercises|chapter review)$|^(problem|exercise)\s+[\d.]+$/i;
 // An appendix labelled with a letter ("A Exercise solutions") after numbered chapters.
 const LETTERED = /^[A-Z][.:]?\s/;
 
@@ -65,9 +65,13 @@ const NOT_A_CHAPTER = /^(contents|table of contents|preface|foreword|acknowledg|
 export function planFromOutline(outline: OutlineItem[], pageCount: number): PlannedChapter[] {
   let top = outline.filter((o) => o.page !== null);
   while (top.length === 1 && top[0].children.some((c) => c.page !== null)) top = top[0].children.filter((c) => c.page !== null);
-  // Parts ("Part I", "Part II") whose children are the chapters: flatten one level. Front matter
-  // beside the parts (Cover, Preface) stays as it is (Oct 24, an O'Reilly book).
-  const isPart = (t: OutlineItem) => /^part\b/i.test(t.title) && t.children.some((c) => c.page !== null);
+  // Parts ("Part I", or "I Proofs" as in MIT's Mathematics for Computer Science) whose children
+  // are the chapters: flatten one level. A Roman numeral alone isn't enough ("C Programming"), so
+  // that kind also needs children with sections of their own. Front matter beside the parts
+  // (Cover, Preface) stays as it is (Oct 24, an O'Reilly book).
+  const holdsChapters = (t: OutlineItem) => t.children.filter((c) => c.children.some((g) => g.page !== null)).length >= 1;
+  const isPart = (t: OutlineItem) =>
+    t.children.some((c) => c.page !== null) && (/^part\b/i.test(t.title) || (/^[IVXLC]+\.?\s/.test(t.title.trim()) && holdsChapters(t)));
   // The part's own pages (its title page) still end the chapter before it.
   const partPages = top.filter(isPart).map((t) => t.page!);
   if (top.some(isPart)) top = top.flatMap((t) => (isPart(t) ? t.children.filter((c) => c.page !== null) : [t]));
@@ -85,7 +89,10 @@ export function planFromOutline(outline: OutlineItem[], pageCount: number): Plan
       .filter((x) => !NOT_A_LESSON.test(x.title));
     const title = clean(t.title);
     const afterNumbered = top.slice(0, i).some((x) => /^\d/.test(x.title.trim()));
-    const likelyChapter = !NOT_A_CHAPTER.test(title) && !(afterNumbered && LETTERED.test(title));
+    // A page or three with no sections is a part's introduction or a stray "References", not a
+    // chapter to draft (the author can still tick it).
+    const tiny = sections.length === 0 && end - start < 3;
+    const likelyChapter = title !== "Untitled" && !tiny && !NOT_A_CHAPTER.test(title) && !(afterNumbered && LETTERED.test(title));
     return { title, pages: range(start, end), sections, likelyChapter };
   });
 }

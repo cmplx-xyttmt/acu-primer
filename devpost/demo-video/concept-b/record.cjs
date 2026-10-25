@@ -56,12 +56,13 @@ async function scroll(page, dy) {
   await wait(400);
 }
 
-async function clip(browser, name, storage, run, theme = "light") {
+// Every clip records in dark mode (Isaac, Oct 25); pass "light" to record one in the light look.
+async function clip(browser, name, storage, run, theme = "dark") {
   if (only.length && !only.includes(name)) return;
   const dir = path.join(outDir, "raw-" + name);
   fs.rmSync(dir, { recursive: true, force: true });
   const ctx = await browser.newContext({
-    viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1.5,
+    viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1.5, colorScheme: theme,
     recordVideo: { dir, size: { width: 1920, height: 1080 } },
     serviceWorkers: name === "c06-offline" ? "allow" : "block",
   });
@@ -73,7 +74,8 @@ async function clip(browser, name, storage, run, theme = "light") {
     localStorage.setItem("acu:theme", theme);
   }, [storage, theme]);
   // The paid routes stay blocked, except in the one clip that records a real draft.
-  if (name !== PAID_CLIP) await ctx.route(/\/api\/author\/(drafts|lessons\/[^/]+\/steps\/[^/]+\/revise)/, (r) => r.abort());
+  // Reading a book's contents pages is a Claude call too (Erickson's bookmarks make it unneeded).
+  if (name !== PAID_CLIP) await ctx.route(/\/api\/author\/(drafts|books\/contents|lessons\/[^/]+\/steps\/[^/]+\/revise)/, (r) => r.abort());
   const page = await ctx.newPage();
   try {
     await run(page, ctx);
@@ -156,7 +158,7 @@ async function clip(browser, name, storage, run, theme = "light") {
     await click(page, page.getByRole("button", { name: /Continue/ }), 1500);
   });
 
-  // Shot (dark mode): the next module. The student misses the simpler question too, and is sent
+  // Shot: the next module. The student misses the simpler question too, and is sent
   // back to the material, with Try again or Skip for now.
   await clip(browser, "c04-student-fails", student, async (page) => {
     await page.goto(BASE + CHAPTER); await wait(1500);
@@ -175,7 +177,7 @@ async function clip(browser, name, storage, run, theme = "light") {
     await click(page, page.locator(".fallback").getByRole("button", { name: "Check" }), 2500);
     await scroll(page, 400); await wait(1500);
     await click(page, btn(page, "Skip for now"), 1500);
-  }, "dark");
+  });
 
   // Shot: the author sees that student's path.
   await clip(browser, "c05-student-log", author, async (page) => {
@@ -304,9 +306,11 @@ async function clip(browser, name, storage, run, theme = "light") {
   });
 
   // Shot: statistics too. The sampling exploration in OpenIntro 5.1 (the session draft, shown to
-  // students in the copy).
+  // students in the copy). It opens on the statistics subject page for a moment, so the change of
+  // subject shows (Isaac, Oct 24).
   await clip(browser, "c11-sampling", { "acu:lastName": "Tendo" }, async (page) => {
-    await page.goto(BASE + CHAPTER); await wait(1800);
+    await page.goto(BASE + "/s/openintro-statistics"); await wait(1600);
+    await click(page, page.locator("a.card").first(), 1800);
     const draft = page.locator("button.row").filter({ hasText: "5.1 Point" });
     await click(page, draft, 1200);
     await click(page, page.getByRole("button", { name: /Start|Continue/ }).last(), 1200);
@@ -336,44 +340,56 @@ async function clip(browser, name, storage, run, theme = "light") {
     await scroll(page, 450); await wait(1800); await scroll(page, 450); await wait(2200);
   });
 
-  // Shot: start from a book, then draft one section for real. The PDF is handed to the file
-  // input from the page (the native picker can't be driven); it's served from dist/client for
-  // the recording only.
-  if (only.includes(PAID_CLIP))
-    await clip(browser, PAID_CLIP, author, async (page) => {
-      await page.goto(BASE + "/author"); await wait(2000);
-      await click(page, page.getByRole("link", { name: /Start from a book/ }), 1800);
-      await page.evaluate(async (b) => {
-        const blob = await fetch(b.path).then((r) => r.blob());
-        const input = document.querySelector("input[type=file]");
-        const dt = new DataTransfer();
-        dt.items.add(new File([blob], b.name, { type: "application/pdf" }));
-        input.files = dt.files;
-        input.dispatchEvent(new Event("change", { bubbles: true }));
-      }, BOOK);
-      await page.locator(".chapters").waitFor({ timeout: 60000 }); await wait(1500);
-      const title = page.locator(".field input").first();
-      await click(page, title, 200);
-      await title.fill(""); await title.pressSequentially(BOOK.title, { delay: 60 }); await wait(600);
-      await scroll(page, 500); await wait(1200);
-      await click(page, page.locator(".chapters > li").filter({ hasText: BOOK.chapter }).first().locator("summary"), 2500);
-      await scroll(page, 700); await wait(1000);
-      await click(page, page.locator(".preset").first(), 1200);
-      await click(page, page.getByRole("button", { name: /Create the subject/ }), 2500);
-      // The new subject is last on the author home.
-      const chapterId = await page.evaluate(async (b) => {
-        const r = await fetch("/api/author/subjects", { headers: { "x-author-passphrase": localStorage.getItem("acu:authorPassphrase") } }).then((x) => x.json());
-        const subject = r.subjects.filter((x) => x.title === b.title).at(-1);
-        return subject.chapters.find((c) => c.title === b.chapter).id;
-      }, BOOK);
-      await click(page, page.locator(`a[href="/author/chapters/${chapterId}/draft"]`), 2500);
-      const row = page.locator(".sections li").filter({ hasText: BOOK.section });
-      await click(page, row.getByRole("checkbox"), 1500);
-      await click(page, page.getByRole("button", { name: "Draft", exact: true }), 1000);
-      await page.locator(".queue li.done").getByRole("link", { name: "Review" }).waitFor({ timeout: 20 * 60 * 1000 });
+  // Shot: start from a book, then the draft screen with one section ticked. The PDF is handed to
+  // the file input from the page (the native picker can't be driven); it's served from
+  // dist/client for the recording only. "c08-book-to-draft" stops with the cursor on Draft and
+  // spends nothing; PAID_CLIP presses Draft for real and runs only when named.
+  async function bookToDraft(page, pressDraft) {
+    await page.goto(BASE + "/author"); await wait(2000);
+    await click(page, page.getByRole("link", { name: /Start from a book/ }), 1800);
+    await page.evaluate(async (b) => {
+      const blob = await fetch(b.path).then((r) => r.blob());
+      const input = document.querySelector("input[type=file]");
+      const dt = new DataTransfer();
+      dt.items.add(new File([blob], b.name, { type: "application/pdf" }));
+      input.files = dt.files;
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    }, BOOK);
+    await page.locator(".chapters").waitFor({ timeout: 60000 }); await wait(1500);
+    const title = page.locator(".field input").first();
+    await click(page, title, 200);
+    await title.fill(""); await title.pressSequentially(BOOK.title, { delay: 60 }); await wait(600);
+    await scroll(page, 500); await wait(1200);
+    await click(page, page.locator(".chapters > li").filter({ hasText: BOOK.chapter }).first().locator("summary"), 2500);
+    await scroll(page, 700); await wait(1000);
+    await click(page, page.locator(".preset").first(), 1200);
+    await click(page, page.getByRole("button", { name: /Create the subject/ }), 2500);
+    // The new subject is last on the author home, closed like the others; open it.
+    const chapterId = await page.evaluate(async (b) => {
+      const r = await fetch("/api/author/subjects", { headers: { "x-author-passphrase": localStorage.getItem("acu:authorPassphrase") } }).then((x) => x.json());
+      const subject = r.subjects.filter((x) => x.title === b.title).at(-1);
+      return subject.chapters.find((c) => c.title === b.chapter).id;
+    }, BOOK);
+    await click(page, page.locator("button.toggle").filter({ hasText: BOOK.title }).last(), 1500);
+    await click(page, page.locator(`a[href="/author/chapters/${chapterId}/draft"]`), 2500);
+    const row = page.locator(".sections li").filter({ hasText: BOOK.section });
+    await click(page, row.getByRole("checkbox"), 1500);
+    const draft = page.getByRole("button", { name: "Draft", exact: true });
+    if (!pressDraft) {
+      await draft.scrollIntoViewIfNeeded(); await wait(400);
+      const b = await draft.boundingBox();
+      await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 18 });
       await wait(3000);
-      await click(page, page.locator(".queue li.done").getByRole("link", { name: "Review" }), 3000);
-    });
+      return;
+    }
+    await click(page, draft, 1000);
+    await page.locator(".queue li.done").getByRole("link", { name: "Review" }).waitFor({ timeout: 20 * 60 * 1000 });
+    await wait(3000);
+    await click(page, page.locator(".queue li.done").getByRole("link", { name: "Review" }), 3000);
+  }
+  // Last, since it adds a second copy of the Erickson subject to the database.
+  await clip(browser, "c08-book-to-draft", author, (page) => bookToDraft(page, false));
+  if (only.includes(PAID_CLIP)) await clip(browser, PAID_CLIP, author, (page) => bookToDraft(page, true));
 
   await browser.close();
 })();

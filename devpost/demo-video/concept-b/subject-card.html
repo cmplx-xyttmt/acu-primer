@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Subject card</title>
+<!-- The card before the sampling shot (Isaac, Oct 24): it marks the switch from Erickson's
+     Algorithms to the statistics subject. The words are the ones Isaac chose, in the opener's
+     .label style, on the app's dark background so it sits between two dark-mode clips. -->
+<link rel="stylesheet" href="base.css">
+<style>
+#stage { background: #151517; }
+#line { left: 0; right: 0; top: 500px; text-align: center; font-size: 40px; letter-spacing: .08em; color: #a09b92; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="line" class="abs label">OpenIntro Statistics · CC BY-SA</div>
+</div>
+<script src="motion.js"></script>
+<script>
+function render(t) {
+  const k = seg(t, 0, 0.5, easeOut) * (1 - seg(t, 2.0, 2.5));
+  style(document.getElementById("line"), { opacity: k, transform: `translateY(${(1 - seg(t, 0, 0.5, easeOut)) * 12}px)` });
+}
+document.fonts.ready.then(() => play(render, 2.5));
+</script>
+</body>
+</html>

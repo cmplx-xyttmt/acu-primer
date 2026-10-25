@@ -170,15 +170,15 @@ Build mode: learn (chosen Sep 25, 2026)
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap (a recap: Isaac chose to move on to the submission and follow the route later)
+- [x] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate (edit offered, deferred; reflection not asked)
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: [what actually happened; real document/test/code references; unfinished work if interrupted]
-Route and stops: [actual paths and symbols; guided stops completed, or reference-only route]
-Edit outcome: [tried/kept/reverted/declined/not applicable; verification if changed]
-Reflection: [offered/answered/declined/already covered — personal answer belongs only in the ignored profile]
-Activity mode: [live app and editor, explicit static fallback, focused alternative, prior practice, or recap]
+Activity and evidence: Oct 25. The route was prepared from the MCS encrypted-PDF case (the symptom "no contents found" against the contents plainly on page 3, then garbage bookmarks, blank cut pages and `/Encrypt`), and sent with a run step and three stops. Isaac chose to move to the submission and follow it later, so this is recorded as a recap, not a completed tour. Isaac noted, and the map records, how the work was split: he ran the app locally, deployed and on a phone, reported what was broken or confusing, and made the direction and scope calls; Claude wrote the code and the checks.
+Route and stops: reference only, not toured: `src/app/author/BookStart.svelte` `choose`; `src/app/lib/pdfOutline.ts` `readBook` (and `pdfPages.ts` `cutPages`), `src/shared/bookPlan.ts` `planFromOutline` (`isPart`, `holdsChapters`, `NOT_A_LESSON`, `tiny`); `tests/bookPlan.test.ts` "flattens parts numbered with Roman numerals".
+Edit outcome: offered (the `tiny` threshold), deferred; no change.
+Reflection: not asked; Isaac's note on his role is recorded above as a fact about the process.
+Activity mode: recap. Map at `devpost/app-map.html` (commit e0b1644 snapshot), checked at 1100px light and 390px dark, no sideways scroll, works without scripts.
 
 ## Revisions
 - The router is `src/app/router.svelte.ts`, not `router.ts` — Svelte 5 runes (reactive `$state`) only work in `.svelte` and `.svelte.ts` files.

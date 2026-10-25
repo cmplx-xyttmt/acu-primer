@@ -9,7 +9,7 @@ Built for Devpost's Build With AI: Basics. Planning documents are in `devpost/` 
 `devpost/scope.md`, `devpost/prd.md` and `devpost/spec.md`).
 
 - Live: https://acu-primer.cmplxxyttmt.workers.dev
-- Demo video: [link to come]
+- Demo video: https://youtu.be/1NpsG322lKY
 
 ## How it fits together
 

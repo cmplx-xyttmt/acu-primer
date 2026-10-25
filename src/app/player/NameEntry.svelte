@@ -19,7 +19,7 @@
   >
     <label for="name">Your name</label>
     <!-- svelte-ignore a11y_autofocus (the only field on the page) -->
-    <input id="name" type="text" bind:value={name} autocomplete="name" autofocus />
+    <input id="name" type="text" bind:value={name} autocomplete="name" maxlength="100" autofocus />
     <button class="btn" type="submit" disabled={!name.trim()}>Start</button>
   </form>
 </main>

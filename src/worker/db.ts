@@ -408,11 +408,16 @@ export async function withdrawSuggestion(db: D1Database, suggestionId: string): 
 
 // Save a batch of student events, ignoring ids already saved (a batch can arrive twice).
 // Returns how many were accepted (already-saved ids among them are ignored by the database)
-// and how many named a chapter that doesn't exist (those are skipped).
+// and how many named a chapter students can't see (those are skipped): one that doesn't exist,
+// or has no lesson a student can open.
 export async function saveEvents(db: D1Database, events: StudentEvent[]): Promise<{ accepted: number; unknownChapter: number }> {
   const slugs = [...new Set(events.map((e) => e.chapterSlug))];
   const known = await db
-    .prepare(`SELECT id, slug FROM chapters WHERE slug IN (${slugs.map(() => "?").join(",")})`)
+    .prepare(
+      `SELECT c.id, c.slug FROM chapters c
+       WHERE c.slug IN (${slugs.map(() => "?").join(",")})
+         AND EXISTS (SELECT 1 FROM lessons l WHERE l.chapter_id = c.id AND (l.status = 'reviewed' OR c.show_unreviewed = 1))`,
+    )
     .bind(...slugs)
     .all<{ id: string; slug: string }>();
   const chapterIds = new Map(known.results.map((c) => [c.slug, c.id]));

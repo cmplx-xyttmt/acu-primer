@@ -51,7 +51,7 @@
     <form class="rename card" onsubmit={saveName}>
       <label for="rename">Your name</label>
       <!-- svelte-ignore a11y_autofocus (opened by pressing "Not you?") -->
-      <input id="rename" type="text" bind:value={draftName} autocomplete="name" autofocus />
+      <input id="rename" type="text" bind:value={draftName} autocomplete="name" maxlength="100" autofocus />
       <button class="btn btn-sm" type="submit" disabled={!draftName.trim()}>Save</button>
       <button class="btn-quiet btn-sm" type="button" onclick={() => (editing = false)}>Cancel</button>
     </form>

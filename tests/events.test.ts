@@ -24,6 +24,11 @@ describe("event batches", () => {
     expect(EventBatch.safeParse({ events: Array.from({ length: 101 }, () => event()) }).success).toBe(false);
   });
 
+  it("rejects a payload over 4 KB and a time that isn't ISO", () => {
+    expect(EventBatch.safeParse({ events: [event({ payload: { text: "x".repeat(5000) } })] }).success).toBe(false);
+    expect(EventBatch.safeParse({ events: [event({ clientTime: "yesterday" })] }).success).toBe(false);
+  });
+
   it("rejects extra fields, so the Worker only stores what it expects", () => {
     expect(EventBatch.safeParse({ events: [event({ isAuthor: true })] }).success).toBe(false);
   });

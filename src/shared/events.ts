@@ -22,8 +22,9 @@ export const StudentEvent = z.strictObject({
   studentName: z.string().min(1).max(100),
   deviceId: z.string().min(8).max(64),
   type: z.enum(EVENT_TYPES),
-  payload: z.record(z.string(), z.unknown()),
-  clientTime: z.string().max(40), // ISO time on the student's device; the log sorts by it
+  // Up to about 4 KB: an answer and a few labels. The route is open, so nothing larger is kept.
+  payload: z.record(z.string(), z.unknown()).refine((p) => JSON.stringify(p).length <= 4096, "payload over 4 KB"),
+  clientTime: z.iso.datetime(), // ISO time on the student's device; the log sorts by it
 });
 
 export const EventBatch = z.strictObject({ events: z.array(StudentEvent).min(1).max(100) });

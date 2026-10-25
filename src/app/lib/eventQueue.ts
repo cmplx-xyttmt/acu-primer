@@ -78,7 +78,9 @@ export async function flush() {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ events: batch }),
     });
-    if (res.ok) {
+    // A 400 or 413 means the server will never take this batch (an event it refuses), so it's
+    // dropped too; otherwise it would block every later event from this browser.
+    if (res.ok || res.status === 400 || res.status === 413) {
       const sent = new Set(batch.map((e) => e.id));
       write(read().filter((e) => !sent.has(e.id)));
       if (read().length > 0) setTimeout(flush, 0); // more waiting: send the next batch

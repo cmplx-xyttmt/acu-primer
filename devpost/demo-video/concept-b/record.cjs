@@ -16,6 +16,10 @@ const STUDENT = "Amina";
 // The one clip allowed to spend: Start from a book, then a real draft (about $1.30). Run it only
 // against the database the lesson should stay in, and only when asked to.
 const PAID_CLIP = "c08-book-and-draft";
+// The same flow with the app's fake drafting (Oct 25): run it only against a Worker started with
+// FAKE_DRAFTS=all-done on localhost. No Claude call is made; the draft takes about 12 s and saves
+// a "[Fake]" copy of a sample lesson, which the clip doesn't open.
+const FAKE_CLIP = "c08-fake-draft";
 const BOOK = { path: "/test-book.pdf", name: "Algorithms-JeffE.pdf", title: "Algorithms, by Jeff Erickson", chapter: "Recursion", section: "Tower of Hanoi" };
 
 // A cursor dot that follows the mouse, since Playwright's video doesn't show one.
@@ -75,7 +79,8 @@ async function clip(browser, name, storage, run, theme = "dark") {
   }, [storage, theme]);
   // The paid routes stay blocked, except in the one clip that records a real draft.
   // Reading a book's contents pages is a Claude call too (Erickson's bookmarks make it unneeded).
-  if (name !== PAID_CLIP) await ctx.route(/\/api\/author\/(drafts|books\/contents|lessons\/[^/]+\/steps\/[^/]+\/revise)/, (r) => r.abort());
+  if (name === FAKE_CLIP) await ctx.route(/\/api\/author\/(books\/contents|lessons\/[^/]+\/steps\/[^/]+\/revise)/, (r) => r.abort());
+  else if (name !== PAID_CLIP) await ctx.route(/\/api\/author\/(drafts|books\/contents|lessons\/[^/]+\/steps\/[^/]+\/revise)/, (r) => r.abort());
   const page = await ctx.newPage();
   try {
     await run(page, ctx);
@@ -343,8 +348,9 @@ async function clip(browser, name, storage, run, theme = "dark") {
   // Shot: start from a book, then the draft screen with one section ticked. The PDF is handed to
   // the file input from the page (the native picker can't be driven); it's served from
   // dist/client for the recording only. "c08-book-to-draft" stops with the cursor on Draft and
-  // spends nothing; PAID_CLIP presses Draft for real and runs only when named.
-  async function bookToDraft(page, pressDraft) {
+  // spends nothing; PAID_CLIP presses Draft for real and runs only when named; FAKE_CLIP presses
+  // Draft on a fake-drafting Worker and stops when the queue item is done.
+  async function bookToDraft(page, mode) {
     await page.goto(BASE + "/author"); await wait(2000);
     await click(page, page.getByRole("link", { name: /Start from a book/ }), 1800);
     await page.evaluate(async (b) => {
@@ -375,11 +381,19 @@ async function clip(browser, name, storage, run, theme = "dark") {
     const row = page.locator(".sections li").filter({ hasText: BOOK.section });
     await click(page, row.getByRole("checkbox"), 1500);
     const draft = page.getByRole("button", { name: "Draft", exact: true });
-    if (!pressDraft) {
+    if (mode === "hover") {
       await draft.scrollIntoViewIfNeeded(); await wait(400);
       const b = await draft.boundingBox();
       await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 18 });
       await wait(3000);
+      return;
+    }
+    if (mode === "fake") {
+      const fake = await page.evaluate(() => fetch("/api/author/budget", { headers: { "x-author-passphrase": localStorage.getItem("acu:authorPassphrase") } }).then((r) => r.json()).then((b) => b.fake === true));
+      if (!fake) throw new Error("fake drafting is off on this Worker; not pressing Draft");
+      await click(page, draft, 1000);
+      await page.locator(".queue li.done").waitFor({ timeout: 60000 });
+      await wait(4000);
       return;
     }
     await click(page, draft, 1000);
@@ -388,8 +402,9 @@ async function clip(browser, name, storage, run, theme = "dark") {
     await click(page, page.locator(".queue li.done").getByRole("link", { name: "Review" }), 3000);
   }
   // Last, since it adds a second copy of the Erickson subject to the database.
-  await clip(browser, "c08-book-to-draft", author, (page) => bookToDraft(page, false));
-  if (only.includes(PAID_CLIP)) await clip(browser, PAID_CLIP, author, (page) => bookToDraft(page, true));
+  await clip(browser, "c08-book-to-draft", author, (page) => bookToDraft(page, "hover"));
+  if (only.includes(FAKE_CLIP)) await clip(browser, FAKE_CLIP, author, (page) => bookToDraft(page, "fake"));
+  if (only.includes(PAID_CLIP)) await clip(browser, PAID_CLIP, author, (page) => bookToDraft(page, "paid"));
 
   await browser.close();
 })();

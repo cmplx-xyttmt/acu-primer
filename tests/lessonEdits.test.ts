@@ -6,7 +6,7 @@ import { lessonProblems } from "../src/shared/lessonChecks.ts";
 import { changedParts, setFallbackPart, swapAlternative } from "../src/shared/lessonEdits.ts";
 
 const draft = Lesson.parse(
-  JSON.parse(readFileSync(new URL("../content/openintro-sampling/5.1-point-estimates-draft.json", import.meta.url), "utf8")),
+  JSON.parse(readFileSync(new URL("./fixtures/5.1-point-estimates-draft.json", import.meta.url), "utf8")),
 );
 
 describe("swapAlternative", () => {

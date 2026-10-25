@@ -1,0 +1,1 @@
+Test data. `5.1-point-estimates-draft.json` is a lesson drafted from section 5.1 of *OpenIntro Statistics*, 4th ed. (CC BY-SA 3.0), kept here because the wire-format and lesson-edit tests use its explorations and sort check. It's licensed CC BY-SA 3.0 like its source and isn't an OpenIntro product. It's no longer served by the app.

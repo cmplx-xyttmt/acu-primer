@@ -5,7 +5,7 @@ import { WireLesson, keepSwitches, lessonFromWire, lessonToWire } from "../src/s
 import { lesson as fixture } from "./fixture.ts";
 
 const draft = Lesson.parse(
-  JSON.parse(readFileSync(new URL("../content/openintro-sampling/5.1-point-estimates-draft.json", import.meta.url), "utf8")),
+  JSON.parse(readFileSync(new URL("./fixtures/5.1-point-estimates-draft.json", import.meta.url), "utf8")),
 );
 
 // The wire format can't say "switched off" or carry simpler-question explanations, so compare

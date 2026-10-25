@@ -12,10 +12,13 @@ export default defineConfig({
     // and KaTeX when the app first loads, and a copy of every course response, so a course
     // opened once keeps working without a connection. Nothing on the author side is cached.
     VitePWA({
-      registerType: "autoUpdate",
+      // "prompt": a new version waits until the app applies it (src/app/lib/appUpdate.svelte.ts),
+      // so a deploy never reloads the page in the middle of a lesson.
+      registerType: "prompt",
       injectRegister: null, // registered in src/app/main.ts
       manifest: false,
       workbox: {
+        clientsClaim: true, // once applied, the new version takes over the open page
         // woff2 is enough: every browser that runs service workers reads it.
         globPatterns: ["**/*.{js,css,html,woff2,svg,png,ico}"],
         navigateFallback: "index.html",

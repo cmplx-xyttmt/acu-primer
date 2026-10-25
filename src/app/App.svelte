@@ -3,6 +3,7 @@
   import Player from "./player/Player.svelte";
   import Home from "./player/Home.svelte";
   import NotFound from "./player/NotFound.svelte";
+  import UpdateBanner from "./UpdateBanner.svelte";
   import SubjectPage from "./player/SubjectPage.svelte";
   import AuthorGate from "./author/AuthorGate.svelte";
   import AuthorHome from "./author/AuthorHome.svelte";
@@ -96,3 +97,5 @@
 {:else}
   <NotFound />
 {/if}
+
+<UpdateBanner />

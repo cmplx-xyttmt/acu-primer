@@ -65,13 +65,15 @@
     });
   }
 
-  // --- Editing a subject's overview and brief ----------------------------------------------
-  let editing = $state<Record<string, { overview: string; preset: string; brief: string }>>({});
-  const startEdit = (s: AuthorSubject) => (editing[s.id] = { overview: s.overview ?? "", preset: "", brief: s.brief ?? "" });
+  // --- Editing a subject's title, overview and brief --------------------------------------
+  // The title can change; the subject's address (its slug) stays, so links keep working.
+  let editing = $state<Record<string, { title: string; overview: string; preset: string; brief: string }>>({});
+  const startEdit = (s: AuthorSubject) =>
+    (editing[s.id] = { title: s.title, overview: s.overview ?? "", preset: "", brief: s.brief ?? "" });
   async function saveSubject(s: AuthorSubject) {
     const e = editing[s.id];
     await once(async () => {
-      await authorApi.updateSubject(s.id, { overview: e.overview, brief: e.brief });
+      await authorApi.updateSubject(s.id, { title: e.title.trim(), overview: e.overview, brief: e.brief });
       delete editing[s.id];
       await load();
     });
@@ -222,7 +224,7 @@
           </h2>
           {#if isOpen && s.id && !editing[s.id]}
             <span class="links">
-              <button class="btn-quiet btn-sm" onclick={() => startEdit(s)}><PenLine size={15} aria-hidden="true" />Edit overview and brief</button>
+              <button class="btn-quiet btn-sm" onclick={() => startEdit(s)}><PenLine size={15} aria-hidden="true" />Edit</button>
               <button class="btn-quiet btn-sm danger" onclick={() => askDeleteSubject(s)}><Trash2 size={15} aria-hidden="true" />Delete subject</button>
             </span>
           {/if}
@@ -233,6 +235,7 @@
         {#if s.id && editing[s.id]}
           {@const e = editing[s.id]}
           <div class="form inner">
+            <label>Title <input type="text" bind:value={e.title} maxlength="200" /></label>
             <label>Overview, for students <textarea rows="2" bind:value={e.overview}></textarea></label>
             <fieldset>
               <legend>Learner brief</legend>
@@ -244,7 +247,7 @@
               <textarea rows="4" bind:value={e.brief}></textarea>
             </fieldset>
             <div class="row">
-              <button class="btn" disabled={saving} onclick={() => saveSubject(s)}>Save</button>
+              <button class="btn" disabled={saving || !e.title.trim()} onclick={() => saveSubject(s)}>Save</button>
               <button class="btn-quiet" onclick={() => delete editing[s.id]}>Cancel</button>
             </div>
           </div>

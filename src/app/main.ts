@@ -10,7 +10,7 @@ import "katex/dist/katex.min.css";
 import "./theme.css";
 import App from "./App.svelte";
 import { applyTheme, loadTheme } from "./lib/theme.ts";
-import { registerSW } from "virtual:pwa-register";
+import { startUpdates } from "./lib/appUpdate.svelte.ts";
 
 // Apply the saved light/dark choice before the first render, so the page doesn't flash.
 applyTheme(loadTheme());
@@ -28,7 +28,8 @@ mount(App, { target: document.getElementById("app")! });
 
 // The service worker keeps the app and every opened chapter for offline use. Not in `npm run
 // dev`, where the plugin leaves it off; try offline with a build (`npm run preview` or deployed).
-registerSW({ immediate: true });
+// A new deploy shows a banner and is applied on the next page change (appUpdate.svelte.ts).
+startUpdates();
 
 // Ask the browser not to clear the saved copy when the phone runs low on space. If it says no,
 // everything still works; the copy can just be cleared sooner.

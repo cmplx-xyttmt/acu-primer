@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>acu-primer improvements</title>
+<style>
+:root{
+  --color-forest:#17492f;--color-pine:#20603e;--color-emerald:#2e8659;--color-amber:#e4882e;--color-clay:#d96e43;--color-leaf:#9ac85a;
+  --text:#24312a;--heading:var(--color-forest);--link:var(--color-pine);--muted:rgba(26,40,28,.72);--faint:rgba(26,40,28,.55);
+  --hr:rgba(23,73,47,.15);--surface:rgba(255,255,255,.55);--surface-border:rgba(255,255,255,.78);
+  --surface-shadow:0 20px 48px -24px rgba(23,73,47,.45);--surface-shine:inset 0 1px 0 rgba(255,255,255,.85);--glass-blur:blur(18px) saturate(135%);
+  --inline-code-bg:rgba(46,134,89,.12);--inline-code-text:#20603e;
+  --bg-grad:linear-gradient(165deg,#f5f0de 0%,#e9ebd0 52%,#dce4c7 100%);--gel-green:linear-gradient(135deg,#2e8659 0%,#17492f 100%);--gel-amber:linear-gradient(135deg,#f2b15e 0%,#e4882e 100%);
+  --ok-bg:rgba(46,134,89,.12);--warn-bg:rgba(228,136,46,.13);--warn-text:#9a5214;--bad-bg:rgba(217,110,67,.14);--bad-text:#a3401c;
+  --radius-glass:1.1rem;--radius-pill:999px;
+  --font-serif:"Iowan Old Style","Palatino Linotype",Palatino,"Palatino LT STD",Georgia,ui-serif,serif;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --text:#d4dae3;--heading:#eef3fa;--link:#5fbf99;--muted:rgba(212,218,227,.72);--faint:rgba(212,218,227,.5);--hr:rgba(255,255,255,.12);
+  --surface:rgba(255,255,255,.05);--surface-border:rgba(255,255,255,.12);--surface-shadow:0 20px 48px -24px rgba(0,0,0,.6);--surface-shine:inset 0 1px 0 rgba(255,255,255,.12);
+  --inline-code-bg:rgba(95,191,153,.15);--inline-code-text:#83d1b0;--bg-grad:linear-gradient(165deg,#1a2028 0%,#151a21 55%,#11151a 100%);
+  --ok-bg:rgba(95,191,153,.14);--warn-bg:rgba(242,177,94,.12);--warn-text:#f2b15e;--bad-bg:rgba(240,140,110,.14);--bad-text:#f4a58a;
+}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg-grad);background-attachment:fixed;color:var(--text);font-family:var(--font-sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+header.top{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px 20px;background:var(--surface);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border-bottom:1px solid var(--surface-border);box-shadow:var(--surface-shine)}
+header.top .mark{width:28px;height:28px;border-radius:9px;background:var(--gel-green);color:#fff;display:grid;place-items:center;font-family:var(--font-serif);font-weight:700}
+header.top h1{margin:0;font-family:var(--font-serif);font-size:1.15rem;color:var(--heading);font-weight:600}
+header.top .prog{margin-left:auto;display:flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+header.top button{font-family:var(--font-mono);font-size:11px;background:transparent;color:var(--muted);border:1px solid var(--hr);border-radius:var(--radius-pill);padding:3px 10px;cursor:pointer}
+nav.jump{display:flex;flex-wrap:wrap;gap:6px;max-width:940px;margin:14px auto 0;padding:0 16px}
+nav.jump a{font-family:var(--font-mono);font-size:11.5px;color:var(--link);text-decoration:none;background:var(--surface);border:1px solid var(--surface-border);padding:3px 10px;border-radius:var(--radius-pill)}
+.wrap{max-width:940px;margin:0 auto;padding:16px 16px 70px;display:grid;gap:18px}
+.card{background:var(--surface);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);border:1px solid var(--surface-border);border-radius:var(--radius-glass);box-shadow:var(--surface-shadow),var(--surface-shine);scroll-margin-top:70px;overflow:hidden}
+.card__hd{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;padding:14px 18px;border-bottom:1px solid var(--hr)}
+.card__hd h2{margin:0;font-family:var(--font-serif);font-size:1.25rem;color:var(--heading);font-weight:600}
+.card__hd .desc{margin-left:auto;font-size:12.5px;color:var(--faint)}
+.card__bd{padding:14px 18px 18px;display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+p{margin:0}
+h3{margin:10px 0 0;font-family:var(--font-serif);font-size:1.05rem;color:var(--heading);font-weight:600}
+.callout{font-size:13.5px;padding:10px 13px;border-radius:12px;background:var(--warn-bg);border-left:3px solid var(--color-amber)}
+.callout.ok{background:var(--ok-bg);border-left-color:var(--color-emerald)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{padding:10px 12px;border:1px solid var(--hr);border-radius:12px}
+.stat b{display:block;font-family:var(--font-serif);font-size:1.6rem;color:var(--heading);line-height:1.2}
+.stat span{font-size:12.5px;color:var(--muted)}
+code,.kbd{font-family:var(--font-mono);font-size:12px;background:var(--inline-code-bg);color:var(--inline-code-text);border-radius:6px;padding:1px 5px;overflow-wrap:anywhere}
+ol.items{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+ol.items li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;align-items:start;padding:11px 10px;border-radius:12px;border:1px solid var(--hr)}
+ol.items li.kept{border-color:var(--color-emerald);background:var(--ok-bg)}
+ol.items input{width:17px;height:17px;margin:4px 0 0;accent-color:var(--color-emerald);cursor:pointer}
+.it-hd{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+.id{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--color-amber)}
+.it-title{font-weight:600;color:var(--heading)}
+.tag{font-family:var(--font-mono);font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:var(--radius-pill);padding:1px 8px}
+.sev-blocks{background:var(--bad-bg);color:var(--bad-text)}
+.sev-judge{background:var(--warn-bg);color:var(--warn-text)}
+.sev-minor{background:var(--inline-code-bg);color:var(--inline-code-text)}
+.size{background:transparent;border:1px solid var(--hr);color:var(--muted)}
+dl{margin:6px 0 0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 10px;font-size:13.8px}
+dt{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);padding-top:3px}
+dd{margin:0;color:var(--text)}
+a{color:var(--link)}
+#picks{font-family:var(--font-mono);font-size:12.5px;padding:9px 12px;border-radius:10px;border:1px dashed var(--hr);overflow-wrap:anywhere;min-height:2.4em}
+@media(max-width:600px){header.top .prog{margin-left:0;width:100%} dl{grid-template-columns:minmax(0,1fr)} dt{padding-top:6px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <span class="mark">a</span>
+  <h1>acu-primer: improvements before submitting</h1>
+  <span class="prog"><span id="count">0 kept</span><button type="button" onclick="clearPicks()">clear</button></span>
+</header>
+<nav class="jump">
+  <a href="#summary">summary</a><a href="#bugs">bugs</a><a href="#checks">checks only you can do</a><a href="#improve">improvements</a><a href="#how">how I checked</a>
+</nav>
+<main class="wrap">
+
+<section class="card" id="summary">
+  <div class="card__hd"><h2>Summary</h2><span class="desc">Saturday Oct 24 2026, two days before the deadline</span></div>
+  <div class="card__bd">
+    <div class="stats" id="stats"></div>
+    <p>Tick the box on any item you want to keep. Your picks are saved in this browser only, and the line below lists them so you can paste "keep B2, I5" into a session.</p>
+    <div id="picks">Nothing ticked yet.</div>
+    <div class="callout">The five I'd look at first: <b>B1</b> (deploy order, since the live site is the Oct 16 build and today's code breaks without migrations 0002 to 0005), <b>B2</b> (there's no GitHub remote yet, and Devpost requires a public repo), <b>B3</b> (a judge can't see the author side at all), <b>B4</b> (the explorations and the Tower of Hanoi lesson are invisible to students, and the Hanoi lesson lives only in your local database), and <b>C5</b> (the 6-ship skill stops until the checkpoints, final review and app map in <code>checklist.md</code> are ticked).</div>
+    <div class="callout ok">The good news first. <code>npm test</code> passes all 85 tests. <code>npm run check</code> reports 0 errors and 0 warnings in 400 files. <code>npx tsc --noEmit</code> and <code>npm run build</code> pass. Driving the app in Chromium found no console errors, no sideways scrolling at 375px in light or dark, and no colour-contrast failures from axe on any student or author page.</div>
+  </div>
+</section>
+
+<section class="card" id="bugs">
+  <div class="card__hd"><h2>Bugs</h2><span class="desc">things that are broken or wrong</span></div>
+  <div class="card__bd"><ol class="items" data-group="B"></ol></div>
+</section>
+
+<section class="card" id="checks">
+  <div class="card__hd"><h2>Checks only you can do</h2><span class="desc">unticked in checklist.md and review-checklist.html</span></div>
+  <div class="card__bd">
+    <p class="callout">Your ticks in <code>review-checklist.html</code> live in your browser's local storage, so I couldn't see which of them you've done. The items below name the sections. Skip any you've already ticked.</p>
+    <ol class="items" data-group="C"></ol>
+  </div>
+</section>
+
+<section class="card" id="improve">
+  <div class="card__hd"><h2>Improvements</h2><span class="desc">grouped by area</span></div>
+  <div class="card__bd" id="improve-body"></div>
+</section>
+
+<section class="card" id="how">
+  <div class="card__hd"><h2>How I checked</h2></div>
+  <div class="card__bd">
+    <p>I copied <code>.wrangler/state</code> into a scratch folder and ran the built Worker on that copy at port 8790 with a throwaway passphrase. The Claude key was a dummy value (<code>--var CLAUDE_API_KEY:sk-dummy…</code>), so no paid call was possible. The browser also aborted the draft, revise, source and contents routes. Your own local database wasn't touched. On the copy only, I switched on "show unreviewed" for the sampling and recursion chapters so I could play the explorations.</p>
+    <p>I drove the app with Playwright (Chromium 127) at 1280px and 375px, in light and dark. I ran axe-core on every page and tabbed through pages with the keyboard. Two subagents read the Worker, the shared code and the author screens line by line. Screenshots are in <code>devpost/improvements-2026-10-24/</code>. On the live site I only sent GET requests. I didn't change any source file and didn't commit.</p>
+    <p>One honest limit: Playwright's offline switch doesn't cover service-worker traffic in Chromium, so my offline test can't prove the "never opened" message. The page-level part did work. Four answers queued while offline and all four were sent when the connection came back. That's why offline is in the checks for you (C3).</p>
+  </div>
+</section>
+</main>
+
+<noscript><p style="max-width:940px;margin:0 auto;padding:16px">This page builds its lists with JavaScript. Open it in a browser with JavaScript on.</p></noscript>
+
+<script>
+var S = "devpost/improvements-2026-10-24/";
+function shot(n){ return '<a href="improvements-2026-10-24/' + n + '">' + n + '</a>'; }
+
+var ITEMS = [
+/* ---------------- Bugs ---------------- */
+{id:"B1", g:"B", sev:"blocks", size:"S", t:"Deploying today's code without migrations 0002 to 0005 breaks every route, and running them first breaks the live site",
+ saw:"The live site (" + '<a href="https://acu-primer.cmplxxyttmt.workers.dev">acu-primer.cmplxxyttmt.workers.dev</a>' + ") is the Oct 16 build: <code>/api/subjects</code> answers 404, and its home page links to <code>/c/openintro-sampling</code>. Today's Worker queries <code>chapters</code>, <code>subjects</code>, <code>spend</code>, <code>step_approvals</code>, <code>subjects.book</code> and <code>chapters.plan</code> (<code>src/worker/db.ts:25-31, 80-82, 109-113, 128-140, 341, 402</code>). Without migration 0004 the home page, every chapter and <code>POST /api/events</code> return 500. Without 0005 the author home returns 500. The other way round, the Oct 16 Worker queries <code>courses</code>, which 0004 renames, so it breaks as soon as the migration runs.",
+ why:"A judge who opens the link in the gap, or after a half-done deploy, sees an empty home page. Students' answers would also pile up in their browsers.",
+ fix:"Run <code>npx wrangler d1 migrations list acu-primer --remote</code> first. If 0001 was loaded with <code>d1 execute</code> rather than <code>migrations apply</code>, there's no record of it and <code>apply</code> fails on \"table courses already exists\". Then apply the migrations and run <code>npm run deploy</code> straight after. Then import content and set <code>CLAUDE_API_KEY</code> as a secret. Open the site once yourself to get past the service worker's one stale load."},
+{id:"B2", g:"B", sev:"blocks", size:"S", t:"There's no GitHub repository yet",
+ saw:"<code>git remote -v</code> prints nothing. The 6-ship skill lists a public GitHub URL as required, alongside the video.",
+ why:"You can't submit without a public repo.",
+ fix:"Create the repo and push. I checked a few risks already. <code>learner-profile.md</code>, <code>.env</code>, <code>.dev.vars</code>, PDFs and <code>content/drafts/</code> are gitignored and not tracked. A search of the full history for <code>sk-ant-</code> found nothing. Look over <code>devpost/</code> once for personal notes before it goes public. There's also no <code>LICENSE</code> file (see I22)."},
+{id:"B3", g:"B", sev:"blocks", size:"S to M", t:"A judge can't see the author side at all",
+ saw:"The home page's last link, \"Writing or reviewing lessons? Author side\" (<code>src/app/player/Home.svelte:95</code>), opens a bare box with the heading \"Author side\", a Passphrase field and Open. There's no sentence about what's behind it, no link back and no demo (" + shot("edge-author-nopass.png") + "). No route or flag gets past <code>authorGate</code> (<code>src/worker/auth.ts:31-32</code>).",
+ why:"Half of what makes acu-primer different from a quiz generator is on that side: drafting from book pages, review by playing, sign-off and each student's path. From the link, a judge only sees the student half.",
+ fix:"Pick one. (a) Put a judge passphrase in the Devpost testing notes. The $15 monthly cap limits the risk, but a judge could still start a $1.30 draft. (b) Add a demo role (see I2). (c) At the very least, give the gate a sentence and two links: \"This is where authors draft and review lessons. Watch the demo video, or play a lesson as a student.\""},
+{id:"B4", g:"B", sev:"blocks", size:"M", t:"The explorations, the sort check and the Tower of Hanoi lesson are invisible to students",
+ saw:"The OpenIntro chapter shows students only the hand-written fixture, which has no exploration and no sort check. The sort check, the sampling and formula explorations are in <code>openintro-sampling-5-1-draft</code>, which is unreviewed, and the chapter's \"show unreviewed\" switch is off. The Erickson subject doesn't show on the home page because its one lesson, <code>recursion-tower-of-hanoi-c16db1</code>, is unreviewed. That lesson exists only in your local D1. It isn't in <code>content/</code> and it isn't on the live site. Only the OSTEP 4.4 stepper is visible, because that chapter shows unreviewed lessons.",
+ why:"Slice 8 was built for the submission's wow factor, and today a judge can't reach any of it from the home page.",
+ fix:"Review and sign off the 5.1 draft and the Hanoi lesson locally (C8). Then get the Hanoi lesson into a content folder. Either add a small export (I16), or copy its <code>content</code> column out of local D1 with <code>wrangler d1 execute --local</code>. Then <code>npm run import:remote</code> both. I believe Erickson's <i>Algorithms</i> is under CC BY 4.0; check the colophon and credit it in the chapter overview."},
+{id:"B5", g:"B", sev:"judge", size:"S", t:"The module counter reads \"Module3of10\" at desktop width",
+ saw:"<code>src/app/player/ModuleView.svelte:178</code> puts the spaces inside <code>&lt;span class=\"wide-only\"&gt;Module &lt;/span&gt;</code>, and the spaces get lost in the flex row. Visible in " + shot("explore-after-light-1280.png") + ", top right.",
+ why:"It's at the top of every module, so every judge sees it.",
+ fix:"Write the whole string in one place, for example <code>{index + 1} / {total}</code> with an <code>aria-label=\"Module 3 of 10\"</code>, or use <code>&amp;nbsp;</code>."},
+{id:"B6", g:"B", sev:"judge", size:"S", t:"Continue on the chapter overview doesn't go where you stopped",
+ saw:"<code>src/app/player/ChapterOverview.svelte:42</code> picks the first lesson that isn't complete. A student four modules into lesson 2 who never finished lesson 1 presses Continue and lands on lesson 1, module 1 (" + shot("overview-unreviewed-light-1280.png") + " then " + shot("continue-target-light-1280.png") + ").",
+ why:"The button says Continue and starts somewhere else. This is likely once a chapter has a few lessons and students pick the one they want from the list.",
+ fix:"Remember the last lesson played (the chapter progress could store <code>lastLessonId</code>) and continue that one while it's unfinished. Otherwise fall back to the first unfinished lesson."},
+{id:"B7", g:"B", sev:"judge", size:"S", t:"A draft is saved under Claude's lesson id, but the browser opens the server's id",
+ saw:"<code>src/worker/routes/drafting.ts:169, 198-199</code> and <code>db.ts:462</code>. <code>insertDraft</code> stores <code>result.value.id</code>, the id Claude wrote. The stream then sends <code>{ done: lessonId }</code>, the id the server made, and <code>Session.svelte:97</code> opens that one. Nothing makes the two match.",
+ why:"If Claude writes a different id, the author pays about $1.30 and then sees \"No lesson with that id.\" An id with a capital letter, a dot or an underscore can never be opened, because the routes only match <code>[a-z0-9-]+</code>.",
+ fix:"Set <code>result.value.id = lessonId</code> (and the source) before <code>insertDraft</code>."},
+{id:"B8", g:"B", sev:"judge", size:"S", t:"Claude API errors in revise, contents and upload show \"Something went wrong on the server\"",
+ saw:"<code>src/worker/claude.ts:147-158</code> doesn't catch errors from <code>stream.finalMessage()</code>. Only <code>postDraft</code> maps <code>Anthropic.APIError</code> (<code>drafting.ts:105, 147, 227</code>). If the second attempt throws, the first attempt's cost is never logged.",
+ why:"An overloaded API or a rate limit during a demo gives the author no idea what happened, and the spend line undercounts.",
+ fix:"Catch inside the attempt loop. Return a readable message such as \"Claude is busy, try again in a minute\" with the usage so far, and log that cost."},
+{id:"B9", g:"B", sev:"judge", size:"M", t:"Start from a book may fail on the live site for books with more than about 9 chapters",
+ saw:"<code>src/worker/db.ts:190-197</code>. Creating a book costs 4 queries for the subject and 5 per chapter, one after another. D1 on the Workers free plan allows 50 queries per request (uncertain: it depends on your plan). Erickson's book has 15 chapters, which comes to about 79 queries. It also isn't atomic.",
+ why:"The book from your video would fail live with a generic 500 and leave a half-made subject. Pressing again makes a second copy, <code>algorithms-2</code>. It worked locally because local D1 has no such limit.",
+ fix:"Work out slugs and positions in memory with one read per table, then do a single <code>db.batch([...])</code>. Try it on the live site with a long book after the deploy (C2)."},
+{id:"B10", g:"B", sev:"judge", size:"S to M", t:"A deployed draft hasn't been tried yet, and its background work isn't kept alive",
+ saw:"Slice 3b's own check says \"one deployed draft completes without a CPU-limit error\", and the Revisions list it as not checked live. The draft runs in an async function that isn't passed to <code>ctx.waitUntil</code> (<code>drafting.ts:176-210</code>), and <code>fetch</code> doesn't take <code>ctx</code> at all. <code>readContents</code> builds a base64 string of up to 20 MB inside the Worker (<code>claude.ts:330-331</code>).",
+ why:"If the author's tab closes, the runtime may cancel the work after Claude has already charged, so the spend row is never written. On the free plan's 10 ms CPU, parsing a 55k-token stream plus Zod checks might also go over (uncertain).",
+ fix:"Pass <code>ctx</code> through and wrap the background work in <code>ctx.waitUntil</code>. Then do one live draft and one live contents read (C2)."},
+{id:"B11", g:"B", sev:"judge", size:"S", t:"The sign-off screen tells the author to run a Claude Code command",
+ saw:"<code>src/app/author/Review.svelte:455-460</code>: \"Open suggestions get applied by a revision: run <code>/revise-lesson</code> in Claude Code in the acu-primer folder.\" Slice 6 added the Apply with Claude button, which replaced that.",
+ why:"A judge reads it as \"this needs a developer tool\".",
+ fix:"\"Open the step and press Apply with Claude, or withdraw the suggestion.\""},
+{id:"B12", g:"B", sev:"minor", size:"S", t:"One bad event blocks every later event from that browser",
+ saw:"<code>src/app/lib/eventQueue.ts:73-90</code> always sends the oldest 100 events and drops them only on a 2xx. <code>POST /api/events</code> refuses the whole batch if any event fails the schema (<code>src/worker/routes/events.ts:9</code>). The name box has no <code>maxlength</code> (<code>NameEntry.svelte</code>, <code>Home.svelte</code>), and the schema caps names at 100 characters.",
+ why:"A student who types a 101-character name (or anything else the schema refuses) disappears from the author's student list for good, offline or not.",
+ fix:"Add <code>maxlength=\"100\"</code> to both name boxes. On a 400, drop that batch, or have the Worker save the valid events and list the rejected ids."},
+{id:"B13", g:"B", sev:"minor", size:"S", t:"A suggestion's text is thrown away when saving it fails",
+ saw:"<code>src/app/author/Part.svelte:29-38</code> clears the text after <code>await onSuggest()</code>. <code>run()</code> in <code>Review.svelte:70-80</code> catches every error and resolves, so the text is cleared either way. The error shows at the top of the page, far from the box.",
+ why:"A network blip loses what the author wrote.",
+ fix:"Have <code>run</code> return whether it worked, and clear the box only on success."},
+{id:"B14", g:"B", sev:"minor", size:"S", t:"Author home: the show-unreviewed switch can show the wrong state, and buttons can double-submit",
+ saw:"<code>src/app/author/AuthorHome.svelte:79-87, 185</code> sets <code>checked={c.showUnreviewed}</code> one way, so a failed save leaves the box flipped. Create subject, Create chapter and Save (<code>:130, :162, :217</code>) have no busy flag.",
+ why:"The switch controls what students see. A double click makes two subjects.",
+ fix:"Reset the checkbox on failure and disable it while saving. Add a <code>saving</code> flag to the three buttons."},
+{id:"B15", g:"B", sev:"minor", size:"S", t:"Start from a book: dead end on errors, leftovers from the last book, and Create while still reading",
+ saw:"<code>src/app/author/BookStart.svelte</code>. When the contents read fails, <code>notFound</code> stays false, so the \"pages to try\" box never shows. For a PDF with no bookmarks, Create stays disabled (<code>:99-100, :198</code>). \"Choose another PDF\" (<code>:257</code>) keeps <code>contentsCost</code>, <code>notFound</code>, <code>outline</code> and the error from the first book. Create is enabled while Claude is still reading the contents (<code>:63-69, :254</code>). The page-gap prompt can say \"starts on page null\" (<code>:223-232</code>, uncertain).",
+ why:"Each of these leaves an author stuck or confused on the screen that starts the whole flow.",
+ fix:"One <code>reset()</code> that clears every field. Set <code>notFound = true</code> in the catch. Add <code>|| readingContents</code> to Create's <code>disabled</code>."},
+{id:"B16", g:"B", sev:"minor", size:"S", t:"Leaving the draft screen mid-draft gives no warning, and the error can be wrong",
+ saw:"<code>src/app/author/Session.svelte:200-209</code> says \"Keep this tab open\", but there's no <code>beforeunload</code>. <code>streamDraft</code> (<code>src/app/lib/api.ts:137-160</code>) has no try around <code>fetch</code>, so offline shows \"Failed to fetch\". A cut-off line shows a raw JSON error. The server saves the lesson before it sends <code>done</code> (<code>drafting.ts:197-198</code>), so \"The connection closed before the draft finished\" can appear for a lesson that was saved. A failed budget refresh in <code>finally</code> (<code>:109</code>) can hide the finished panel.",
+ why:"The author may draft again and pay twice.",
+ fix:"Add <code>beforeunload</code> while drafting. Wrap the fetch and the parse. Change the copy to \"It may still have been saved. Check Your subjects before drafting again.\" Give <code>loadBudget</code> its own quiet catch."},
+{id:"B17", g:"B", sev:"minor", size:"S", t:"After a new deploy, the service worker can reload the page in the middle of a lesson",
+ saw:"<code>vite.config.ts</code> uses <code>registerType: \"autoUpdate\"</code>, and <code>main.ts</code> calls <code>registerSW({ immediate: true })</code>. When a new version activates, the page reloads by itself. The checklist also notes that the first load after a deploy shows the old version.",
+ why:"A student halfway through a check loses what they typed. A judge's first visit has no service worker, so judges are fine. This affects you while recording, and returning students.",
+ fix:"Switch to <code>registerType: \"prompt\"</code> with a small \"New version, reload\" banner, or reload only when the player is on the overview."},
+{id:"B18", g:"B", sev:"minor", size:"S", t:"Small routing gaps",
+ saw:"Unknown paths and old <code>/c/openintro-sampling</code> links show the home page with no message (" + shot("edge-old-link.png") + "). <code>navigate()</code> never scrolls to the top (<code>src/app/router.svelte.ts:21-27</code>), so opening Review from far down the author home lands partway down. A bad chapter id on the draft screen shows \"…\" forever with a working form. A wrong API method returns 404 when it should return 405 (<code>src/worker/index.ts:64</code>).",
+ why:"Old links from the Oct 16 deploy stop working without saying why.",
+ fix:"Redirect <code>/c/&lt;slug&gt;</code> to its new address, add a small \"No page here\" screen, call <code>scrollTo(0, 0)</code> in <code>navigate</code>, and show \"No chapter at this address\" on the draft screen."},
+
+/* ---------------- Checks ---------------- */
+{id:"C1", g:"C", size:"S", t:"Run the deploy in the right order and put the API key on Cloudflare",
+ saw:"<code>review-checklist.html</code> section 10 is still open. Only <code>AUTHOR_PASSPHRASE</code> is a remote secret.",
+ why:"Without this, the deployed link shows the Oct 16 app.",
+ fix:"In your terminal, <code>npx wrangler secret put CLAUDE_API_KEY</code>. Then follow the order in B1. Afterwards, load the site once on your laptop and once on your phone."},
+{id:"C2", g:"C", size:"S", t:"One live draft and one live Start from a book (about $1.50 to $2 together)",
+ saw:"Never run on the deployed Worker (slice 3b's Revisions). B9 and B10 are both risks that only show up live.",
+ why:"If drafting fails live, the video's claims and the deployed link disagree.",
+ fix:"After the deploy, run Start from a book with a book of more than 10 chapters (Erickson), then draft one short section. Watch for a 500 or a CPU-limit error in <code>wrangler tail</code>."},
+{id:"C3", g:"C", size:"S", t:"Offline on the deployed link, on your phone",
+ saw:"<code>review-checklist.html</code> section 06. My automated offline test couldn't cover service-worker traffic (see How I checked). The queue part worked: 4 events queued offline and were sent on reconnect.",
+ why:"\"Works offline\" is one of the three claims on your scope.",
+ fix:"Open a chapter on the phone, turn on airplane mode, reload, answer one wrong, turn it off, then find the answers in the student log. Also open a chapter you never opened and read the message."},
+{id:"C4", g:"C", size:"M", t:"The whole loop, end to end (checklist.md hands-on checkpoint, unticked)",
+ saw:"<code>checklist.md</code>: \"Whole loop tried end to end, after slice 5: draft, sign off, play as a student, read the log\" is unticked.",
+ why:"This is the core journey from the PRD, and the demo shows it.",
+ fix:"Do it once on the live site after C1 and C2. Draft the section, review it by playing, sign off, play it as a new name, and read that name's path."},
+{id:"C5", g:"C", size:"M", t:"Final kick-the-tires, final review and the app map (checklist.md, unticked)",
+ saw:"\"Final kick-the-tires exploration\", \"Final review complete\" and all three \"Code Tour and App Map\" boxes are unticked. <code>devpost/app-map.html</code> doesn't exist.",
+ why:"The 6-ship skill checks these boxes first and stops if any are open, so it won't walk you through the video, repo and submission until they're done.",
+ fix:"Run <code>/5-build</code> to finish the final review and the learning wrap-up (a short recap counts). This page can stand in as the kick-the-tires feedback."},
+{id:"C6", g:"C", size:"M", t:"Learner checks for slices 4 to 11 and 8 (review-checklist.html sections 02 to 08)",
+ saw:"Every slice after 3c says \"learner check pending\" in the Revisions. Sections 02 (subjects), 03 (look), 03b (review by playing), 03c (explorations), 03d (book), 04 (review and sign-off), 05 (student log), 07 (draft) and 08 (shape) each have hands-on steps.",
+ why:"Several bugs above (B6, B11, B13) are the kind these checks would catch.",
+ fix:"If time is short, do 03b, 03c, 04 and 05 at least, since those are what the video shows."},
+{id:"C7", g:"C", size:"S", t:"Mark the 17 decisions in review-checklist.html section 09",
+ saw:"Each is a keep or change select, for example \"Drafting stays on Opus 5.5 at high effort ($1.28 a draft)\" and \"Drafting rules made subject-neutral\". Your notes say rule changes are your call.",
+ why:"Some are worth settling before the write-up describes them, such as the model and the cost per draft.",
+ fix:"Five minutes of selects."},
+{id:"C8", g:"C", size:"M", t:"Review and sign off the lessons a judge should see",
+ saw:"Locally, 3 of 11 steps of the 5.1 draft are approved. The Hanoi lesson is unreviewed. The OpenIntro chapter also holds the Oct 16 API test draft (<code>…-394a13</code>), with almost the same title as the other two lessons.",
+ why:"Sign-off is your claim (\"every lesson shows whether a person has checked it\"), so only you can do it. It also unlocks B4.",
+ fix:"Decide which lessons go live. I'd pick the fixture, the 5.1 draft with explorations, OSTEP 4.4 with the stepper, and Hanoi. Review them by playing and sign them off."},
+{id:"C9", g:"C", size:"L", t:"The video: narration, final recordings, upload, and a check that the link is public",
+ saw:"<code>review-checklist.html</code> section 11: final recordings are on hold. <code>narration.html</code> has empty boxes for your words. The rough cut is 2:54 with no sound.",
+ why:"The video is required. The deployed link doesn't replace it.",
+ fix:"Record from the deployed link after C1, with <code>?recording=1</code>. Check the uploaded link in a private window."},
+{id:"C10", g:"C", size:"M", t:"Write the Devpost text yourself, including how judges get in",
+ saw:"The hackathon's rules say the name, description and answers must be yours (the 6-ship skill won't draft them).",
+ why:"This is also where B3 is solved or not. A judge reads it before clicking the link.",
+ fix:"Include a \"Try it\" line: which lesson to play first, and how to see the author side (a passphrase, a demo role, or \"see the video at 1:10\")."},
+{id:"C11", g:"C", size:"S", t:"Check the public repo in a private window, and the content licences",
+ saw:"The repo ships lesson JSON drawn from OpenIntro (CC BY-SA, I believe), OSTEP and, after B4, Erickson.",
+ why:"Judges open the repo. Credit for the books reads well and keeps you within their terms.",
+ fix:"After pushing, open the repo URL signed out. Add a short \"Content\" note to the README with each book's licence (check OSTEP's terms on its site)."},
+{id:"C12", g:"C", size:"S", t:"Look at the misconception catalogue",
+ saw:"<code>catalogues/sampling-distributions.json</code> was written from published sources \"for Isaac to check\" (slice 3b).",
+ why:"Drafts label misconceptions \"catalogue\" from this file, and the review screen shows that label.",
+ fix:"Skim it once and fix anything that looks wrong."},
+{id:"C13", g:"C", size:"S", t:"A quick pass with VoiceOver and with Reduce motion on",
+ saw:"axe found no serious problems, but some things only a person hears: answers give no spoken feedback (I9), and step changes drop focus (I11).",
+ why:"Judges sometimes try the keyboard. Students on phones use screen readers more than you'd expect.",
+ fix:"Cmd+F5, then answer one check with the keyboard. Turn on Reduce motion (review-checklist 03, the optional step)."},
+
+/* ---------------- Improvements ---------------- */
+{id:"I1", g:"I", area:"A judge's first minute", size:"S", t:"Give the home page a \"Start here\" for first-time visitors",
+ saw:"A judge lands on the hero, two subject cards that say \"1 chapter\", and an author link at the bottom (" + shot("home-light-1280.png") + "). Nothing says which lesson shows the adaptive hints or an exploration.",
+ why:"Judges give a project a minute or two. The best moments (a wrong answer that changes the lesson, an exploration) are three clicks deep.",
+ fix:"Add a card above Subjects: \"New here? Try a 5-minute lesson\", linking straight to the 5.1 lesson with the sampling exploration. Add a second line linking to the video for the author side. You write the words."},
+{id:"I2", g:"I", area:"A judge's first minute", size:"M", t:"A read-only demo role for the author side",
+ saw:"The gate takes one passphrase that unlocks everything, paid routes included (<code>src/worker/auth.ts</code>).",
+ why:"It lets judges see review by playing, the paths checklist, and a student's log without risking your budget.",
+ fix:"Add a second secret, <code>DEMO_PASSPHRASE</code>. It allows GETs plus approve and suggest on one demo chapter, and returns 403 on drafting, revise, contents and book creation, with a polite message. A \"Reset demo\" button (or re-import) puts the chapter back."},
+{id:"I3", g:"I", area:"A judge's first minute", size:"S", t:"Explain the gate page, and say why when a passphrase stops working",
+ saw:"" + shot("edge-author-nopass.png") + ". When a saved passphrase stops working mid-session, <code>AuthorGate.svelte:32-36</code> clears the error, so the form comes back with no reason.",
+ why:"A bare password box reads as \"not for you\".",
+ fix:"One sentence about what authors do here, a link back to the student side, and \"Your passphrase stopped working. Type it again.\""},
+{id:"I4", g:"I", area:"A judge's first minute", size:"M", t:"Show how a lesson was made, on the student side",
+ saw:"Students see \"Not yet reviewed\" on unreviewed lessons and nothing on reviewed ones.",
+ why:"Your kernel is \"checked by a person\". A line such as \"Drafted by Claude from pages 170-180 of OpenIntro Statistics. Reviewed by Isaac, Oct 24: every step played and approved.\" makes that visible to every judge without the passphrase.",
+ fix:"Add the source, pages and sign-off date to the public chapter response, and show them on the lesson intro."},
+{id:"I5", g:"I", area:"Student experience", size:"S", t:"Three lessons with nearly the same title in one chapter",
+ saw:"With unreviewed lessons shown, Sampling distributions lists \"Point estimates and sampling variability\", \"5.1 Point estimates and sampling variability\" and \"Point estimates and sampling variability\" again (" + shot("overview-unreviewed-light-1280.png") + ").",
+ why:"A student can't tell them apart.",
+ fix:"Delete or hide the Oct 16 API test draft, and give the fixture a distinct title (or retire it once the 5.1 draft is signed off)."},
+{id:"I6", g:"I", area:"Student experience", size:"S to M", t:"Mark the end of a lesson",
+ saw:"\"Finish lesson\" goes straight back to the overview.",
+ why:"There's no moment that says what the student just learned or what's next. A short screen gives the lesson a shape.",
+ fix:"A small summary: the outcomes ticked off, how many modules were passed and skipped, and a button for the next lesson."},
+{id:"I7", g:"I", area:"Student experience", size:"S", t:"Say why the app asks for a name",
+ saw:"The name screen is a title, \"Your name\" and Start (" + shot("name-light-1280.png") + ").",
+ why:"A cautious student or judge may hesitate. The name is sent to the author with every answer.",
+ fix:"One line under the box: \"Your teacher sees your answers under this name. No account, and nothing else is collected.\" Add <code>maxlength</code> (B12)."},
+{id:"I8", g:"I", area:"Student experience", size:"S", t:"Tidy book-derived text and error pages",
+ saw:"The Erickson recursion chapter's overview reads \"Covers … ♥Linear-Time Selection\": the heart is from the book's own section titles. \"Can't open this chapter\" has no link home (" + shot("edge-bad-chapter.png") + ").",
+ why:"Small things, but they show on the first screen of a chapter.",
+ fix:"Strip leading symbols in <code>src/shared/bookPlan.ts</code> when building titles. Add a \"Back to subjects\" link to both error pages."},
+{id:"I9", g:"I", area:"Accessibility", size:"S", t:"Announce right, wrong and hints to screen readers",
+ saw:"There's no <code>aria-live</code>, <code>role=\"status\"</code> or <code>role=\"alert\"</code> anywhere in <code>src/app</code>.",
+ why:"A screen-reader user presses Check and hears nothing.",
+ fix:"Wrap the verdict and the hint in <code>role=\"status\" aria-live=\"polite\"</code>. Do the same for the review coach line and the draft progress line, and use <code>role=\"alert\"</code> for errors."},
+{id:"I10", g:"I", area:"Accessibility", size:"S", t:"Answer options: name the group and let arrow keys move",
+ saw:"<code>checks/Select.svelte:23</code> and <code>explore/ExploreView.svelte:65</code> use <code>role=\"radiogroup\"</code> without a name. In my test, ArrowDown on an option didn't move focus.",
+ why:"Radio roles promise arrow-key movement. Tab works, so this is polish, not a blocker.",
+ fix:"<code>aria-labelledby</code> pointing at the question, and arrow keys that move between options (or drop the radio roles and use <code>aria-pressed</code>)."},
+{id:"I11", g:"I", area:"Accessibility", size:"S", t:"Move focus to the new module's heading",
+ saw:"axe flags \"Page must have a level-one heading\" on every module. After Continue, focus falls to <code>&lt;body&gt;</code>. The author review does the same on step changes (<code>Review.svelte:91-97</code>), and its step pills read as \"3 ✓ •\" with no <code>aria-current</code>.",
+ why:"Keyboard users have to tab from the top again on every module.",
+ fix:"Make the module title an <code>h1</code> with <code>tabindex=\"-1\"</code> and focus it on change. Add <code>aria-current=\"step\"</code> and a text label to the pills."},
+{id:"I12", g:"I", area:"Accessibility", size:"S", t:"Author-side labels and the faint margin button",
+ saw:"The suggestion textarea has only a placeholder (<code>Part.svelte:77</code>). The brief textareas in <code>AuthorHome.svelte:127, 159</code> and <code>BookStart.svelte:250</code> have no label. Preset chips have no <code>aria-pressed</code>. BookStart's file picker shows no focus ring (<code>:275-280</code>). The margin suggestion button rests at <code>opacity: 0.3</code> (<code>Part.svelte:119</code>), about 1.6:1. The Students table has an empty header cell (axe).",
+ why:"Each is small. Together they make the author side harder to use without a mouse.",
+ fix:"Add labels, <code>aria-pressed</code>, copy Session's <code>.picker:focus-within</code> rule, and rest the button at about 0.6 opacity."},
+{id:"I13", g:"I", area:"Author experience", size:"M", t:"The author home is 9,000 pixels tall on a phone",
+ saw:"" + shot("author-home-dark-375.png") + ". Every subject is open, each of Erickson's 13 empty chapters shows its full card, and there's a leftover \"Algorithms / Divide and Conquer\" test subject.",
+ why:"Anyone who gets past the gate, on a phone, scrolls a long way to find the one lesson that exists.",
+ fix:"Collapse subjects to a header with counts, show chapters with no lessons as one line each, and delete the test subject before the video."},
+{id:"I14", g:"I", area:"Author experience", size:"S", t:"Draft screen copy that has gone stale",
+ saw:"<code>Session.svelte:133</code>: \"The first real draft (11 pages, claude-opus-5-5, high effort) took 10½ minutes and cost $1.28\", which mixes today's model name into an Oct 16 figure. The Erickson draft took about 6 minutes and $1.08. \"Book or reading (PDF, stays on this laptop)\" also shows on phones. The empty state says \"Start one with New subject\" and leaves out Start from a book (<code>AuthorHome.svelte:139</code>).",
+ why:"These are the lines a judge reads while deciding whether to press Draft.",
+ fix:"\"A draft of about 10 pages takes 5 to 10 minutes and costs about $1 to $1.30.\" Use \"stays on this device\", and mention Start from a book in the empty state."},
+{id:"I15", g:"I", area:"Author experience", size:"S", t:"Warn before an edit unpublishes a signed-off lesson",
+ saw:"Any edit (one hint switch, a swap) sets the lesson back to unreviewed (<code>src/worker/db.ts:468-478</code>), so it disappears from students at once.",
+ why:"The rule is right, but a judge flipping a switch on the demo lesson would watch it vanish without knowing why.",
+ fix:"A one-line confirm: \"This lesson is live. Changing it hides it from students until you approve the step and sign off again.\""},
+{id:"I16", g:"I", area:"Author experience", size:"M", t:"Export a lesson to a content file",
+ saw:"In-app drafts live only in the database (checklist Revisions). Moving the Hanoi lesson to the live site (B4) needs manual SQL today.",
+ why:"It makes local to live, and database to git, one click. It also lets the repo show a real Claude-drafted lesson.",
+ fix:"An author route that returns the lesson JSON, and a Download button on the review screen that the import script can read."},
+{id:"I17", g:"I", area:"Author experience", size:"S", t:"Make the spend guard count the call it's about to make",
+ saw:"<code>drafting.ts:39-46</code> checks spend before the call and logs it after, so $14.99 plus a $1.30 draft ends at $16.29. Two drafts at once both pass.",
+ why:"It matters more if judges get author access (B3, I2).",
+ fix:"Refuse when <code>spent + estimate &gt; budget</code>, with an estimate per kind of call."},
+{id:"I18", g:"I", area:"Performance", size:"S to M", t:"Students download the whole author side",
+ saw:"<code>npm run build</code>: the main chunk is 548 KB (170 KB gzipped) and Vite warns about it. App.svelte imports every author screen up front. The service worker also precaches the 420 KB pdf-lib chunk (<code>es-*.js</code>) for every student: 33 entries, 1.37 MB.",
+ why:"On a phone over mobile data, the first load is the one judges and new students see.",
+ fix:"Load the author screens with dynamic <code>import()</code> in App.svelte, and leave the pdf-lib chunk out of <code>globPatterns</code> (it's only used on the author side)."},
+{id:"I19", g:"I", area:"Robustness", size:"S", t:"Keep author-only parts out of the public chapter response",
+ saw:"<code>GET /api/chapters/:slug</code> sends the full lesson content (<code>db.ts:47-52</code>), including alternatives, the explorations' \"why\" notes, misconception sources and switched-off parts. No brief, plan or spend leaks.",
+ why:"Answers need to be there for offline grading, so that part is fine. The rest is the author's working notes.",
+ fix:"A <code>toStudent(lesson)</code> step that strips them before returning."},
+{id:"I20", g:"I", area:"Robustness", size:"S", t:"Put limits on the open events route",
+ saw:"<code>POST /api/events</code> takes any payload size, any name, any chapter, 100 events per request (<code>src/shared/events.ts:25-26</code>). <code>clientTime</code> is any string, and the log sorts by it.",
+ why:"Once the link is public, anyone can fill your student list with junk.",
+ fix:"Reject bodies over about 64 KB, cap each payload at about 4 KB, require an ISO time, and accept only chapters with a visible lesson."},
+{id:"I21", g:"I", area:"Robustness", size:"S", t:"Three small hardening fixes in the shared logic",
+ saw:"<code>src/shared/formula.ts:100, 111, 130</code> uses <code>name in FUNCTIONS</code>, which is true for <code>constructor</code>, so <code>__proto__(1)</code> throws a TypeError rather than a FormulaError. It's still safe, since no code can run. If both parts of a general fallback are switched off, <code>flow.ts:54</code> returns an empty hint. A revision of the outcomes skips the text checks and saves in two separate writes (<code>claude.ts:293-297</code>, <code>drafting.ts:250-251</code>).",
+ why:"Unlikely in the demo, but each is a one-liner.",
+ fix:"<code>Object.hasOwn</code>, treat an empty fallback as the material suggestion (or refuse that switch), and run <code>lessonProblems</code> on the whole lesson plus one <code>db.batch</code>."},
+{id:"I22", g:"I", area:"README and repo", size:"S", t:"A README that works for a judge",
+ saw:"The README covers running, offline, checks and deploy. It doesn't say what makes the app different, has no live or video link and no screenshot, and doesn't say how Claude is used. Locally it only imports the OpenIntro chapter. It calls the key <code>ANTHROPIC_API_KEY</code> in <code>.dev.vars.example</code>, while your setup uses <code>CLAUDE_API_KEY</code> (both work). It says <code>npm run check</code>, which is right: plain <code>npx tsc --noEmit</code> only checks the app config, not the Worker or the Svelte files.",
+ why:"Judges open the repo second. Technical documentation is allowed. The submission prose is yours.",
+ fix:"Add the live link, the video link, two screenshots, a short \"How Claude is used\" section (the flat wire format, one retry with the error, the spend log, nothing published without sign-off), a \"Content and licences\" note, a <code>LICENSE</code> file, and the OSTEP import line."},
+];
+
+function sevTag(s){ return s ? '<span class="tag sev-' + s + '">' + ({blocks:"blocks submission", judge:"visible to a judge", minor:"minor"})[s] + '</span>' : ""; }
+function render(it){
+  return '<li id="' + it.id + '"><input type="checkbox" data-k="' + it.id + '" aria-label="Keep ' + it.id + '">' +
+    '<div><div class="it-hd"><span class="id">' + it.id + '</span><span class="it-title">' + it.t + '</span>' + sevTag(it.sev) +
+    '<span class="tag size">size ' + it.size + '</span></div>' +
+    '<dl><dt>What I saw</dt><dd>' + it.saw + '</dd><dt>Why it matters</dt><dd>' + it.why + '</dd><dt>Suggested fix</dt><dd>' + it.fix + '</dd></dl></div></li>';
+}
+document.querySelector('ol[data-group="B"]').innerHTML = ITEMS.filter(function(i){return i.g==="B";}).map(render).join("");
+document.querySelector('ol[data-group="C"]').innerHTML = ITEMS.filter(function(i){return i.g==="C";}).map(render).join("");
+var areas = [], body = "";
+ITEMS.filter(function(i){return i.g==="I";}).forEach(function(i){ if (areas.indexOf(i.area) < 0) areas.push(i.area); });
+areas.forEach(function(a){ body += '<h3>' + a + '</h3><ol class="items">' + ITEMS.filter(function(i){return i.g==="I" && i.area===a;}).map(render).join("") + '</ol>'; });
+document.getElementById("improve-body").innerHTML = body;
+
+var n = function(f){ return ITEMS.filter(f).length; };
+document.getElementById("stats").innerHTML =
+  '<div class="stat"><b>' + n(function(i){return i.sev==="blocks";}) + '</b><span>bugs that block submission</span></div>' +
+  '<div class="stat"><b>' + n(function(i){return i.sev==="judge";}) + '</b><span>bugs a judge could see</span></div>' +
+  '<div class="stat"><b>' + n(function(i){return i.sev==="minor";}) + '</b><span>minor bugs</span></div>' +
+  '<div class="stat"><b>' + n(function(i){return i.g==="C";}) + '</b><span>checks only you can do</span></div>' +
+  '<div class="stat"><b>' + n(function(i){return i.g==="I";}) + '</b><span>improvements</span></div>';
+
+var KEY = "acu-improvements-2026-10-24";
+var state = {};
+try { state = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch(e) {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) {} }
+function refresh(){
+  var kept = [];
+  document.querySelectorAll("input[data-k]").forEach(function(b){ b.closest("li").classList.toggle("kept", b.checked); if (b.checked) kept.push(b.dataset.k); });
+  document.getElementById("count").textContent = kept.length + " kept";
+  document.getElementById("picks").textContent = kept.length ? "keep " + kept.join(", ") : "Nothing ticked yet.";
+}
+document.querySelectorAll("input[data-k]").forEach(function(b){
+  b.checked = !!state[b.dataset.k];
+  b.addEventListener("change", function(){ state[b.dataset.k] = b.checked; save(); refresh(); });
+});
+function clearPicks(){ if (!confirm("Clear all ticks?")) return; state = {}; save(); document.querySelectorAll("input[data-k]").forEach(function(b){ b.checked = false; }); refresh(); }
+refresh();
+</script>
+</body>
+</html>

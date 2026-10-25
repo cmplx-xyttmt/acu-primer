@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Devpost rules check</title>
+<style>
+:root{
+  --text:#24312a;--heading:#17492f;--muted:rgba(26,40,28,.72);--hr:rgba(23,73,47,.15);
+  --surface:rgba(255,255,255,.55);--surface-border:rgba(255,255,255,.78);
+  --shadow:0 20px 48px -24px rgba(23,73,47,.45);
+  --bg:linear-gradient(165deg,#f5f0de 0%,#e9ebd0 52%,#dce4c7 100%);
+  --green:#2f7a4b;--green-bg:rgba(47,122,75,.13);
+  --amber:#a8600f;--amber-bg:rgba(228,136,46,.16);
+  --red:#a8322a;--red-bg:rgba(200,60,50,.13);
+  --slate:#45607a;--slate-bg:rgba(69,96,122,.13);
+  --quote-bg:rgba(23,73,47,.06);
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --text:#d4dae3;--heading:#eef3fa;--muted:rgba(212,218,227,.7);--hr:rgba(255,255,255,.12);
+  --surface:rgba(255,255,255,.05);--surface-border:rgba(255,255,255,.12);
+  --shadow:0 20px 48px -24px rgba(0,0,0,.6);
+  --bg:linear-gradient(165deg,#1a2028 0%,#151a21 55%,#11151a 100%);
+  --green:#7fd19c;--green-bg:rgba(127,209,156,.12);
+  --amber:#f0b46a;--amber-bg:rgba(240,180,106,.12);
+  --red:#f08f86;--red-bg:rgba(240,143,134,.12);
+  --slate:#a9c0d8;--slate-bg:rgba(169,192,216,.12);
+  --quote-bg:rgba(255,255,255,.04);
+}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);background-color:#eceed6;background-attachment:fixed;color:var(--text);font:15px/1.6 var(--sans)}
+@media (prefers-color-scheme:dark){body{background-color:#151a21}}
+main{max-width:900px;margin:0 auto;padding:32px 16px 80px;display:grid;gap:18px}
+h1,h2,h3{font-family:var(--serif);color:var(--heading);font-weight:600;margin:0;line-height:1.25}
+h1{font-size:2rem}
+h2{font-size:1.4rem;margin-top:14px}
+h3{font-size:1.1rem}
+p{margin:0}
+a{color:var(--green)}
+code{font-family:var(--mono);font-size:.88em;background:var(--quote-bg);padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
+.card{background:var(--surface);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid var(--surface-border);border-radius:1.1rem;box-shadow:var(--shadow);padding:16px 18px;display:grid;gap:10px;min-width:0}
+.lede{color:var(--muted)}
+.item{gap:8px}
+.hd{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.hd label{display:flex;align-items:center;gap:10px;cursor:pointer;flex:1 1 300px;min-width:0}
+.hd input{width:18px;height:18px;accent-color:var(--green);flex:none}
+.n{font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--amber);flex:none}
+.t{font-family:var(--serif);font-size:1.08rem;color:var(--heading);font-weight:600}
+.badge{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:999px;font-weight:700;white-space:nowrap}
+.met{color:var(--green);background:var(--green-bg)}
+.notyet{color:var(--amber);background:var(--amber-bg)}
+.risk{color:var(--red);background:var(--red-bg)}
+.unclear{color:var(--slate);background:var(--slate-bg)}
+blockquote{margin:0;padding:8px 12px;border-left:3px solid var(--green);background:var(--quote-bg);border-radius:0 10px 10px 0;font-family:var(--serif);font-size:.98rem}
+blockquote .src{display:block;font-family:var(--sans);font-size:12px;color:var(--muted);margin-top:4px;overflow-wrap:anywhere}
+.row{display:grid;grid-template-columns:84px 1fr;gap:4px 10px}
+.row .k{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding-top:3px}
+@media (max-width:560px){.row{grid-template-columns:1fr}.row .k{padding-top:0}}
+ul,ol{margin:0;padding-left:1.25rem}
+li+li{margin-top:4px}
+.summary li{margin-top:6px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--hr);vertical-align:top}
+th{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+.tablewrap{overflow-x:auto}
+.note{font-size:13.5px;color:var(--muted)}
+.score{font-family:var(--mono);font-size:12px;font-weight:700}
+</style>
+</head>
+<body>
+<main>
+
+<header class="card">
+  <h1>Devpost rules check</h1>
+  <p class="lede">acu-primer against the official rules of Build With AI: Basics. Checked Saturday, October 24, 2026. Nothing in the app, the repo or Devpost was changed to make this page.</p>
+  <p><b>Deadline:</b> Monday, October 26, 2026 at 5:00 pm Eastern Time, which is <b>Tuesday, October 27 at 00:00 EAT</b>. The overview page shows the same moment as "Oct 27, 2026 @ 12:00am GMT+3". After that, the submission can't be changed.</p>
+  <p class="note">Sources read in full: <a href="https://learn-ai-basics.devpost.com/rules">official rules</a>, <a href="https://learn-ai-basics.devpost.com/">overview</a>, <a href="https://learn-ai-basics.devpost.com/resources">resources</a>, <a href="https://learn-ai-basics.devpost.com/updates">updates</a> (including "Two new questions on the submission form" and "Will It Ship recording is up!"). The site has no separate FAQ page; the Q&amp;A is inside the Will It Ship update. The submission form itself isn't visible until a project is created, and no project exists yet under My projects. Ticks on this page aren't saved.</p>
+</header>
+
+<section class="card summary">
+  <h2 style="margin-top:0">What needs doing</h2>
+  <p>Most of the rules are met by what's already built. The open items are about publishing and access, plus three content-license questions. In rough order:</p>
+  <ol>
+    <li><b>No public repo yet</b> (R13). The local repo has no remote, and <code>github.com/cmplx-xyttmt/acu-primer</code> returns 404. This is required, and Stage One can't pass without it.</li>
+    <li><b>No license file</b> (R15). The rules ask for an open source license that GitHub shows in the About box.</li>
+    <li><b>OSTEP lessons are in git history</b> (R36). OSTEP has no open license, and four lessons drafted from it are committed and live on the deployed site. Decide before the first push, because deleting them in a new commit still publishes them in history.</li>
+    <li><b>The deployed site is older than the video</b> (R10). It runs the October 16 version, and <code>/api/subjects</code> returns "Not found". The rules say the project must work as shown in the video.</li>
+    <li><b>Judges can't reach the author side</b> (R23, R24). It needs the passphrase, the live site has no Claude key set, and each draft costs about $1 against a $15 monthly cap.</li>
+    <li><b>The video isn't on YouTube or Vimeo yet</b> (R19). It has no narration yet either (R38), and it has no beat showing how the skills were used (R22).</li>
+    <li><b>The OpenIntro naming and share-alike terms</b> (R34). Lessons derived from OpenIntro must be CC BY-SA 3.0 and must not be titled like an OpenIntro product. The subject is currently called "OpenIntro Statistics".</li>
+    <li><b>Form answers only you can write</b> (R26 to R29): the description, the skill pack question, the age checkbox, and whatever other fields the form shows.</li>
+  </ol>
+  <p>One correction to something we'd said before. The official rules don't say the narration or submission text must be written by you. That rule comes from the Devpost Learn Skill Pack's <code>6-ship</code> skill (see R38). It still binds you in practice, because Stage One checks that you built with the skill pack.</p>
+</section>
+
+<!-- ============ A ============ -->
+<h2>A. Dates and eligibility</h2>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R1</span><span class="t">Submit before the deadline</span></label><span class="badge notyet">not yet</span></div>
+  <blockquote>"Submission Period: September 22, 2026 (10:00 am Eastern Time) – October 26, 2026 (5:00 pm Eastern Time)"<span class="src">Rules, section 1, <a href="https://learn-ai-basics.devpost.com/rules">learn-ai-basics.devpost.com/rules</a></span></blockquote>
+  <blockquote>"Once the Submission Period has ended, you may not make any changes or alterations to your Submission"<span class="src">Rules, section 5</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>US Eastern is still on daylight time on October 26 (UTC-4), so 5:00 pm ET is 21:00 UTC, which is 00:00 EAT on Tuesday the 27th. No project has been started on Devpost.</p></div>
+  <div class="row"><span class="k">Action</span><p>Create the Devpost project as a draft today, so you can see the form (see R29). Aim to press Submit by Monday midday EAT, then keep editing the draft until the deadline if needed.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R2</span><span class="t">Age of majority, and the checkbox on the form</span></label><span class="badge notyet">not yet</span></div>
+  <blockquote>"Individuals who are at least the age of majority where they reside as of the time of entry"<span class="src">Rules, section 3</span></blockquote>
+  <blockquote>"We added two required questions to the submission form: a short explanation of how you used the Devpost Learn Skill Pack, and an age of majority checkbox. Both are required to be eligible for prizes."<span class="src"><a href="https://learn-ai-basics.devpost.com/updates/46821-two-new-questions-on-the-submission-form">Update, "Two new questions on the submission form"</a></span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>You meet the age rule (the overview says "Ages 18+ only"). The checkbox isn't ticked because no submission exists yet.</p></div>
+  <div class="row"><span class="k">Action</span><p>Tick the age of majority box on the form.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R3</span><span class="t">Country of residence</span></label><span class="badge met">met</span></div>
+  <blockquote>"Individuals who are residents of, or Organizations domiciled in, a country ... where the laws of the United States or local law prohibits participating ... (including, but not limited to, Brazil, Quebec, Russia, Crimea, Cuba, Iran, and North Korea ...)"<span class="src">Rules, section 3</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>Uganda isn't on the list and isn't comprehensively sanctioned by OFAC.</p></div>
+  <div class="row"><span class="k">Action</span><p>None.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R4</span><span class="t">No conflict of interest, no Devpost support</span></label><span class="badge met">met</span></div>
+  <blockquote>"A Project must not have been developed, or derived from a Project developed, with financial or preferential support from the Sponsor or Administrator."<span class="src">Rules, section 4, Financial or Preferential Support</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>Devpost is the sponsor and administrator. You work at Tunga, which isn't connected to Devpost, and the judges (Darlyze Calixte, Joe Holmes, Michelle Brain) are Devpost staff. The project was built on your own time with your own Claude key.</p></div>
+  <div class="row"><span class="k">Action</span><p>None.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R5</span><span class="t">Registered, entering as an individual</span></label><span class="badge met">met</span></div>
+  <blockquote>"Register for the Hackathon on the Hackathon Website by clicking the 'Join Hackathon' button."<span class="src">Rules, section 4, How To Enter</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>The overview page says "You're registered for this hackathon." You're entering alone, so the team Representative rules don't apply.</p></div>
+  <div class="row"><span class="k">Action</span><p>None.</p></div>
+</article>
+
+<!-- ============ B ============ -->
+<h2>B. The project</h2>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R6</span><span class="t">A new project, started during the submission period</span></label><span class="badge met">met</span></div>
+  <blockquote>"Projects must be newly created during the Submission Period. ... The work described and submitted must have been built during the Submission Period."<span class="src">Rules, section 4, New Projects Only</span></blockquote>
+  <blockquote>"New project, started from an empty folder during the submission period. Old ideas are fine, old code is not."<span class="src"><a href="https://learn-ai-basics.devpost.com/">Overview</a>, What to build</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>The first commit (<code>ff40456</code>, the <code>.gitignore</code>) is dated September 25, 2026, 17:37 EAT, three days after the period opened. Every later commit is between then and October 23.</p></div>
+  <div class="row"><span class="k">Action</span><p>None.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R7</span><span class="t">Disclose pre-existing work</span></label><span class="badge notyet">not yet</span></div>
+  <blockquote>"Participants may use standard development tools, including frameworks, libraries, starter templates, and AI coding assistants, but must disclose any other pre-existing code or work incorporated into the Project."<span class="src">Rules, section 4, New Projects Only</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>No code came from before. <code>devpost/learner-profile.md</code> records your rule "no code copied from <code>~/Projects/curriculum-edtech/</code> (ideas only)". Ideas did come from there: <code>concept-brief.html</code> (August 11) and <code>content-graph</code> (August 13), both before the period. The skill pack's files are committed under <code>.agents/skills/</code>.</p></div>
+  <div class="row"><span class="k">Action</span><p>Add one or two sentences to the description, in your words, saying that the idea and the content model were sketched in August, that no earlier code was used, and that the Devpost skill pack (MIT) is included in <code>.agents/skills/</code>. Ideas aren't strictly "work incorporated", but saying so costs nothing and pre-empts a question.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R8</span><span class="t">Built with the Skill Pack, planning docs in the repo</span></label><span class="badge met">met</span></div>
+  <blockquote>"Entrants must create a new software project using the Devpost Learn Skill Pack ... and the code repository must include the planning documents generated by the Skill Pack (scope.md, prd.md, and spec.md)."<span class="src">Rules, section 4, What to Create</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p><code>devpost/scope.md</code>, <code>devpost/prd.md</code> and <code>devpost/spec.md</code> are committed (September 25), each with <code>status: approved</code>. <code>skills-lock.json</code> records all six skills from <code>challengepost/learn-ai-basics</code>. <code>devpost/checklist.md</code> shows the 5-build slices. The PRD and spec carry a naming note for the October 21 rename, so they still match the app. The Will It Ship checklist asks for exactly this: "they match what you built."</p></div>
+  <div class="row"><span class="k">Action</span><p>None, apart from making the repo public (R13). Keep the docs at <code>devpost/</code>, where the skills put them.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R9</span><span class="t">The skill pack's own closing steps</span></label><span class="badge risk">at risk</span></div>
+  <blockquote>"The first stage will determine via pass/fail whether ... the Project reasonably fits the theme and was built using the Devpost Learn skill pack, as evidenced by the planning documents in the repository."<span class="src">Rules, section 6, Stage One</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>This isn't a rule by itself, but it's how Stage One will be judged. In <code>devpost/checklist.md</code>, two hands-on checkpoints ("Whole loop tried end to end", "Final kick-the-tires"), <b>Final Review</b> and <b>Code Tour and App Map</b> are all unticked, and there's no <code>devpost/app-map.html</code>. <code>6-ship</code> says to stop and go back to <code>5-build</code> when these are open. The risk is low, since judges are told to look at the planning documents, not the checklist.</p></div>
+  <div class="row"><span class="k">Action</span><p>Run the end of <code>5-build</code> (final review and the app map, or the short recap it allows), then <code>6-ship</code>. This takes about an hour and leaves a tidy record in the repo. If time runs out, skip it. It doesn't block entry.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R10</span><span class="t">A working proof of concept that works as shown</span></label><span class="badge risk">at risk</span></div>
+  <blockquote>"The Project must be a working proof of concept that performs at least one function end to end"<span class="src">Rules, section 4, What to Create</span></blockquote>
+  <blockquote>"The Project must be capable of being successfully installed and running consistently on the platform for which it is intended and must function as depicted in the video and/or expressed in the text description."<span class="src">Rules, section 4, Functionality</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>Locally, the whole loop works: Start from a book, a paid draft of Erickson 1.3 (354 s, $1.08), review by playing, sign-off, the student path and the log. All of it is recorded in clips c08 to c12. The deployed link is the October 16 build, though. I checked it today: <code>/api/subjects</code> returns <code>{"error":"Not found."}</code>, so it has no subjects, no new look, no review by playing, no explorations and no Start from a book. The checklist also notes that the live site has no Claude key and that Worker CPU during a draft hasn't been tried there.</p></div>
+  <div class="row"><span class="k">Action</span><p>Deploy the current <code>main</code>. Run <code>npm run db:migrate:remote</code> (migrations 0003 to 0005 are new to the live database), then <code>npx wrangler secret put CLAUDE_API_KEY</code> (you type it), then re-import the content you want live, then <code>npm run deploy</code>. Play through once on your phone. If you'd rather not deploy, leave the live link out of the submission, and the video plus repo still meet the rules.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R11</span><span class="t">Say which platform it runs on</span></label><span class="badge notyet">not yet</span></div>
+  <blockquote>"A submitted Project must run on the platform for which it is intended and which is specified in the Submission Requirements."<span class="src">Rules, section 4, Platforms</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>It's a web app on Cloudflare Workers, used in a browser on a laptop or phone. That's written in <code>spec.md</code> and the README, but not yet in submission text.</p></div>
+  <div class="row"><span class="k">Action</span><p>Name the platform in the description or the "Built with" field (for example: web, runs in any modern browser, Cloudflare Workers and D1).</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R12</span><span class="t">Allowed to use the third-party APIs and libraries</span></label><span class="badge met">met</span></div>
+  <blockquote>"If a Project integrates any third-party SDK, APIs and/or data, Entrant must be authorized to use them in accordance with any terms and conditions or licensing requirements of the tool."<span class="src">Rules, section 4, Third-Party Integrations</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>The Claude API is called with your own paid key under Anthropic's commercial terms. Cloudflare is your own account on the free plan. The npm packages are open source: KaTeX (MIT), pdf-lib (MIT), Lucide icons (ISC), Fontsource fonts (SIL OFL), Zod (MIT) and the Anthropic SDK (MIT). The skill pack became MIT-licensed on about October 5.</p></div>
+  <div class="row"><span class="k">Action</span><p>None. Optional: copy the skill pack's MIT notice into <code>.agents/skills/</code> when you add your own LICENSE, since MIT asks that the notice travels with copies.</p></div>
+</article>
+
+<!-- ============ C ============ -->
+<h2>C. The repository</h2>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R13</span><span class="t">A public repo URL on GitHub, GitLab or Bitbucket</span></label><span class="badge risk">not yet, required</span></div>
+  <blockquote>"Provide a URL to your code repository for judging and testing on either GitHub, GitLab or Bitbucket. ... The repository must be public"<span class="src">Rules, section 4, Submission Requirements</span></blockquote>
+  <blockquote>"It should be in the 'Try it out link' field on the submission form."<span class="src"><a href="https://learn-ai-basics.devpost.com/updates/46766-don-t-forget-to-include-a-url-to-your-public-repo">Update, "Don't forget to include a URL to your public repo!"</a></span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p><code>git remote -v</code> prints nothing, so the repo has never been pushed. <code>https://github.com/cmplx-xyttmt/acu-primer</code> returns 404 (I guessed the name from your site repo). <code>gh</code> isn't installed on this Mac. The working tree is clean on <code>main</code>.</p></div>
+  <div class="row"><span class="k">Action</span><p>Settle R36 (OSTEP) first, because whatever is in history goes public. Then create a public GitHub repo, add it as <code>origin</code>, push <code>main</code>, open the URL in a private window to confirm it loads signed out, and paste it into "Try it out".</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R14</span><span class="t">History has no secrets or private files</span></label><span class="badge met">met</span></div>
+  <blockquote>"Before publishing, inspect tracked files, intended additions, and git history for secrets, credentials, private data, and unrelated files."<span class="src"><code>6-ship</code> skill, step 2 (skill pack guidance, not the official rules)</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>I scanned every commit's file list. <code>learner-profile.md</code>, <code>.env</code>, <code>.dev.vars</code>, any <code>.pdf</code> and <code>content/drafts/</code> have never been committed, and no <code>sk-ant-</code> string appears in any diff. <code>.dev.vars.example</code> has empty values. The D1 database id in <code>wrangler.jsonc</code> isn't a secret. The planning docs mention a lecturer friend, the CS department's HOD and your $20 Claude budget, and they link to paths under <code>~/Projects/curriculum-edtech/</code>.</p></div>
+  <div class="row"><span class="k">Action</span><p>Skim <code>devpost/*.md</code> once for anything you wouldn't want public. Nothing I found needs removing.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R15</span><span class="t">An open source license file, visible in About</span></label><span class="badge notyet">not yet</span></div>
+  <blockquote>"The repository must be public and should be open source by including an open source license file. This license should be detectable and visible at the top of the repository page (in the About section)."<span class="src">Rules, section 4, Submission Requirements</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>There's no <code>LICENSE</code> file, and <code>package.json</code> says <code>"private": true</code> with no license field.</p></div>
+  <div class="row"><span class="k">Action</span><p>Add a <code>LICENSE</code> at the root (MIT is the usual choice for the code, and GitHub detects it). The lesson content has its own terms (R34, R35), so add a short "Content licenses" note in the README: the OpenIntro-based lessons are CC BY-SA 3.0, and the Erickson-based ones are CC BY 4.0 if you ever commit them. After pushing, check that the About box shows the license.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R16</span><span class="t">The repo has everything needed to run it</span></label><span class="badge unclear">mostly met</span></div>
+  <blockquote>"The repository must contain all necessary source code, assets, and instructions required for the project to be functional."<span class="src">Rules, section 4, Submission Requirements</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>The README covers install, migrate, import the sample chapter, dev, tests and deploy. It doesn't say that drafting needs <code>ANTHROPIC_API_KEY</code> (or <code>CLAUDE_API_KEY</code>) in <code>.dev.vars</code>, that <code>MONTHLY_BUDGET_USD</code> caps spend, or that the OSTEP chapter can be imported too. The video media in <code>devpost/demo-video/media/</code> is gitignored, which is fine, because it isn't needed to run the app.</p></div>
+  <div class="row"><span class="k">Action</span><p>Add those few lines to the README's "Run it locally". This is technical documentation, which <code>6-ship</code> says an agent may write.</p></div>
+</article>
+
+<!-- ============ D ============ -->
+<h2>D. The demo video</h2>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R17</span><span class="t">Under three minutes</span></label><span class="badge met">met, tight</span></div>
+  <blockquote>"should be less than three (3) minutes. Judges are not required to watch beyond three minutes"<span class="src">Rules, section 4, Submission Requirements</span></blockquote>
+  <blockquote>"a short demo video (1 to 3 minutes, a screen recording is fine)"<span class="src"><a href="https://learn-ai-basics.devpost.com/">Overview</a>, What to submit</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p><code>ffprobe</code> gives the rough cut 173.97 s (2:54), video only. That leaves 6 seconds of room.</p></div>
+  <div class="row"><span class="k">Action</span><p>Keep the final cut, end card included, at 2:55 or less. If you add the skills beat (R22), take the time out of shot 06 (the sampling exploration, 17 s) or trim c10.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R18</span><span class="t">Footage of the app working on its device</span></label><span class="badge met">met</span></div>
+  <blockquote>"should include footage that shows the Project functioning on the device for which it was built"<span class="src">Rules, section 4, Submission Requirements</span></blockquote>
+  <blockquote>"Reviewers won't clone or run code, so the video has to show it working."<span class="src"><a href="https://learn-ai-basics.devpost.com/">Overview</a>, What to submit</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>From 0:20 on, the rough cut is screen recordings of the real app in a browser (clips c08 to c12, made with Playwright against a Worker on a copy of your database). The first 20 seconds are a motion piece built from real Erickson pages and the real drafted lesson.</p></div>
+  <div class="row"><span class="k">Action</span><p>None. The Will It Ship advice is to show the app in the first minute, and it appears by 0:07.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R19</span><span class="t">Public on YouTube or Vimeo, link on the form</span></label><span class="badge notyet">not yet</span></div>
+  <blockquote>"must be uploaded to and made publicly visible on YouTube or Vimeo and a link to the video must be provided on the submission form on the Hackathon Website"<span class="src">Rules, section 4, Submission Requirements</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>The video exists only as a local rough cut with no sound.</p></div>
+  <div class="row"><span class="k">Action</span><p>Upload the final cut as <b>Public</b>. Unlisted probably works, but "publicly visible" reads most safely as Public. Open the link in a private window, then paste it into the form's video field.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R20</span><span class="t">No third-party trademarks, music or material without permission</span></label><span class="badge risk">at risk</span></div>
+  <blockquote>"must not include third party trademarks, or copyrighted music or other material unless the Entrant has permission to use such material."<span class="src">Rules, section 4, Submission Requirements</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>There's no audio yet. The opener shows two pages of Erickson's <i>Algorithms</i> with the credit line "Jeff Erickson, Algorithms · Section 1.3, Tower of Hanoi · CC BY 4.0", which CC BY 4.0 allows (R35). Shot 06 shows a lesson derived from OpenIntro (R34). The older <code>book-to-subject</code> piece uses OpenIntro's <b>cover</b>, and OpenIntro's license page says "book covers, etc are also copyrighted". That piece isn't in the current rough cut. "Claude" appears as words on the draft screen, which is a factual mention, and no logos appear.</p></div>
+  <div class="row"><span class="k">Action</span><ol><li>Keep <code>book-to-subject.mp4</code> out of the final cut, or rebuild it without the cover.</li><li>If you add music, use a track whose license you can name (for example YouTube Audio Library, no attribution required), or none.</li><li>Don't show Anthropic or Devpost logos.</li><li>Put the source credits in the YouTube description too (R35).</li></ol></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R21</span><span class="t">English</span></label><span class="badge met">met</span></div>
+  <blockquote>"All Submission materials must be in English or, if not in English, the Entrant must provide an English translation"<span class="src">Rules, section 4, Language Requirements</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>The app, docs and planned narration are all in English.</p></div>
+  <div class="row"><span class="k">Action</span><p>After uploading, check YouTube's automatic captions. Fixing them, or uploading your narration as a caption file, helps judges who watch muted.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R22</span><span class="t">Show how you built it with the skills</span></label><span class="badge notyet">not yet (guidance)</span></div>
+  <blockquote>"Your video shows the app right away and walks through how you built it with the skills."<span class="src"><a href="https://learn-ai-basics.devpost.com/updates/47209-will-it-ship-recording-is-up">Update, "Will It Ship recording is up!"</a>, the checklist before you submit</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>This is advice from the judges, not a rule. None of the eight shots in <code>narration.html</code> shows the skills, the planning docs or the checklist.</p></div>
+  <div class="row"><span class="k">Action</span><p>Add a 10 to 15 second beat (for example, before the end card) that scrolls <code>devpost/scope.md</code>, <code>prd.md</code>, <code>spec.md</code> and the ticked slices in <code>checklist.md</code>. Make room by cutting shot 06 to about 5 seconds.</p></div>
+</article>
+
+<!-- ============ E ============ -->
+<h2>E. Access for judges</h2>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R23</span><span class="t">Login details for the private parts</span></label><span class="badge notyet">not yet</span></div>
+  <blockquote>"Access must be provided to an Entrant's working Project for judging and testing by providing a link to a public repository and providing a demo video. If Entrant's website is private, Entrant must include login credentials in its testing instructions."<span class="src">Rules, section 4, Testing</span></blockquote>
+  <blockquote>"Judges can get in without creating an account. Add a test login or demo mode to your submission."<span class="src"><a href="https://learn-ai-basics.devpost.com/updates/47209-will-it-ship-recording-is-up">Update, "Will It Ship recording is up!"</a></span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>The student side is open: a typed name, no account. The author side (<code>/author</code>) needs <code>AUTHOR_PASSPHRASE</code>. Today the live author routes return 401 without it. Most of what makes the app interesting (drafting, review by playing, the log) is behind that gate.</p></div>
+  <div class="row"><span class="k">Action</span><p>Before submitting, set a new passphrase just for judging (<code>npx wrangler secret put AUTHOR_PASSPHRASE</code>). Give it in the testing instructions, and assume that field may be public. Change it again after October 30, 5:00 pm ET. A demo mode would be nicer, but it's new code two days out, so I wouldn't.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R24</span><span class="t">Free, unrestricted access until judging ends</span></label><span class="badge risk">at risk</span></div>
+  <blockquote>"The Entrant must make the Project available free of charge and without any restriction, for testing, evaluation and use by the Sponsor, Administrator and Judges until the Judging Period ends."<span class="src">Rules, section 4, Testing</span></blockquote>
+  <blockquote>"Judging Period: October 27, 2026 (10:00 am Eastern Time) – October 30, 2026 (5:00 pm Eastern Time)"<span class="src">Rules, section 1</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>Drafting costs you money: $1.08 to $1.28 per draft so far, plus $0.07 for reading a contents page. <code>MONTHLY_BUDGET_USD</code> is 15, and the Worker refuses Claude calls past it, which a judge would see as a restriction. The live database's spend log is separate from your local one, so the live cap is mostly unused. The live site also has no Claude key yet (R10). Judges need a PDF to try Start from a book.</p></div>
+  <div class="row"><span class="k">Action</span><ol><li>Keep the cap, and say in the testing instructions that a draft takes about 5 to 10 minutes and that there's a spend cap.</li><li>Put a signed-off Tower of Hanoi lesson on the live site, so judges can play and review without drafting.</li><li>Link Erickson's free PDF (<a href="https://jeffe.cs.illinois.edu/teaching/algorithms/">jeffe.cs.illinois.edu/teaching/algorithms</a>) for Start from a book.</li><li>Leave the site up, unchanged, until October 30 evening ET.</li></ol></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R25</span><span class="t">Judges may never open the app</span></label><span class="badge unclear">info</span></div>
+  <blockquote>"Judges are not required to test the Project and may choose to judge based solely on the text description, images, and video provided in the Submission."<span class="src">Rules, section 4, Testing</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>The video and the description have to carry the whole case on their own. The live site is a bonus.</p></div>
+  <div class="row"><span class="k">Action</span><p>Add three or four screenshots to the Devpost image gallery: review by playing, a student's hint for a specific mistake, the stepper exploration and the log. The contact sheets in <code>media/concept-b/</code> are a good place to pick frames.</p></div>
+</article>
+
+<!-- ============ F ============ -->
+<h2>F. The submission form</h2>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R26</span><span class="t">A text description of features and functionality</span></label><span class="badge notyet">not yet</span></div>
+  <blockquote>"Include a text description that should explain the features and functionality of your Project."<span class="src">Rules, section 4, Submission Requirements</span></blockquote>
+  <blockquote>"A short description: what it does, who it's for, what you learned."<span class="src"><a href="https://learn-ai-basics.devpost.com/">Overview</a>, What to submit</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>Not written. It's yours to write on Sunday (R38).</p></div>
+  <div class="row"><span class="k">Action</span><p>Write it yourself. The four judging criteria (section I) are a useful outline: the problem and who has it, what the app does end to end, what's new about it, and what you learned. Add the disclosures from R7, the platform from R11, the credits from R34 to R36, and the testing notes from R23 and R24.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R27</span><span class="t">How you used the Devpost Learn Skill Pack</span></label><span class="badge notyet">not yet</span></div>
+  <blockquote>"a short explanation of how you used the Devpost Learn Skill Pack ... required to be eligible for prizes."<span class="src"><a href="https://learn-ai-basics.devpost.com/updates/46821-two-new-questions-on-the-submission-form">Update, "Two new questions on the submission form"</a></span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>The material is in the repo: the September 25 planning session (scope, PRD, spec, all approved the same day), learn mode, the slices and their revisions in <code>checklist.md</code>, and the grills that added slices 9 to 11 and re-planned 8.</p></div>
+  <div class="row"><span class="k">Action</span><p>Answer it in your words.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R28</span><span class="t">The age of majority checkbox</span></label><span class="badge notyet">not yet</span></div>
+  <blockquote>"an age of majority checkbox. Both are required to be eligible for prizes."<span class="src"><a href="https://learn-ai-basics.devpost.com/updates/46821-two-new-questions-on-the-submission-form">Update, "Two new questions on the submission form"</a></span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>Same as R2, listed again so it's on the form checklist.</p></div>
+  <div class="row"><span class="k">Action</span><p>Tick it.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R29</span><span class="t">Every other required field on the form</span></label><span class="badge unclear">unclear</span></div>
+  <blockquote>"Complete and enter all of the required fields on the 'Enter a Submission' page of the Hackathon Website"<span class="src">Rules, section 4, How To Enter</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>I couldn't see the form without creating a project, and I didn't create one. Devpost forms usually ask for a project name, a tagline, the story (the description), "Built with" tags, "Try it out" links, a video link and gallery images. The <code>6-ship</code> skill also mentions exit-survey questions.</p></div>
+  <div class="row"><span class="k">Action</span><p>Click "Start project" on the hackathon page today. A draft is private and editable until the deadline. List its required fields, and answer each one yourself.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R30</span><span class="t">One submission, or several that differ</span></label><span class="badge met">met</span></div>
+  <blockquote>"An Entrant may submit more than one Submission, however, each Submission must be unique and substantially different"<span class="src">Rules, section 4, Multiple Submissions</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>You're submitting one project.</p></div>
+  <div class="row"><span class="k">Action</span><p>None.</p></div>
+</article>
+
+<!-- ============ G ============ -->
+<h2>G. Ownership and third-party content</h2>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R31</span><span class="t">Your original work, and AI coding assistants</span></label><span class="badge met">met</span></div>
+  <blockquote>"Your Submission must: (a) be your (or your Team, or Organization's) original work product; (b) be solely owned by you ... and (c) not violate the intellectual property rights ... of any other person or entity."<span class="src">Rules, section 4, Intellectual Property</span></blockquote>
+  <blockquote>"Participants may use standard development tools, including frameworks, libraries, starter templates, and AI coding assistants"<span class="src">Rules, section 4, New Projects Only</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>The rules allow AI coding assistants. Claude Code wrote most of the code, under your direction, through the skill pack's process. The hackathon is built around that, since the skills are made for coding agents. Point (c) is where the book questions below come in.</p></div>
+  <div class="row"><span class="k">Action</span><p>None beyond R7 and R34 to R36.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R32</span><span class="t">Content you have rights to, in the repo and on screen</span></label><span class="badge unclear">see R34 to R36</span></div>
+  <blockquote>"entrants represent and warrant that (a) submitted content is not copyrighted ... or otherwise subject to third party intellectual property rights ... unless entrant is the owner of such rights or has permission from their rightful owner to post the content"<span class="src">Rules, section 7, Intellectual Property Rights</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>Three books appear in the repo, the live site or the video. CLRS doesn't: it's gitignored (<code>*.pdf</code>), no lessons from it are committed, and the video moved off it on October 23.</p></div>
+  <div class="row"><span class="k">Action</span><p>Settle R34, R35 and R36.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R33</span><span class="t">Open source parts are used under their licenses</span></label><span class="badge met">met</span></div>
+  <blockquote>"An Entrant may submit a Submission that includes the use of open source software or hardware, provided the Entrant complies with applicable open source licenses and ... creates software that enhances and builds upon the features and functionality included in the underlying open source product."<span class="src">Rules, section 4, Intellectual Property</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>The packages are listed in R12. The demo-video folders ship Plus Jakarta Sans with its <code>OFL.txt</code>, as the OFL asks.</p></div>
+  <div class="row"><span class="k">Action</span><p>None.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R34</span><span class="t">OpenIntro Statistics: share-alike, and no OpenIntro title</span></label><span class="badge risk">at risk</span></div>
+  <blockquote>"Most of OpenIntro's resources, including the Statistics textbooks, are released under a Creative Commons BY-SA 3.0 license." ... "Derivative works should also be clearly licensed under the Creative Commons BY-SA 3.0 license" ... "Derivative work can not be branded or titled in a way that suggests the derivative work is an OpenIntro product"<span class="src"><a href="https://www.openintro.org/license/">openintro.org/license</a></span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p><code>content/openintro-sampling/</code> holds a hand-written and a drafted lesson based on section 5.1. The lesson intro shows "OpenIntro Statistics, 4th ed. (CC BY-SA), pages", which is good attribution. The repo has no CC BY-SA license for these files yet. The subject is titled "OpenIntro Statistics", and the chapter is "Sampling distributions (OpenIntro Statistics)". A reader could take those as an OpenIntro product. Shot 06 of the video shows this chapter. I'm not sure how strictly OpenIntro reads the title rule, but the fix is cheap.</p></div>
+  <div class="row"><span class="k">Action</span><ol><li>Mark <code>content/openintro-sampling/</code> as CC BY-SA 3.0 (a short <code>LICENSE</code> or <code>README</code> in that folder).</li><li>Rename the subject (for example to "Statistics") and the chapter, keeping "Based on OpenIntro Statistics, 4th ed., CC BY-SA 3.0. Not an OpenIntro product." in the subject overview.</li><li>Re-record or re-check shot 06 if the old title shows on screen.</li></ol></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R35</span><span class="t">Erickson's Algorithms: credit with a link</span></label><span class="badge unclear">mostly met</span></div>
+  <blockquote>The book is "licensed under a Creative Commons Attribution 4.0 International license", and if you redistribute it, the author asks you to "please include a link back to this web page."<span class="src"><a href="https://jeffe.cs.illinois.edu/teaching/algorithms/">jeffe.cs.illinois.edu/teaching/algorithms</a></span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>The opener credits author, book, section and license on screen. The lesson intro shows the book and pages. The Tower of Hanoi lesson exists only in your local database, not in git. Nowhere is there a link back yet.</p></div>
+  <div class="row"><span class="k">Action</span><p>Put the link (or <code>algorithms.wtf</code>) in the YouTube description and the Devpost description, and on the end card if there's room. If the lesson goes onto the live site, add the link to the subject overview.</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R36</span><span class="t">OSTEP: no open license</span></label><span class="badge risk">at risk</span></div>
+  <blockquote>The page says the book "is and will always be free in PDF form" and asks instructors to "please just link to them directly" "(instead of making a copy locally)". It names no Creative Commons or other open license.<span class="src"><a href="https://pages.cs.wisc.edu/~remzi/OSTEP/">pages.cs.wisc.edu/~remzi/OSTEP</a></span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p><code>content/ostep-processes/</code> holds four Claude-drafted lessons from chapters 4 and 6, committed on October 14. They're on the live site with <code>showUnreviewed</code> on, so anyone can play them. They aren't in the rough cut. The lessons are written in new words with no copied passages, and they credit the book. They still follow the book section by section, and I'm not sure whether that counts as a derivative work. Free to read isn't the same as free to adapt.</p></div>
+  <div class="row"><span class="k">Action</span><p>Pick one before the first push.</p><ol><li><b>Leave OSTEP out of the public repo.</b> A delete commit isn't enough, because the files stay in history. You'd need to push a history without them, which means rewriting history before anything is public. That's your decision, and nothing has been pushed yet, so nobody else is affected. Remove the chapter from the live database too.</li><li><b>Ask the authors.</b> Email Remzi and Andrea Arpaci-Dusseau for permission. This is unlikely to come back before Monday.</li><li><b>Keep it and accept the risk.</b> I wouldn't, since the demo doesn't need it.</li></ol></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R37</span><span class="t">Devpost may use your name, voice and face</span></label><span class="badge unclear">info</span></div>
+  <blockquote>"Entrants agree that the sponsor and Devpost shall have the right to promote the Submission and use the name, likeness, voice and image of all individuals contributing to a Submission ... for three years thereafter."<span class="src">Rules, section 7</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>Your narration, and your face if you appear on camera, fall under this. So does the student name "Amina" in the clips, but she's fictional.</p></div>
+  <div class="row"><span class="k">Action</span><p>Nothing to do. Just know it before you record.</p></div>
+</article>
+
+<!-- ============ H ============ -->
+<h2>H. Who writes the words</h2>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R38</span><span class="t">Narration and submission text are yours</span></label><span class="badge notyet">not yet</span></div>
+  <p>The official rules have no sentence about this. I searched all fifteen sections. The closest is in the IP section, which allows outside help "provided the Submission components are solely the Entrant's work product and the result of the Entrant's ideas and creativity". The explicit rule is in the skill pack's <code>6-ship</code> skill, which you installed and which Stage One checks you used:</p>
+  <blockquote>"Submission copy and any optional peer feedback must be human-written, even on request."<span class="src"><code>.agents/skills/6-ship/SKILL.md</code>, from <a href="https://github.com/challengepost/learn-ai-basics">github.com/challengepost/learn-ai-basics</a></span></blockquote>
+  <blockquote>"You write your project name, short description, and other submission answers yourself. I can help you think through them and identify gaps. Once you've written them, I can correct spelling and grammar, but I won't draft or rewrite them."<span class="src">Same file, step 4</span></blockquote>
+  <blockquote>"Don't reopen the scope interview or write their narration."<span class="src">Same file, step 3</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p><code>narration.html</code> has points to cover and empty boxes, with no drafted words. Its intro says "the hackathon's rules say the narration must be written by you". Strictly, it's the skill pack's rules. The storyboard's captions are bracketed placeholders.</p></div>
+  <div class="row"><span class="k">Action</span><p>On Sunday, write the narration, the captions and every form answer yourself. An agent may only fix spelling and grammar in what you wrote. If you like, correct the wording in <code>narration.html</code> to "the skill pack's rules".</p></div>
+</article>
+
+<!-- ============ I ============ -->
+<h2>I. Judging</h2>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R39</span><span class="t">Stage One: fits the theme, built with the skill pack</span></label><span class="badge notyet">met once the repo is public</span></div>
+  <blockquote>"The first stage will determine via pass/fail whether the ideas meet a baseline level of viability, in that the Project reasonably fits the theme and was built using the Devpost Learn skill pack, as evidenced by the planning documents in the repository."<span class="src">Rules, section 6</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>The theme is a working proof of concept built with AI best practices, and acu-primer fits it. The planning documents exist (R8). They just aren't public yet (R13).</p></div>
+  <div class="row"><span class="k">Action</span><p>Push the repo (R13).</p></div>
+</article>
+
+<article class="card item">
+  <div class="hd"><label><input type="checkbox"><span class="n">R40</span><span class="t">Stage Two: four criteria, equal weight</span></label><span class="badge unclear">info</span></div>
+  <blockquote>"Entries will be judged on the following equally weighted criteria ... Design ... Potential Impact ... Innovation/Idea ... Presentation"<span class="src">Rules, section 6</span></blockquote>
+  <div class="row"><span class="k">Evidence</span><p>That makes each criterion 25%. The overview page and the Will It Ship update list only three (Design, Innovation/Idea, Presentation) and leave out Potential Impact. Section 11 says the official rules prevail where the two differ, so plan for four. Ties are broken by the first criterion listed, which is Design, then Potential Impact, then Innovation, then Presentation. The rules also say judging may use "automated AI-driven analysis", so plain, specific text helps.</p></div>
+  <div class="row"><span class="k">Action</span><p>See the scoring below.</p></div>
+</article>
+
+<section class="card">
+  <h2 style="margin-top:0">How the app and video plan stand on each criterion</h2>
+  <p class="note">This is my read, not a prediction. "Strong", "fair" and "weak" are relative to what the rules describe.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Criterion (25% each)</th><th>Where it stands</th><th>What would raise it</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>Design</b><br><span class="note">"Does the project deliver a complete, coherent product experience — not just a technical proof of concept?"</span></td>
+        <td><span class="score met badge">strong</span><br>There's a whole loop on both sides: book, draft, review by playing, sign-off, student, log. It has its own look (warm paper, the Detour logo, violet review frame), dark mode, phone width and offline play. The weak spots are outside the video. The live site is the old design. The author side is locked. The sampling chapter has three lessons with nearly the same title.</td>
+        <td>Deploy the current build (R10). Give judges a passphrase (R23). Rename or hide the two extra 5.1 lessons before the final recording. Check that the first screen says what it is and who it's for, as the Will It Ship checklist asks. The current home line does.</td>
+      </tr>
+      <tr>
+        <td><b>Potential Impact</b><br><span class="note">"credible, specific case for solving a real problem for a real audience — and does the solution actually address that problem based on what's demonstrated?"</span></td>
+        <td><span class="score notyet badge">fair</span><br>The audience in the docs is specific: a lecturer with a textbook, your department's CS course, and later athletes at sports academies with poor connections. The video plan leaves most of that to shot 02's narration, though. It also cut the offline clip (c06), which is the only footage that backs the poor-connection claim.</td>
+        <td>Name one real audience and one real situation in the first 20 seconds. Use numbers you have, like one section drafted in 6 minutes for $1.08, and how long the hand-written 5.1 lesson took you. If you say "offline", show 5 seconds of c06, or else don't say it. Say plainly that the sign-off answers the "can I trust AI-written lessons" worry.</td>
+      </tr>
+      <tr>
+        <td><b>Innovation / Idea</b><br><span class="note">"How creative and novel is the concept and does the project differ from existing concepts?"</span></td>
+        <td><span class="score met badge">strong</span><br>AI quiz generators are common, so the difference has to be visible. The video shows it: a hint aimed at the specific wrong answer, a two-level stop, review by playing every path, and an exploration configured from a widget library that the model never codes. A judge has to notice these as different, though, and right now only the narration will say so.</td>
+        <td>One sentence, in your words, on how this differs from asking a chatbot for a quiz. Put it in both the narration and the description. A caption naming the misconception on the hint screen (the log already shows it) would make the "aimed at the mistake" point without words.</td>
+      </tr>
+      <tr>
+        <td><b>Presentation</b><br><span class="note">"Does the video clearly demonstrate the project working end-to-end? Does the pitch communicate what problem is solved, who it's for, and why it matters?"</span></td>
+        <td><span class="score notyet badge">fair, for now</span><br>The rough cut follows the loop in order and fits in 2:54. It has no sound, no captions and no problem statement yet. It has no skills beat (R22), and the end card's repo link is still a placeholder.</td>
+        <td>Say what it is and who it's for in the first 5 seconds (the Will It Ship advice to "Stand"). Add the skills beat. Burn in short captions for the key moments. Put the real repo URL on the end card. Watch the final cut once at phone size, since some text in the clips is small.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="card">
+  <h2 style="margin-top:0">Order for the next two days</h2>
+  <ol>
+    <li><b>Saturday:</b> decide OSTEP (R36) and the OpenIntro rename (R34). Add the LICENSE and content-license notes (R15). Update the README (R16). Push the public repo (R13). Create the Devpost draft and list its fields (R29).</li>
+    <li><b>Saturday or Sunday morning:</b> deploy the current build, with the key, a judging passphrase and a reviewed Tower of Hanoi lesson (R10, R23, R24). Optionally finish <code>5-build</code>'s final review and app map (R9).</li>
+    <li><b>Sunday:</b> write and record the narration. Add the skills beat, trim to 2:55 or less, and upload as Public (R17 to R22, R38). Write the description and form answers (R26 to R28).</li>
+    <li><b>Monday by midday EAT:</b> fill every field, check the repo and video links in a private window, and submit (R1). Then leave the live site alone until October 30.</li>
+  </ol>
+</section>
+
+</main>
+</body>
+</html>

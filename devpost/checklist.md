@@ -166,7 +166,7 @@ Build mode: learn (chosen Sep 25, 2026)
 
 ## Final Review
 
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [x] Final review complete — feedback resolved and learner confirms ready to ship (Oct 25, Isaac: "yes, proof of concept ready to ship")
 
 ## Code Tour and App Map
 

@@ -161,8 +161,8 @@ Build mode: learn (chosen Sep 25, 2026)
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 2: the student side with fallbacks, so its feel shapes everything the tool will generate (Oct 9: Isaac tried every wrong-answer path; his feedback added the light/dark switch, Back, folding hints and Skip for now, and the fixture content fixes)
-- [ ] Whole loop tried end to end — after slice 5: draft, sign off, play as a student, read the log
-- [ ] Final kick-the-tires exploration and feedback completed
+- [x] Whole loop tried end to end — after slice 5: draft, sign off, play as a student, read the log (Oct 24 to 25, Isaac, locally and then on the deployed site: drafting several sections, review by playing and sign-off, playing lessons including on a phone)
+- [x] Final kick-the-tires exploration and feedback completed (Oct 24 to 25: every finding is a Revisions entry from those days, from the review-screen fixes to encrypted PDFs, parts numbered I and II, and new versions without a hard refresh; the Oct 24 improvements page served as the written kick-the-tires review)
 
 ## Final Review
 

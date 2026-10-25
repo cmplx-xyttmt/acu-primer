@@ -1,8 +1,8 @@
 {
   "subject": {
     "slug": "openintro-statistics",
-    "title": "OpenIntro Statistics",
-    "overview": "An introduction to statistics: data, probability, and the foundations of inference."
+    "title": "Intro to Statistics",
+    "overview": "An introduction to statistics: data, probability, and the foundations of inference. Based on OpenIntro Statistics, 4th ed. (CC BY-SA 3.0). Not an OpenIntro product."
   },
   "slug": "openintro-sampling",
   "title": "Sampling distributions",

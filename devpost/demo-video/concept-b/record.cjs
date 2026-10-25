@@ -98,7 +98,7 @@ async function clip(browser, name, storage, run, theme = "light") {
   // Shot: a student finds the subject and the chapter, and gives their name once.
   await clip(browser, "c01-home-to-chapter", {}, async (page) => {
     await page.goto(BASE + "/"); await wait(2200);
-    await click(page, page.getByRole("link", { name: /OpenIntro Statistics/ }), 2000);
+    await click(page, page.getByRole("link", { name: /Intro to Statistics/ }), 2000);
     await click(page, page.locator("a.card").first(), 1500);
     await type(page, page.getByLabel("Your name"), STUDENT);
     await click(page, btn(page, "Start"), 2500);

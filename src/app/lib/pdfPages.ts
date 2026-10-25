@@ -20,8 +20,14 @@ export function parsePageRange(range: string, pageCount: number): number[] {
   return pages;
 }
 
+// pdf-lib opens an encrypted PDF (one locked against changes, which still opens in any viewer)
+// but can't decrypt it: copied pages come out blank, so Claude would be paid to read nothing.
+export const ENCRYPTED_PDF =
+  "This PDF is encrypted (locked against changes), so its pages can't be cut out: they would reach Claude blank. Save an unlocked copy and choose that instead, for example with qpdf --decrypt book.pdf book-unlocked.pdf.";
+
 export async function cutPages(pdf: Uint8Array | ArrayBuffer, range: string): Promise<Uint8Array> {
   const source = await PDFDocument.load(pdf, { ignoreEncryption: true });
+  if (source.isEncrypted) throw new Error(ENCRYPTED_PDF);
   const indexes = parsePageRange(range, source.getPageCount());
   const out = await PDFDocument.create();
   for (const page of await out.copyPages(source, indexes)) out.addPage(page);

@@ -5,6 +5,7 @@
 
 import { PDFArray, PDFDict, PDFDocument, PDFHexString, PDFName, PDFRef, PDFString, type PDFObject } from "pdf-lib";
 import type { OutlineItem } from "../../shared/bookPlan.ts";
+import { ENCRYPTED_PDF } from "./pdfPages.ts";
 
 export interface PdfBook {
   title: string | null; // from the PDF's own metadata, often missing or unhelpful
@@ -16,6 +17,7 @@ const MAX_ITEMS = 2000;
 
 export async function readBook(bytes: Uint8Array | ArrayBuffer): Promise<PdfBook> {
   const doc = await PDFDocument.load(bytes, { ignoreEncryption: true, updateMetadata: false });
+  if (doc.isEncrypted) throw new Error(ENCRYPTED_PDF); // its bookmarks would read as garbage
   const ctx = doc.context;
   const lookup = (o: PDFObject | undefined): PDFObject | undefined => (o instanceof PDFRef ? ctx.lookup(o) : o);
   const text = (o: PDFObject | undefined): string | null => {

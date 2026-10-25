@@ -13,12 +13,6 @@
       "position": 1,
       "status": "reviewed",
       "note": "Hand-written fixture for building the player. Isaac reviews it at the slice 1 learner check."
-    },
-    {
-      "file": "5.1-point-estimates-draft.json",
-      "position": 2,
-      "status": "unreviewed",
-      "note": "Drafted in a Claude Code session with the draft-lesson skill (Oct 9). Not signed off."
     }
   ]
 }

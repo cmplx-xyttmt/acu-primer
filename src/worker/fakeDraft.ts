@@ -2,11 +2,11 @@
 // waiting ten minutes a lesson. On with `npm run dev:fake` (FAKE_DRAFTS=1), and only ever on a
 // local address, so a stray setting can't reach the deployed site. No Claude call is made: the
 // pages aren't uploaded, and each "draft" streams made-up progress for about 12 seconds, then
-// saves a copy of the OSTEP 4.4 sample lesson titled "[Fake] <section>", costing $0.
+// saves a copy of the OpenIntro 5.1 sample lesson titled "[Fake] <section>", costing $0.
 // FAKE_DRAFTS=some-fail makes every second draft fail, to see how the queue copes.
 
 import { Lesson } from "../shared/lesson.ts";
-import sample from "../../content/ostep-processes/4.4-process-states.json";
+import sample from "../../content/openintro-sampling/5.1-point-estimates.json";
 
 export type FakeMode = "off" | "all-done" | "some-fail";
 

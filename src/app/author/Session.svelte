@@ -201,7 +201,7 @@
   {#if budget?.fake}
     <p class="fake">
       <strong>Fake drafting is on</strong> (started with <code>npm run dev:fake</code>). Nothing goes to Claude and nothing is spent: each draft takes about
-      12 seconds and saves a copy of the OSTEP 4.4 sample lesson, titled "[Fake]" and the section's name. Delete them from the author home when you're done.
+      12 seconds and saves a copy of the OpenIntro 5.1 sample lesson, titled "[Fake]" and the section's name. Delete them from the author home when you're done.
     </p>
   {/if}
   {#if budget}

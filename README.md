@@ -63,7 +63,7 @@ You need Node 20 or newer.
 npm install
 npm run db:migrate:local                             # create the local D1 tables
 npm run import:local -- content/openintro-sampling   # the statistics chapter and its subject
-npm run import:local -- content/erickson-recursion   # the algorithms chapter (Tower of Hanoi)
+npm run import:local -- content/erickson             # the algorithms subject (13 chapters, Tower of Hanoi)
 npm run dev                                          # http://localhost:5173
 ```
 
@@ -78,14 +78,15 @@ Drafting needs a Claude API key in `.dev.vars` as `CLAUDE_API_KEY` (or `ANTHROPI
 draft fails). Each fake draft takes about 12 seconds and saves a copy of the sample lesson
 titled "[Fake] …". Fake drafting only works on localhost.
 
-## Moving a lesson from the app into git
+## Moving a subject from the app into git
 
-Lessons drafted in the app live in the database. To keep a chapter in git, or load it on the
-live site:
+Lessons drafted in the app live in the database. To keep a subject in git, or load it on the
+live site, export it: every chapter with its outline (the sections still to draft) and every
+lesson.
 
 ```sh
-npm run export:chapter -- recursion content/erickson-recursion   # from the local database
-npm run import:remote -- content/erickson-recursion
+npm run export:subject -- algorithms-by-jeff-erickson content/erickson   # from the local database
+npm run import:remote -- content/erickson
 ```
 
 Sign the lessons off first: each keeps the status it has locally. A signed-off lesson also has
@@ -118,7 +119,7 @@ npx wrangler d1 migrations list acu-primer --remote
 npm run db:migrate:remote
 npm run deploy
 npm run import:remote -- content/openintro-sampling
-npm run import:remote -- content/erickson-recursion
+npm run import:remote -- content/erickson
 npx wrangler secret put CLAUDE_API_KEY
 npx wrangler secret put AUTHOR_PASSPHRASE
 ```
@@ -144,6 +145,6 @@ that load); reload once.
 - `content/openintro-sampling/` is based on *OpenIntro Statistics*, 4th ed., by Diez,
   Çetinkaya-Rundel and Barr (https://www.openintro.org/book/os/), and is licensed CC BY-SA 3.0
   like its source. It isn't an OpenIntro product.
-- `content/erickson-recursion/` is based on *Algorithms* by Jeff Erickson
+- `content/erickson/` is based on *Algorithms* by Jeff Erickson
   (https://jeffe.cs.illinois.edu/teaching/algorithms/), and is licensed CC BY 4.0 like its
   source.

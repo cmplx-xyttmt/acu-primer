@@ -18,7 +18,7 @@
     "db:migrate:remote": "wrangler d1 migrations apply acu-primer --remote -c wrangler.jsonc",
     "import:local": "tsx scripts/import-lesson.ts --local",
     "import:remote": "tsx scripts/import-lesson.ts --remote",
-    "export:chapter": "tsx scripts/export-chapter.ts"
+    "export:subject": "tsx scripts/export-subject.ts"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.60.1",

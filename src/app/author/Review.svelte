@@ -474,7 +474,7 @@
           <p class="muted">
             <a class="btn-quiet btn-sm" href={lessonFile} download="{lesson.id}.json"><Download size={15} aria-hidden="true" />Download the lesson file</a>
             The JSON the import reads, for keeping the lesson in git or loading it on another server
-            (<code>npm run export:chapter</code> writes the whole chapter folder).
+            (<code>npm run export:subject</code> writes the whole subject, with its outline).
           </p>
         {:else if !rs.canSignOff}
           <p>Not ready to sign off yet: {rs.blockers.join(", ")}.</p>

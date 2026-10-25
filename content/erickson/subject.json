@@ -1,0 +1,597 @@
+{
+  "slug": "algorithms-by-jeff-erickson",
+  "title": "Algorithms, by Jeff Erickson",
+  "overview": "Based on Algorithms by Jeff Erickson (CC BY 4.0), free at https://jeffe.cs.illinois.edu/teaching/algorithms/",
+  "brief": "First-year university students taking this as part of a course, often studying alone on a phone between classes. Comfortable with high-school maths; new to the subject's vocabulary. Short readings, plenty of checks, and help that explains a wrong answer without talking down.",
+  "book": {
+    "title": "Algorithms, by Jeff Erickson",
+    "fileName": "Algorithms-JeffE.pdf",
+    "size": 25055430,
+    "pageCount": 472
+  },
+  "chapters": [
+    {
+      "slug": "introduction",
+      "title": "Introduction",
+      "overview": "Covers What is an algorithm?; Multiplication; Congressional Apportionment; A Bad Example; Describing Algorithms; Analyzing Algorithms.",
+      "position": 1,
+      "showUnreviewed": false,
+      "plan": {
+        "pages": "19-38",
+        "sections": [
+          {
+            "title": "What is an algorithm?",
+            "pages": "19-20"
+          },
+          {
+            "title": "Multiplication",
+            "pages": "21-25"
+          },
+          {
+            "title": "Congressional Apportionment",
+            "pages": "26-27"
+          },
+          {
+            "title": "A Bad Example",
+            "pages": "28"
+          },
+          {
+            "title": "Describing Algorithms",
+            "pages": "29-31"
+          },
+          {
+            "title": "Analyzing Algorithms",
+            "pages": "32-34"
+          }
+        ]
+      },
+      "lessons": []
+    },
+    {
+      "slug": "recursion",
+      "title": "Recursion",
+      "overview": "Covers Reductions; Simplify and Delegate; Tower of Hanoi; Mergesort; Quicksort; The Pattern; Recursion Trees; Linear-Time Selection; Fast Multiplication; Exponentiation.",
+      "position": 2,
+      "showUnreviewed": false,
+      "plan": {
+        "pages": "39-88",
+        "sections": [
+          {
+            "title": "Reductions",
+            "pages": "39"
+          },
+          {
+            "title": "Simplify and Delegate",
+            "pages": "40-41"
+          },
+          {
+            "title": "Tower of Hanoi",
+            "pages": "42-43"
+          },
+          {
+            "title": "Mergesort",
+            "pages": "44-46"
+          },
+          {
+            "title": "Quicksort",
+            "pages": "47-48"
+          },
+          {
+            "title": "The Pattern",
+            "pages": "49-52"
+          },
+          {
+            "title": "Recursion Trees",
+            "pages": "49-52"
+          },
+          {
+            "title": "Linear-Time Selection",
+            "pages": "53-57"
+          },
+          {
+            "title": "Fast Multiplication",
+            "pages": "58-59"
+          },
+          {
+            "title": "Exponentiation",
+            "pages": "60-61"
+          }
+        ]
+      },
+      "lessons": [
+        {
+          "file": "recursion-tower-of-hanoi-c16db1.json",
+          "position": 1,
+          "status": "reviewed"
+        }
+      ]
+    },
+    {
+      "slug": "backtracking",
+      "title": "Backtracking",
+      "overview": "Covers N Queens; Game Trees; Subset Sum; The General Pattern; Text Segmentation (Interpunctio Verborum); Longest Increasing Subsequence; Longest Increasing Subsequence, Take 2; Optimal Binary Search Trees.",
+      "position": 3,
+      "showUnreviewed": false,
+      "plan": {
+        "pages": "89-114",
+        "sections": [
+          {
+            "title": "N Queens",
+            "pages": "89-90"
+          },
+          {
+            "title": "Game Trees",
+            "pages": "91-93"
+          },
+          {
+            "title": "Subset Sum",
+            "pages": "94-96"
+          },
+          {
+            "title": "The General Pattern",
+            "pages": "97"
+          },
+          {
+            "title": "Text Segmentation (Interpunctio Verborum)",
+            "pages": "98-103"
+          },
+          {
+            "title": "Longest Increasing Subsequence",
+            "pages": "104-106"
+          },
+          {
+            "title": "Longest Increasing Subsequence, Take 2",
+            "pages": "107-108"
+          },
+          {
+            "title": "Optimal Binary Search Trees",
+            "pages": "109-110"
+          }
+        ]
+      },
+      "lessons": []
+    },
+    {
+      "slug": "dynamic-programming",
+      "title": "Dynamic Programming",
+      "overview": "Covers Mātrāvṛtta; Aside: Even Faster Fibonacci Numbers; Interpunctio Verborum Redux; The Pattern: Smart Recursion; Warning: Greed is Stupid; Longest Increasing Subsequence; Edit Distance; Subset Sum; Optimal Binary Search Trees; Dynamic Programming on Trees.",
+      "position": 4,
+      "showUnreviewed": false,
+      "plan": {
+        "pages": "115-176",
+        "sections": [
+          {
+            "title": "Mātrāvṛtta",
+            "pages": "115-120"
+          },
+          {
+            "title": "Aside: Even Faster Fibonacci Numbers",
+            "pages": "121-122"
+          },
+          {
+            "title": "Interpunctio Verborum Redux",
+            "pages": "123-124"
+          },
+          {
+            "title": "The Pattern: Smart Recursion",
+            "pages": "123-124"
+          },
+          {
+            "title": "Warning: Greed is Stupid",
+            "pages": "125-126"
+          },
+          {
+            "title": "Longest Increasing Subsequence",
+            "pages": "127-128"
+          },
+          {
+            "title": "Edit Distance",
+            "pages": "129-133"
+          },
+          {
+            "title": "Subset Sum",
+            "pages": "134"
+          },
+          {
+            "title": "Optimal Binary Search Trees",
+            "pages": "135-137"
+          },
+          {
+            "title": "Dynamic Programming on Trees",
+            "pages": "138-140"
+          }
+        ]
+      },
+      "lessons": []
+    },
+    {
+      "slug": "greedy-algorithms",
+      "title": "Greedy Algorithms",
+      "overview": "Covers Storing Files on Tape; Scheduling Classes; General Pattern; Huffman Codes; Stable Matching.",
+      "position": 5,
+      "showUnreviewed": false,
+      "plan": {
+        "pages": "177-204",
+        "sections": [
+          {
+            "title": "Storing Files on Tape",
+            "pages": "177-178"
+          },
+          {
+            "title": "Scheduling Classes",
+            "pages": "179-181"
+          },
+          {
+            "title": "General Pattern",
+            "pages": "182"
+          },
+          {
+            "title": "Huffman Codes",
+            "pages": "183-186"
+          },
+          {
+            "title": "Stable Matching",
+            "pages": "187-193"
+          }
+        ]
+      },
+      "lessons": []
+    },
+    {
+      "slug": "basic-graph-algorithms",
+      "title": "Basic Graph Algorithms",
+      "overview": "Covers Introduction and History; Basic Definitions; Representations and Examples; Data Structures; Whatever-First Search; Important Variants; Graph Reductions: Flood Fill.",
+      "position": 6,
+      "showUnreviewed": false,
+      "plan": {
+        "pages": "205-242",
+        "sections": [
+          {
+            "title": "Introduction and History",
+            "pages": "205-207"
+          },
+          {
+            "title": "Basic Definitions",
+            "pages": "208-209"
+          },
+          {
+            "title": "Representations and Examples",
+            "pages": "210-212"
+          },
+          {
+            "title": "Data Structures",
+            "pages": "213-216"
+          },
+          {
+            "title": "Whatever-First Search",
+            "pages": "217-218"
+          },
+          {
+            "title": "Important Variants",
+            "pages": "219-222"
+          },
+          {
+            "title": "Graph Reductions: Flood Fill",
+            "pages": "223-224"
+          }
+        ]
+      },
+      "lessons": []
+    },
+    {
+      "slug": "depth-first-search",
+      "title": "Depth-First Search",
+      "overview": "Covers Preorder and Postorder; Detecting Cycles; Topological Sort; Memoization and Dynamic Programming; Strong Connectivity; Strong Components in Linear Time.",
+      "position": 7,
+      "showUnreviewed": false,
+      "plan": {
+        "pages": "243-274",
+        "sections": [
+          {
+            "title": "Preorder and Postorder",
+            "pages": "245-248"
+          },
+          {
+            "title": "Detecting Cycles",
+            "pages": "249"
+          },
+          {
+            "title": "Topological Sort",
+            "pages": "250-251"
+          },
+          {
+            "title": "Memoization and Dynamic Programming",
+            "pages": "252-254"
+          },
+          {
+            "title": "Strong Connectivity",
+            "pages": "255"
+          },
+          {
+            "title": "Strong Components in Linear Time",
+            "pages": "256-261"
+          }
+        ]
+      },
+      "lessons": []
+    },
+    {
+      "slug": "minimum-spanning-trees",
+      "title": "Minimum Spanning Trees",
+      "overview": "Covers Distinct Edge Weights; The Only Minimum Spanning Tree Algorithm; Borůvka’s Algorithm; Jarník’s (“Prim’s”) Algorithm; Kruskal’s Algorithm.",
+      "position": 8,
+      "showUnreviewed": false,
+      "plan": {
+        "pages": "275-290",
+        "sections": [
+          {
+            "title": "Distinct Edge Weights",
+            "pages": "275-276"
+          },
+          {
+            "title": "The Only Minimum Spanning Tree Algorithm",
+            "pages": "277-278"
+          },
+          {
+            "title": "Borůvka’s Algorithm",
+            "pages": "279-280"
+          },
+          {
+            "title": "Jarník’s (“Prim’s”) Algorithm",
+            "pages": "281-282"
+          },
+          {
+            "title": "Kruskal’s Algorithm",
+            "pages": "283-285"
+          }
+        ]
+      },
+      "lessons": []
+    },
+    {
+      "slug": "shortest-paths",
+      "title": "Shortest Paths",
+      "overview": "Covers Shortest Path Trees; Negative Edges; The Only SSSP Algorithm; Unweighted Graphs: Breadth-First Search; Directed Acyclic Graphs: Depth-First Search; Best-First: Dijkstra’s Algorithm; Relax ALL the Edges: Bellman-Ford.",
+      "position": 9,
+      "showUnreviewed": false,
+      "plan": {
+        "pages": "291-326",
+        "sections": [
+          {
+            "title": "Shortest Path Trees",
+            "pages": "292-293"
+          },
+          {
+            "title": "Negative Edges",
+            "pages": "292-293"
+          },
+          {
+            "title": "The Only SSSP Algorithm",
+            "pages": "294-295"
+          },
+          {
+            "title": "Unweighted Graphs: Breadth-First Search",
+            "pages": "296-299"
+          },
+          {
+            "title": "Directed Acyclic Graphs: Depth-First Search",
+            "pages": "300-301"
+          },
+          {
+            "title": "Best-First: Dijkstra’s Algorithm",
+            "pages": "302-306"
+          },
+          {
+            "title": "Relax ALL the Edges: Bellman-Ford",
+            "pages": "307-314"
+          }
+        ]
+      },
+      "lessons": []
+    },
+    {
+      "slug": "all-pairs-shortest-paths",
+      "title": "All-Pairs Shortest Paths",
+      "overview": "Covers Introduction; Lots of Single Sources; Reweighting; Johnson's Algorithm; Dynamic Programming; Divide and Conquer; Funny Matrix Multiplication; (Kleene-Roy-)Floyd-Warshall(-Ingerman).",
+      "position": 10,
+      "showUnreviewed": false,
+      "plan": {
+        "pages": "327-344",
+        "sections": [
+          {
+            "title": "Introduction",
+            "pages": "327"
+          },
+          {
+            "title": "Lots of Single Sources",
+            "pages": "328"
+          },
+          {
+            "title": "Reweighting",
+            "pages": "329"
+          },
+          {
+            "title": "Johnson's Algorithm",
+            "pages": "330"
+          },
+          {
+            "title": "Dynamic Programming",
+            "pages": "331-332"
+          },
+          {
+            "title": "Divide and Conquer",
+            "pages": "333"
+          },
+          {
+            "title": "Funny Matrix Multiplication",
+            "pages": "334-335"
+          },
+          {
+            "title": "(Kleene-Roy-)Floyd-Warshall(-Ingerman)",
+            "pages": "336-337"
+          }
+        ]
+      },
+      "lessons": []
+    },
+    {
+      "slug": "maximum-flows-minimum-cuts",
+      "title": "Maximum Flows & Minimum Cuts",
+      "overview": "Covers Flows; Cuts; The Maxflow-Mincut Theorem; Ford and Fulkerson's augmenting-path algorithm; Combining and Decomposing Flows; Edmonds and Karp's Algorithms; Further Progress.",
+      "position": 11,
+      "showUnreviewed": false,
+      "plan": {
+        "pages": "345-370",
+        "sections": [
+          {
+            "title": "Flows",
+            "pages": "346"
+          },
+          {
+            "title": "Cuts",
+            "pages": "347-348"
+          },
+          {
+            "title": "The Maxflow-Mincut Theorem",
+            "pages": "349-351"
+          },
+          {
+            "title": "Ford and Fulkerson's augmenting-path algorithm",
+            "pages": "352-353"
+          },
+          {
+            "title": "Combining and Decomposing Flows",
+            "pages": "354-357"
+          },
+          {
+            "title": "Edmonds and Karp's Algorithms",
+            "pages": "358-360"
+          },
+          {
+            "title": "Further Progress",
+            "pages": "361"
+          }
+        ]
+      },
+      "lessons": []
+    },
+    {
+      "slug": "applications-of-flows-and-cuts",
+      "title": "Applications of Flows and Cuts",
+      "overview": "Covers Edge-Disjoint Paths; Vertex Capacities and Vertex-Disjoint Paths; Bipartite Matching; Tuple Selection; Disjoint-Path Covers; Baseball Elimination; Project Selection.",
+      "position": 12,
+      "showUnreviewed": false,
+      "plan": {
+        "pages": "371-396",
+        "sections": [
+          {
+            "title": "Edge-Disjoint Paths",
+            "pages": "371"
+          },
+          {
+            "title": "Vertex Capacities and Vertex-Disjoint Paths",
+            "pages": "372"
+          },
+          {
+            "title": "Bipartite Matching",
+            "pages": "373"
+          },
+          {
+            "title": "Tuple Selection",
+            "pages": "374-377"
+          },
+          {
+            "title": "Disjoint-Path Covers",
+            "pages": "378-380"
+          },
+          {
+            "title": "Baseball Elimination",
+            "pages": "381-383"
+          },
+          {
+            "title": "Project Selection",
+            "pages": "384-385"
+          }
+        ]
+      },
+      "lessons": []
+    },
+    {
+      "slug": "np-hardness",
+      "title": "NP-Hardness",
+      "overview": "Covers A Game You Can't Win; P versus NP; NP-hard, NP-easy, and NP-complete; Formal Definitions (HC SVNT DRACONES); Reductions and Sat; 3Sat (from CircuitSat); Maximum Independent Set (from 3Sat); The General Pattern; Clique and Vertex Cover (from Independent Set); Graph Coloring (from 3Sat); Hamiltonian Cycle; Subset Sum (from Vertex Cover); Other Useful NP-hard Problems; Choosing the Right Problem; A Frivolous Real-World Example; On Beyond Zebra.",
+      "position": 13,
+      "showUnreviewed": false,
+      "plan": {
+        "pages": "397-446",
+        "sections": [
+          {
+            "title": "A Game You Can't Win",
+            "pages": "397-398"
+          },
+          {
+            "title": "P versus NP",
+            "pages": "399"
+          },
+          {
+            "title": "NP-hard, NP-easy, and NP-complete",
+            "pages": "400-401"
+          },
+          {
+            "title": "Formal Definitions (HC SVNT DRACONES)",
+            "pages": "402"
+          },
+          {
+            "title": "Reductions and Sat",
+            "pages": "403-405"
+          },
+          {
+            "title": "3Sat (from CircuitSat)",
+            "pages": "406-407"
+          },
+          {
+            "title": "Maximum Independent Set (from 3Sat)",
+            "pages": "408-409"
+          },
+          {
+            "title": "The General Pattern",
+            "pages": "410-411"
+          },
+          {
+            "title": "Clique and Vertex Cover (from Independent Set)",
+            "pages": "412-415"
+          },
+          {
+            "title": "Graph Coloring (from 3Sat)",
+            "pages": "412-415"
+          },
+          {
+            "title": "Hamiltonian Cycle",
+            "pages": "416-419"
+          },
+          {
+            "title": "Subset Sum (from Vertex Cover)",
+            "pages": "420-421"
+          },
+          {
+            "title": "Other Useful NP-hard Problems",
+            "pages": "422-424"
+          },
+          {
+            "title": "Choosing the Right Problem",
+            "pages": "425"
+          },
+          {
+            "title": "A Frivolous Real-World Example",
+            "pages": "426-428"
+          },
+          {
+            "title": "On Beyond Zebra",
+            "pages": "429-432"
+          }
+        ]
+      },
+      "lessons": []
+    }
+  ]
+}

@@ -152,11 +152,14 @@
   const swapIn = async (moduleId: string, altId: string) => {
     if (okToChange() && (await run(() => authorApi.swap(lessonId, moduleId, altId)))) delete seenByStep[moduleId];
   };
-  const setPart = async (moduleId: string, which: number | "general", part: "reExplanation" | "simplerQuestion", enabled: boolean) => {
-    if (okToChange()) await run(() => authorApi.setPart(lessonId, moduleId, which, part, enabled));
+  // A switch flips back when the author cancels or the save fails.
+  const setPart = async (moduleId: string, which: number | "general", part: "reExplanation" | "simplerQuestion", enabled: boolean, box?: HTMLInputElement) => {
+    const done = okToChange() && (await run(() => authorApi.setPart(lessonId, moduleId, which, part, enabled)));
+    if (!done && box) box.checked = !enabled;
   };
-  const setExploreOn = async (moduleId: string, enabled: boolean) => {
-    if (okToChange()) await run(() => authorApi.setExplore(lessonId, moduleId, enabled));
+  const setExploreOn = async (moduleId: string, enabled: boolean, box?: HTMLInputElement) => {
+    const done = okToChange() && (await run(() => authorApi.setExplore(lessonId, moduleId, enabled)));
+    if (!done && box) box.checked = !enabled;
   };
 
   // One line on how an exploration's widget is set up, for the Every branch view.
@@ -215,7 +218,7 @@
 {#snippet toggle(on: boolean, moduleId: string | null, which: number | "general" | null, part: "reExplanation" | "simplerQuestion")}
   {#if moduleId !== null && which !== null}
     <label class="toggle">
-      <input type="checkbox" checked={on} disabled={busy} onchange={() => setPart(moduleId, which, part, !on)} />
+      <input type="checkbox" checked={on} disabled={busy} onchange={(e) => setPart(moduleId, which, part, !on, e.currentTarget)} />
       shown to students
     </label>
   {/if}
@@ -342,7 +345,7 @@
             <Part label="Exploration" suggestions={partSuggestions("explore")} onSuggest={suggestFor("explore", "Exploration")} onWithdraw={withdraw}>
               <div class="sub" class:off={!e.enabled}>
                 <label class="toggle">
-                  <input type="checkbox" checked={e.enabled} disabled={busy} onchange={() => setExploreOn(mod.id, !e.enabled)} />
+                  <input type="checkbox" checked={e.enabled} disabled={busy} onchange={(ev) => setExploreOn(mod.id, !e.enabled, ev.currentTarget)} />
                   shown to students
                 </label>
                 <span class="tag">Why it's here (authors only)</span>

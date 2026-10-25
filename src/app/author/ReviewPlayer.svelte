@@ -39,8 +39,8 @@
     partSuggestions: (part: string) => Suggestion[];
     suggestFor: (part: string, partLabel: string) => (text: string) => Promise<boolean>;
     onWithdraw: (id: string) => Promise<void>;
-    setPart: (moduleId: string, which: number | "general", part: "reExplanation" | "simplerQuestion", enabled: boolean) => void;
-    setExploreOn: (moduleId: string, enabled: boolean) => void;
+    setPart: (moduleId: string, which: number | "general", part: "reExplanation" | "simplerQuestion", enabled: boolean, box?: HTMLInputElement) => void;
+    setExploreOn: (moduleId: string, enabled: boolean, box?: HTMLInputElement) => void;
   } = $props();
   // The exploration plays first, as for students; "Play it again" starts it over.
   let exploreRun = $state(0);
@@ -91,13 +91,13 @@
 {#snippet switches(f: FallbackParts, which: number | "general")}
   {#if f.reExplanation}
     <label class="switch">
-      <input type="checkbox" checked={f.reExplanation.enabled} disabled={busy} onchange={() => setPart(mod.id, which, "reExplanation", !f.reExplanation!.enabled)} />
+      <input type="checkbox" checked={f.reExplanation.enabled} disabled={busy} onchange={(e) => setPart(mod.id, which, "reExplanation", !f.reExplanation!.enabled, e.currentTarget)} />
       Re-explanation shown to students
     </label>
   {/if}
   {#if f.simplerQuestion}
     <label class="switch">
-      <input type="checkbox" checked={f.simplerQuestion.enabled} disabled={busy} onchange={() => setPart(mod.id, which, "simplerQuestion", !f.simplerQuestion!.enabled)} />
+      <input type="checkbox" checked={f.simplerQuestion.enabled} disabled={busy} onchange={(e) => setPart(mod.id, which, "simplerQuestion", !f.simplerQuestion!.enabled, e.currentTarget)} />
       Simpler question shown to students
     </label>
   {/if}
@@ -116,7 +116,7 @@
         <span class="badge badge-review">Author's view</span>
         <p><strong>Why it's here:</strong> {@html renderInline(e.why)}</p>
         <label class="switch">
-          <input type="checkbox" checked={e.enabled} disabled={busy} onchange={() => setExploreOn(mod.id, !e.enabled)} />
+          <input type="checkbox" checked={e.enabled} disabled={busy} onchange={(ev) => setExploreOn(mod.id, !e.enabled, ev.currentTarget)} />
           Exploration shown to students
         </label>
         <p class="muted">Try it twice: once predicting right, once predicting wrong, to see the explanation a wrong prediction gets.</p>

@@ -22,6 +22,35 @@ video{width:100%;border-radius:1rem;background:#000}
 ul{margin:0;padding-left:1.2rem}
 textarea{width:100%;min-height:80px;font:inherit;border:1px solid var(--hr);border-radius:12px;padding:9px 11px;background:var(--surface);color:var(--text);resize:vertical}
 .note{font-size:13.5px;color:var(--muted)}
+.tools{display:flex;flex-wrap:wrap;gap:8px}
+button,.btn{font:inherit;font-size:14px;font-weight:600;border-radius:10px;padding:8px 14px;border:1px solid var(--hr);background:var(--surface);color:var(--text);cursor:pointer;text-decoration:none}
+button.go{background:linear-gradient(135deg,#2e8659 0%,#17492f 100%);color:#fff;border-color:transparent}
+button.rec{background:#b3261e;color:#fff;border-color:transparent}
+button:disabled{opacity:.5;cursor:default}
+#transcript pre{white-space:pre-wrap;font:15px/1.6 var(--sans);margin:0}
+/* The teleprompter: a dark screen with the cut small at the top and the words large. */
+#prompter{position:fixed;inset:0;z-index:10;background:#0e1216;color:#e8edf2;display:none;flex-direction:column}
+#prompter.on{display:flex}
+#prompter .bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+#prompter .bar label{font-size:13px;color:rgba(232,237,242,.7)}
+#prompter select{font:inherit;font-size:14px;background:#1b2229;color:#e8edf2;border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px}
+#prompter button{background:#1b2229;color:#e8edf2;border-color:rgba(255,255,255,.2)}
+#prompter button.go{background:linear-gradient(135deg,#2e8659 0%,#17492f 100%)}
+#prompter button.rec{background:#b3261e}
+#prompter .stage{flex:1;display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:24px;padding:20px 24px;overflow:hidden}
+@media (max-width:800px){#prompter .stage{grid-template-columns:1fr}}
+#prompter video{border-radius:10px}
+#pClock{font-family:var(--mono);font-size:14px;color:rgba(232,237,242,.7);margin-top:8px}
+#pStatus{font-size:14px;margin-top:6px;color:#f2b15e;min-height:1.4em}
+#pWords{overflow-y:auto;scroll-behavior:smooth;padding-right:8px}
+.pshot{margin:0 0 28px;opacity:.38;transition:opacity .2s}
+.pshot.now{opacity:1}
+.pshot h3{font-family:var(--mono);font-size:13px;font-weight:600;color:#f2b15e;margin:0 0 6px}
+.pshot p{font-size:clamp(24px,3vw,38px);line-height:1.45;margin:0}
+.pshot .w.said{color:#83d1b0}
+.pshot .empty{font-style:italic;color:rgba(232,237,242,.45)}
+#pCount{position:absolute;right:24px;bottom:20px;font-family:var(--mono);font-size:56px;color:#f2b15e}
+#takes a{color:#83d1b0;margin-right:12px}
 </style>
 </head>
 <body>
@@ -29,7 +58,17 @@ textarea{width:100%;min-height:80px;font:inherit;border:1px solid var(--hr);bord
 <h1>Narration shot list</h1>
 <p>The rough cut (2:37, no sound; the app clips re-recorded in dark mode on Oct 25, the draft simulated and captioned, the statistics shot cut) is below. For each shot: what's on screen, the points to cover, and a box for your words. The words are yours: the hackathon's rules say the narration must be written by you. At a relaxed pace, people speak about 2 to 2.5 words a second, so each shot shows a rough word budget. What you type stays in this browser only; copy it somewhere safe when you're done.</p>
 <video src="../media/concept-b/rough-cut.mp4" controls preload="metadata"></video>
-<p class="note">To change the cuts, edit the times in <code>devpost/demo-video/concept-b/rough-cut.sh</code> and run it again. To record your voice over it: QuickTime → New Audio Recording while the rough cut plays, or record straight into iMovie's voiceover tool.</p>
+<div class="tools">
+  <button class="go" id="openPrompter" type="button">Teleprompter and recording</button>
+  <button id="showTranscript" type="button">Transcript</button>
+  <button id="backup" type="button">Download my words (backup)</button>
+  <label class="btn" for="restore">Load my words…</label><input id="restore" type="file" accept=".json,application/json" hidden>
+</div>
+<section class="card" id="transcript" hidden>
+  <div class="hd"><span class="t">Transcript</span><span class="d"><button id="copyT" type="button">Copy</button> <button id="saveT" type="button">Download .txt</button></span></div>
+  <pre id="tText"></pre>
+</section>
+<p class="note">The teleprompter plays the cut (muted) and shows your words large, greying in each word about when it's due, with a countdown before each new shot. "Record" records your voice from the Mac's microphone while the cut plays and saves an audio file that knows where in the cut it starts; a take can start from any shot. Send the files to Claude to lay over the cut (<code>merge-voice.py</code> next to this page does it with ffmpeg). To change the cuts, edit the times in <code>rough-cut.sh</code> and run it again.</p>
 <section class="card"><div class="hd"><span class="n">01</span><span class="t">0:00–0:20</span><span class="d">20 s · about 46 spoken words</span></div>
 <p class="screen"><b>On screen.</b> The opener: two real pages of Erickson&#x27;s Algorithms (Tower of Hanoi) turn into a six-module lesson; module 3 opens into its paths (the right answer, each wrong answer with its hint); the review ticks run down and Draft becomes Reviewed by a person.</p>
 <p class="label">Points to cover</p><ul><li>What a lecturer or self-learner starts with (a book) and what they want (short lessons that respond to mistakes, that they can trust).</li><li>In a sentence: what acu-primer is.</li></ul>
@@ -53,10 +92,155 @@ textarea{width:100%;min-height:80px;font:inherit;border:1px solid var(--hr);bord
 <p class="label">Points to cover</p><ul><li>What&#x27;s next, and where to find the code.</li></ul>
 <textarea data-k="shot8" placeholder="Your words for this shot"></textarea></section>
 </main>
+<div id="prompter" role="dialog" aria-label="Teleprompter">
+  <div class="bar">
+    <label for="pFrom">Start from</label><select id="pFrom"></select>
+    <button class="go" id="pRehearse" type="button">Rehearse</button>
+    <button class="rec" id="pRecord" type="button">Record</button>
+    <button id="pStop" type="button" disabled>Stop</button>
+    <span id="takes"></span>
+    <button id="pClose" type="button" style="margin-left:auto">Close</button>
+  </div>
+  <div class="stage">
+    <div><video id="pVideo" src="../media/concept-b/rough-cut.mp4" muted playsinline preload="auto"></video><div id="pClock">0:00</div><div id="pStatus"></div></div>
+    <div id="pWords"></div>
+  </div>
+  <div id="pCount"></div>
+</div>
 <script>
   var KEY='acu-narration-2026-10-23';
   var state={}; try{state=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
   document.querySelectorAll('textarea[data-k]').forEach(function(t){t.value=state[t.dataset.k]||'';t.addEventListener('input',function(){state[t.dataset.k]=t.value;try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}});});
+</script>
+<script>
+// The shots, in order, read from the cards: number, start and end in seconds, and the words.
+var secs = function (m) { var p = m.split(':'); return Number(p[0]) * 60 + Number(p[1]); };
+var shots = [].map.call(document.querySelectorAll('main section.card:not(#transcript)'), function (c) {
+  var t = c.querySelector('.t').textContent.split(/[–-]/);
+  return { n: c.querySelector('.n').textContent, start: secs(t[0]), end: secs(t[1]), box: c.querySelector('textarea') };
+});
+var $ = function (id) { return document.getElementById(id); };
+var fmt = function (s) { s = Math.max(0, s); return Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0'); };
+var words = function (s) { return s.box.value.trim(); };
+
+// Transcript: every shot's words, in order.
+function transcript() {
+  return shots.map(function (s) { return '[' + fmt(s.start) + '–' + fmt(s.end) + ']\n' + (words(s) || '(nothing yet)'); }).join('\n\n');
+}
+function download(name, text, type) {
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: type }));
+  a.download = name; a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+}
+$('showTranscript').onclick = function () { $('tText').textContent = transcript(); $('transcript').hidden = !$('transcript').hidden; };
+$('copyT').onclick = function () { navigator.clipboard && navigator.clipboard.writeText(transcript()); };
+$('saveT').onclick = function () { download('narration-transcript.txt', transcript() + '\n', 'text/plain'); };
+// Your words live in this browser's storage for this page's address, so a backup file lets
+// you move them (another browser, or the page opened from a different address).
+$('backup').onclick = function () {
+  var o = {}; shots.forEach(function (s) { o[s.box.dataset.k] = s.box.value; });
+  download('narration-words.json', JSON.stringify(o, null, 2), 'application/json');
+};
+$('restore').onchange = function (e) {
+  var f = e.target.files[0]; if (!f) return;
+  f.text().then(function (t) {
+    var o = JSON.parse(t);
+    shots.forEach(function (s) { if (typeof o[s.box.dataset.k] === 'string') { s.box.value = o[s.box.dataset.k]; s.box.dispatchEvent(new Event('input')); } });
+  });
+};
+
+// The teleprompter.
+var v = $('pVideo'), recorder = null, chunks = [], mode = null, ticking = null, recStartedAt = 0, playStartedAt = 0, fromSec = 0;
+shots.forEach(function (s, i) { var o = document.createElement('option'); o.value = i; o.textContent = 'Shot ' + s.n + ' (' + fmt(s.start) + ')'; $('pFrom').appendChild(o); });
+function renderWords() {
+  $('pWords').innerHTML = '';
+  shots.forEach(function (s, i) {
+    var d = document.createElement('div'); d.className = 'pshot'; d.id = 'ps' + i;
+    var h = document.createElement('h3'); h.textContent = s.n + ' · ' + fmt(s.start) + '–' + fmt(s.end); d.appendChild(h);
+    var p = document.createElement('p'), text = words(s);
+    if (!text) { p.className = 'empty'; p.textContent = '(no words for this shot)'; }
+    else text.split(/\s+/).forEach(function (w) { var span = document.createElement('span'); span.className = 'w'; span.textContent = w + ' '; p.appendChild(span); });
+    d.appendChild(p); $('pWords').appendChild(d);
+  });
+}
+var current = -1;
+function tick() {
+  var t = v.currentTime; $('pClock').textContent = fmt(t) + ' / ' + fmt(v.duration || 0);
+  var i = shots.findIndex(function (s) { return t >= s.start && t < s.end; });
+  if (i === -1 && t >= shots[shots.length - 1].start) i = shots.length - 1;
+  if (i !== current) {
+    document.querySelectorAll('.pshot').forEach(function (d, j) { d.classList.toggle('now', j === i); });
+    var el = $('ps' + i); if (el) $('pWords').scrollTop = el.offsetTop - $('pWords').offsetTop - 20;
+    current = i;
+  }
+  if (i >= 0) {
+    // Words grey in at an even pace through the shot, so you can see whether you're ahead or behind.
+    var s = shots[i], f = (t - s.start) / (s.end - s.start), ws = $('ps' + i).querySelectorAll('.w');
+    ws.forEach(function (w, k) { w.classList.toggle('said', k < Math.floor(f * ws.length)); });
+    var next = shots[i + 1], left = next ? next.start - t : 0;
+    $('pCount').textContent = next && left <= 3 ? Math.ceil(left) : '';
+  }
+}
+function begin(record) {
+  renderWords(); current = -1; playStartedAt = 0;
+  fromSec = shots[Number($('pFrom').value)].start;
+  v.currentTime = fromSec;
+  var go = function () {
+    mode = record ? 'record' : 'rehearse';
+    $('pRehearse').disabled = $('pRecord').disabled = true; $('pStop').disabled = false;
+    var n = 3; $('pStatus').textContent = (record ? 'Recording. ' : '') + 'Starting in 3…';
+    var c = setInterval(function () {
+      n--; if (n > 0) { $('pStatus').textContent = (record ? 'Recording. ' : '') + 'Starting in ' + n + '…'; return; }
+      clearInterval(c); $('pStatus').textContent = record ? 'Recording' : 'Rehearsing';
+      v.play().then(function () { playStartedAt = performance.now(); ticking = setInterval(tick, 100); }, function (err) {
+        // No video, no take: a voice file that doesn't line up with the cut is no use.
+        failed = 'The cut didn\'t play (' + err.message + '), so nothing was kept.';
+        end();
+      });
+    }, 1000);
+  };
+  if (!record) return go();
+  navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: true } }).then(function (stream) {
+    chunks = [];
+    recorder = new MediaRecorder(stream);
+    recorder.ondataavailable = function (e) { if (e.data.size) chunks.push(e.data); };
+    recorder.onstart = function () { recStartedAt = performance.now(); go(); };
+    recorder.onstop = function () {
+      stream.getTracks().forEach(function (t) { t.stop(); });
+      // The file name says where in the cut this take starts, and how much audio comes before
+      // the cut starts playing (the countdown), so it can be laid over the cut exactly.
+      var lead = ((playStartedAt - recStartedAt) / 1000).toFixed(3);
+      var ext = (recorder.mimeType.indexOf('mp4') >= 0) ? 'm4a' : 'webm';
+      var name = 'voice-from-' + fromSec.toFixed(3) + 's-lead-' + lead + 's.' + ext;
+      var url = URL.createObjectURL(new Blob(chunks, { type: recorder.mimeType }));
+      var a = document.createElement('a'); a.href = url; a.download = name; a.textContent = 'Save take (shot ' + shots[Number($('pFrom').value)].n + ')';
+      $('takes').appendChild(a);
+      var au = new Audio(url); var play = document.createElement('a'); play.href = '#'; play.textContent = 'Listen';
+      play.onclick = function (e) { e.preventDefault(); au.currentTime = 0; au.play(); }; $('takes').appendChild(play);
+      a.click();
+    };
+    recorder.start();
+  }, function (err) {
+    $('pStatus').textContent = 'The microphone was blocked (' + err.name + '). Allow it in the browser, or open this page from a local server (python3 -m http.server in devpost/demo-video), after saving a backup of your words.';
+  });
+}
+var failed = '';
+function end() {
+  clearInterval(ticking); v.pause(); $('pCount').textContent = '';
+  if (mode === 'record' && recorder && recorder.state !== 'inactive') {
+    if (failed) { recorder.onstop = function () {}; recorder.stream.getTracks().forEach(function (t) { t.stop(); }); }
+    recorder.stop();
+  }
+  $('pStatus').textContent = failed || (mode === 'record' ? 'Take saved (check your Downloads).' : '');
+  failed = '';
+  mode = null; $('pRehearse').disabled = $('pRecord').disabled = false; $('pStop').disabled = true;
+}
+v.addEventListener('ended', end);
+$('pRehearse').onclick = function () { begin(false); };
+$('pRecord').onclick = function () { begin(true); };
+$('pStop').onclick = end;
+$('openPrompter').onclick = function () { renderWords(); v.currentTime = shots[Number($('pFrom').value)].start; tick(); $('prompter').classList.add('on'); };
+$('pClose').onclick = function () { end(); $('prompter').classList.remove('on'); };
 </script>
 </body>
 </html>

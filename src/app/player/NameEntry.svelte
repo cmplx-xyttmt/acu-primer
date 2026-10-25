@@ -19,12 +19,20 @@
   >
     <label for="name">Your name</label>
     <!-- svelte-ignore a11y_autofocus (the only field on the page) -->
-    <input id="name" type="text" bind:value={name} autocomplete="name" maxlength="100" autofocus />
+    <input id="name" type="text" bind:value={name} autocomplete="name" maxlength="100" aria-describedby="name-why" autofocus />
+    <p class="muted why" id="name-why">
+      The lesson's author sees your answers under this name. There's no account: only the name, a random id for this
+      browser, and your answers are sent.
+    </p>
     <button class="btn" type="submit" disabled={!name.trim()}>Start</button>
   </form>
 </main>
 
 <style>
+  .why {
+    margin: 0;
+    font-size: 0.88rem;
+  }
   .home {
     text-decoration: none;
   }

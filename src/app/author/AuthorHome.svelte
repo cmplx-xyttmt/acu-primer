@@ -41,15 +41,28 @@
     const p = BRIEF_PRESETS.find((x) => x.id === id);
     if (p) form.brief = p.brief; // fills the box; the author edits from there
   }
-  async function createSubject() {
-    if (!newSubject?.title.trim()) return;
+  // One save at a time, so a double click doesn't make two subjects or chapters.
+  let saving = $state(false);
+  async function once(work: () => Promise<void>) {
+    if (saving) return;
+    saving = true;
     try {
-      await authorApi.createSubject({ title: newSubject.title, overview: newSubject.overview, brief: newSubject.brief });
-      newSubject = null;
-      await load();
+      await work();
     } catch (err) {
       fail(err);
+    } finally {
+      saving = false;
     }
+  }
+
+  async function createSubject() {
+    const form = newSubject;
+    if (!form?.title.trim()) return;
+    await once(async () => {
+      await authorApi.createSubject({ title: form.title, overview: form.overview, brief: form.brief });
+      newSubject = null;
+      await load();
+    });
   }
 
   // --- Editing a subject's overview and brief ----------------------------------------------
@@ -57,13 +70,11 @@
   const startEdit = (s: AuthorSubject) => (editing[s.id] = { overview: s.overview ?? "", preset: "", brief: s.brief ?? "" });
   async function saveSubject(s: AuthorSubject) {
     const e = editing[s.id];
-    try {
+    await once(async () => {
       await authorApi.updateSubject(s.id, { overview: e.overview, brief: e.brief });
       delete editing[s.id];
       await load();
-    } catch (err) {
-      fail(err);
-    }
+    });
   }
 
   // --- New chapter ------------------------------------------------------------------------
@@ -71,22 +82,26 @@
   async function createChapter(s: AuthorSubject) {
     const c = newChapter[s.id];
     if (!c?.title.trim()) return;
-    try {
+    await once(async () => {
       await authorApi.createChapter(s.id, c);
       delete newChapter[s.id];
       await load();
-    } catch (err) {
-      fail(err);
-    }
+    });
   }
 
-  async function toggle(chapter: AuthorChapter) {
-    const next = !chapter.showUnreviewed;
+  // The box shows the saved value again if saving fails, and can't be flipped while saving.
+  let toggling = $state<string | null>(null);
+  async function toggle(chapter: AuthorChapter, box: HTMLInputElement) {
+    const next = box.checked;
+    toggling = chapter.id;
     try {
       await authorApi.setShowUnreviewed(chapter.id, next);
       chapter.showUnreviewed = next;
     } catch (err) {
+      box.checked = chapter.showUnreviewed;
       fail(err);
+    } finally {
+      toggling = null;
     }
   }
 
@@ -180,7 +195,7 @@
         <textarea rows="4" bind:value={newSubject.brief} placeholder="Pick a profile above to start from, or describe the learner yourself."></textarea>
       </fieldset>
       <div class="row">
-        <button class="btn" disabled={!newSubject.title.trim()} onclick={createSubject}>Create subject</button>
+        <button class="btn" disabled={!newSubject.title.trim() || saving} onclick={createSubject}>Create subject</button>
         <button class="btn-quiet" onclick={() => (newSubject = null)}>Cancel</button>
       </div>
     </section>
@@ -189,7 +204,7 @@
   {#if !subjects}
     <p class="muted">Loading…</p>
   {:else if subjects.length === 0}
-    <p class="muted">No subjects yet. Start one with New subject.</p>
+    <p class="muted">No subjects yet. Start one with Start from a book, or with New subject.</p>
   {:else}
     {#each subjects as s (s.id || "loose")}
       {@const isOpen = !!open[keyOf(s)] || !!(s.id && editing[s.id])}
@@ -229,7 +244,7 @@
               <textarea rows="4" bind:value={e.brief}></textarea>
             </fieldset>
             <div class="row">
-              <button class="btn" onclick={() => saveSubject(s)}>Save</button>
+              <button class="btn" disabled={saving} onclick={() => saveSubject(s)}>Save</button>
               <button class="btn-quiet" onclick={() => delete editing[s.id]}>Cancel</button>
             </div>
           </div>
@@ -253,7 +268,7 @@
             </div>
             {#if c.overview}<p class="muted small">{c.overview}</p>{/if}
             <label class="switch">
-              <input type="checkbox" checked={c.showUnreviewed} onchange={() => toggle(c)} />
+              <input type="checkbox" checked={c.showUnreviewed} disabled={toggling === c.id} onchange={(e) => toggle(c, e.currentTarget)} />
               Show unreviewed lessons to students
             </label>
             <ul>
@@ -286,7 +301,7 @@
               <label>Chapter title <input type="text" bind:value={nc.title} placeholder="Processes and limited direct execution" /></label>
               <label>Overview, for students <textarea rows="2" bind:value={nc.overview}></textarea></label>
               <div class="row">
-                <button class="btn" disabled={!nc.title.trim()} onclick={() => createChapter(s)}>Create chapter</button>
+                <button class="btn" disabled={!nc.title.trim() || saving} onclick={() => createChapter(s)}>Create chapter</button>
                 <button class="btn-quiet" onclick={() => delete newChapter[s.id]}>Cancel</button>
               </div>
             </div>

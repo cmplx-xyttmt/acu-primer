@@ -17,7 +17,7 @@
     label: string;
     margin?: boolean;
     suggestions: Suggestion[]; // this part's, any status
-    onSuggest: (text: string) => Promise<void>;
+    onSuggest: (text: string) => Promise<boolean>; // false when saving failed
     onWithdraw: (id: string) => Promise<void>;
     children: Snippet;
   } = $props();
@@ -25,13 +25,17 @@
   let writing = $state(false);
   let text = $state("");
   let saving = $state(false);
+  let failed = $state(false);
 
+  // The text is cleared only once it's saved, so a network blip doesn't lose it.
   async function save() {
     saving = true;
     try {
-      await onSuggest(text.trim());
-      text = "";
-      writing = false;
+      failed = !(await onSuggest(text.trim()));
+      if (!failed) {
+        text = "";
+        writing = false;
+      }
     } finally {
       saving = false;
     }
@@ -74,7 +78,8 @@
       }}
     >
       <!-- svelte-ignore a11y_autofocus (opened by the author's click) -->
-      <textarea bind:value={text} rows="3" placeholder={margin ? `${label}: what should change, and why?` : "What should change here, and why?"} autofocus></textarea>
+      <textarea bind:value={text} rows="3" placeholder={margin ? `${label}: what should change, and why?` : "What should change here, and why?"} aria-label="Suggestion for {label}" autofocus></textarea>
+      {#if failed}<p class="save-error" role="alert">Couldn't save it. Your text is still here, so try again.</p>{/if}
       <div class="actions">
         <button class="btn" type="submit" disabled={!text.trim() || saving}>{saving ? "Saving…" : "Save suggestion"}</button>
         <button class="btn-quiet" type="button" onclick={() => ((writing = false), (text = ""))}>Cancel</button>
@@ -84,6 +89,11 @@
 </div>
 
 <style>
+  .save-error {
+    color: var(--wrong);
+    margin: 0.4rem 0 0;
+    font-size: 0.9rem;
+  }
   .part {
     margin-top: 0.9rem;
     padding: 0.7rem 0.9rem;

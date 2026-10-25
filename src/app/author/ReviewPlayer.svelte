@@ -37,7 +37,7 @@
     busy: boolean;
     onSeen: (path: PathId) => void;
     partSuggestions: (part: string) => Suggestion[];
-    suggestFor: (part: string, partLabel: string) => (text: string) => Promise<void>;
+    suggestFor: (part: string, partLabel: string) => (text: string) => Promise<boolean>;
     onWithdraw: (id: string) => Promise<void>;
     setPart: (moduleId: string, which: number | "general", part: "reExplanation" | "simplerQuestion", enabled: boolean) => void;
     setExploreOn: (moduleId: string, enabled: boolean) => void;

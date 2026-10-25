@@ -133,7 +133,7 @@
           Object.assign(item, { state: "failed", cost: e.usage?.costUsd, note: e.error + (e.usage ? ` (this attempt cost $${e.usage.costUsd.toFixed(2)})` : "") });
         }
       });
-      if (item.state === "drafting") throw new Error("The connection closed before the draft finished.");
+      if (item.state === "drafting") throw new Error("The connection closed before the draft finished. It may still have been saved: check Your subjects before drafting it again.");
     } finally {
       clearInterval(timer);
     }
@@ -255,7 +255,7 @@
       }}
     >
       <label>
-        Book or reading (PDF, stays on this laptop)
+        Book or reading (PDF, stays on this device)
         {#if file && keptName === file.name}
           <!-- The book kept from Start from a book: nothing to upload (Oct 24, Isaac read the old
                "Choose PDF" button as being asked for the file again). -->

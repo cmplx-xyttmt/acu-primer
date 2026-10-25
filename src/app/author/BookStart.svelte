@@ -36,6 +36,26 @@
   let contents = $state<Contents | null>(null);
   let contentsCost = $state<number | null>(null);
   let pdfPageOfPrinted = $state(""); // asked when the page gap can't be worked out
+  let contentsFailed = $state(false); // the read itself failed (as opposed to finding nothing)
+
+  // Everything from the last PDF goes when another is chosen.
+  function reset() {
+    file = null;
+    phase = "pick";
+    error = "";
+    pageCount = 0;
+    outline = [];
+    chapters = [];
+    title = "";
+    contentsPages = "";
+    contentsStart = 1;
+    notFound = false;
+    contentsFailed = false;
+    readingContents = false;
+    contents = null;
+    contentsCost = null;
+    pdfPageOfPrinted = "";
+  }
 
   const withSections = $derived(chapters.filter((c) => c.on && c.sections.length > 0).length);
   const picked = $derived(chapters.filter((c) => c.on));
@@ -50,8 +70,8 @@
 
   async function choose(f: File | null) {
     if (!f) return;
+    reset();
     file = f;
-    error = "";
     phase = "reading";
     try {
       const { readBook } = await import("../lib/pdfOutline.ts"); // pdf-lib, only on the author side
@@ -82,6 +102,7 @@
     if (!file || !contentsPages.trim()) return;
     readingContents = true;
     error = "";
+    contentsFailed = false;
     try {
       const { cutPages } = await import("../lib/pdfPages.ts");
       const cut = await cutPages(await file.arrayBuffer(), contentsPages);
@@ -97,6 +118,9 @@
       contents = r.contents;
       applyContents();
     } catch (err) {
+      // Show the pages box, so the author can try other pages instead of being stuck.
+      notFound = true;
+      contentsFailed = true;
       fail(err);
     } finally {
       readingContents = false;
@@ -202,6 +226,8 @@
               <WandSparkles size={15} aria-hidden="true" /> The bookmarks don't list sections{chapters.length === 0 ? " (there are none)" : ""}, so Claude is looking for the
               table of contents in pages {contentsPages} (usually $0.20 to $0.50)…
             </p>
+          {:else if notFound && contentsFailed}
+            <p>Reading the contents didn't work (the reason is at the top). If you know where they are, type their pages and try again.</p>
           {:else if notFound}
             <p>
               Claude didn't find a table of contents in those pages{contentsCost !== null ? ` ($${contentsCost.toFixed(3)})` : ""}. If you know where it is, type its pages
@@ -220,6 +246,8 @@
             <button class="btn-secondary" disabled={readingContents || !contentsPages.trim()} onclick={readContentsPages}>
               <WandSparkles size={16} aria-hidden="true" />Read those pages
             </button>
+          {:else if needsGap && firstPrinted === null}
+            <p>The contents Claude read have no page numbers, so the chapters can't be placed in the PDF. Try another PDF.</p>
           {:else if needsGap}
             <p>
               The page numbers printed in a book often differ from the PDF's own. The contents say the first chapter starts on page
@@ -251,10 +279,10 @@
     </section>
 
     <div class="go">
-      <button class="btn" disabled={phase === "creating" || picked.length === 0 || !title.trim()} onclick={create}>
+      <button class="btn" disabled={phase === "creating" || readingContents || picked.length === 0 || !title.trim()} onclick={create}>
         {phase === "creating" ? "Creating…" : `Create the subject and ${picked.length} chapter${picked.length === 1 ? "" : "s"}`}
       </button>
-      <button class="btn-quiet" onclick={() => ((phase = "pick"), (file = null), (chapters = []), (contents = null))}>Choose another PDF</button>
+      <button class="btn-quiet" onclick={reset}>Choose another PDF</button>
     </div>
   {/if}
 

@@ -67,13 +67,16 @@
     else error = err instanceof Error ? err.message : "Something went wrong.";
   }
 
-  async function run(call: () => Promise<AuthorLesson>) {
+  // True when the call worked, so a caller can keep what the author typed when it didn't.
+  async function run(call: () => Promise<AuthorLesson>): Promise<boolean> {
     busy = true;
     error = "";
     try {
       lesson = await call();
+      return true;
     } catch (err) {
       fail(err);
+      return false;
     } finally {
       busy = false;
     }
@@ -114,13 +117,13 @@
 
   const suggestFor = (part: string, partLabel: string) => (text: string) =>
     run(() => authorApi.suggest(lessonId, { stepId: step!.id, part, partLabel, text }));
-  const withdraw = (id: string) => run(() => authorApi.withdraw(id));
+  const withdraw = async (id: string) => void (await run(() => authorApi.withdraw(id)));
 
   // Slice 6: shaping the draft. Claude applies a step's open suggestions (one paid call), or the
   // author swaps in an alternative or switches a hint on or off (no call).
   let reviseNote = $state("");
   async function applyWithClaude() {
-    if (!step) return;
+    if (!step || !okToChange()) return;
     reviseNote = "";
     busy = true;
     error = "";
@@ -135,11 +138,20 @@
       busy = false;
     }
   }
-  const swapIn = (moduleId: string, altId: string) =>
-    run(() => authorApi.swap(lessonId, moduleId, altId)).then(() => delete seenByStep[moduleId]);
-  const setPart = (moduleId: string, which: number | "general", part: "reExplanation" | "simplerQuestion", enabled: boolean) =>
-    run(() => authorApi.setPart(lessonId, moduleId, which, part, enabled));
-  const setExploreOn = (moduleId: string, enabled: boolean) => run(() => authorApi.setExplore(lessonId, moduleId, enabled));
+  // Changing a signed-off lesson's content hides it from students until it's signed off again
+  // (saveLessonContent), so the author is asked first.
+  const okToChange = () =>
+    lesson?.status !== "reviewed" ||
+    confirm("This lesson is live. Changing it hides it from students until you approve the step and sign off again.");
+  const swapIn = async (moduleId: string, altId: string) => {
+    if (okToChange() && (await run(() => authorApi.swap(lessonId, moduleId, altId)))) delete seenByStep[moduleId];
+  };
+  const setPart = async (moduleId: string, which: number | "general", part: "reExplanation" | "simplerQuestion", enabled: boolean) => {
+    if (okToChange()) await run(() => authorApi.setPart(lessonId, moduleId, which, part, enabled));
+  };
+  const setExploreOn = async (moduleId: string, enabled: boolean) => {
+    if (okToChange()) await run(() => authorApi.setExplore(lessonId, moduleId, enabled));
+  };
 
   // One line on how an exploration's widget is set up, for the Every branch view.
   const widgetSummary = (w: Widget) =>

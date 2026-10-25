@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Devpost folder index</title>
+<!-- One page that lists every planning, review and video page in devpost/, with a line on each.
+     Add a row here whenever a new page or doc lands in this folder. Verdant Glass tokens, copied
+     from demo-video/index.html. Open this file locally; the links are relative. -->
+<style>
+:root {
+  --color-forest: #17492f; --color-pine: #20603e; --color-emerald: #2e8659; --color-moss: #5b9e5a; --color-leaf: #9ac85a;
+  --color-amber: #e4882e; --color-peach: #f2b15e; --color-clay: #d96e43;
+  --text: #24312a; --heading: var(--color-forest); --link: var(--color-pine);
+  --muted: rgba(26, 40, 28, 0.72); --faint: rgba(26, 40, 28, 0.52);
+  --hr: rgba(23, 73, 47, 0.15);
+  --surface: rgba(255, 255, 255, 0.55); --surface-border: rgba(255, 255, 255, 0.78);
+  --surface-shadow: 0 20px 48px -24px rgba(23, 73, 47, 0.45); --surface-shine: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  --glass-blur: blur(18px) saturate(135%);
+  --inline-code-bg: rgba(46, 134, 89, 0.12); --inline-code-text: #20603e;
+  --bg-grad: linear-gradient(165deg, #f5f0de 0%, #e9ebd0 52%, #dce4c7 100%);
+  --bg-solid: #ecebd5;
+  --gel-green: linear-gradient(135deg, #2e8659 0%, #17492f 100%);
+  --radius-glass: 1.1rem; --radius-button: 0.75rem; --radius-pill: 999px;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Palatino LT STD", Georgia, ui-serif, serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --text: #d4dae3; --heading: #eef3fa; --link: #5fbf99; --muted: rgba(212, 218, 227, 0.7); --faint: rgba(212, 218, 227, 0.46);
+    --hr: rgba(255, 255, 255, 0.12);
+    --surface: rgba(255, 255, 255, 0.05); --surface-border: rgba(255, 255, 255, 0.12);
+    --surface-shadow: 0 20px 48px -24px rgba(0, 0, 0, 0.6); --surface-shine: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    --inline-code-bg: rgba(95, 191, 153, 0.15); --inline-code-text: #83d1b0;
+    --bg-grad: linear-gradient(165deg, #1a2028 0%, #151a21 55%, #11151a 100%); --bg-solid: #151a21;
+  }
+}
+:root[data-theme="dark"] {
+  --text: #d4dae3; --heading: #eef3fa; --link: #5fbf99; --muted: rgba(212, 218, 227, 0.7); --faint: rgba(212, 218, 227, 0.46);
+  --hr: rgba(255, 255, 255, 0.12);
+  --surface: rgba(255, 255, 255, 0.05); --surface-border: rgba(255, 255, 255, 0.12);
+  --surface-shadow: 0 20px 48px -24px rgba(0, 0, 0, 0.6); --surface-shine: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --inline-code-bg: rgba(95, 191, 153, 0.15); --inline-code-text: #83d1b0;
+  --bg-grad: linear-gradient(165deg, #1a2028 0%, #151a21 55%, #11151a 100%); --bg-solid: #151a21;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg-solid); }
+body { margin: 0; background: var(--bg-grad); background-attachment: fixed; color: var(--text); font-family: var(--font-sans); line-height: 1.55; }
+main { max-width: 920px; margin: 0 auto; padding: 40px 16px 80px; }
+h1, h2, h3 { font-family: var(--font-serif); color: var(--heading); font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
+h1 { font-size: clamp(2rem, 4vw, 2.6rem); margin: 0.2em 0 0.3em; }
+h2 { font-size: 1.45rem; margin: 2.2em 0 0.4em; }
+h2 + p.sub { margin-top: 0; color: var(--muted); font-size: 0.95rem; }
+p { margin: 0 0 0.9em; }
+a { color: var(--link); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+code { background: var(--inline-code-bg); color: var(--inline-code-text); padding: 0.12em 0.4em; border-radius: 0.35em; font-family: var(--font-mono); font-size: 0.85em; overflow-wrap: anywhere; }
+.lede { font-size: 1.08rem; color: var(--muted); max-width: 44rem; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.tag { display: inline-flex; align-items: center; background: var(--inline-code-bg); color: var(--color-pine); font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.2rem 0.55rem; border-radius: var(--radius-pill); white-space: nowrap; }
+.tag.amber { background: rgba(228, 136, 46, 0.16); color: #9a5410; }
+.tag.old { background: transparent; border: 1px solid var(--hr); color: var(--faint); }
+:root[data-theme="dark"] .tag:not(.old) { color: var(--heading); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tag:not(.old) { color: var(--heading); } }
+.glass { background: var(--surface); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); border: 1px solid var(--surface-border); border-radius: var(--radius-glass); box-shadow: var(--surface-shadow), var(--surface-shine); }
+.theme { background: var(--surface); border: 1px solid var(--surface-border); color: var(--text); border-radius: var(--radius-pill); padding: 6px 14px; font: inherit; font-size: 0.85rem; cursor: pointer; }
+.where { padding: 6px 20px; margin: 24px 0; }
+.where dl { margin: 0; display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); }
+.where dt, .where dd { margin: 0; padding: 10px 0; border-bottom: 1px solid var(--hr); }
+.where dt { font-family: var(--font-serif); color: var(--heading); font-weight: 600; padding-right: 16px; }
+.where dl > :nth-last-child(-n + 2) { border-bottom: none; }
+@media (max-width: 640px) {
+  .where dl { grid-template-columns: minmax(0, 1fr); }
+  .where dt { border-bottom: none; padding-bottom: 0; }
+}
+.docs { display: grid; gap: 10px; }
+.doc { padding: 14px 18px; }
+.doc .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+.doc .head a { font-family: var(--font-serif); font-size: 1.1rem; font-weight: 600; text-decoration: none; }
+.doc .head a:hover { text-decoration: underline; }
+.doc .path { font-family: var(--font-mono); font-size: 0.75rem; color: var(--faint); overflow-wrap: anywhere; }
+.doc p { margin: 6px 0 0; font-size: 0.94rem; }
+.doc .also { font-size: 0.85rem; color: var(--muted); }
+footer { margin-top: 48px; font-size: 0.85rem; color: var(--faint); }
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <span class="tag">acu-primer &middot; devpost</span>
+    <button class="theme" id="theme" type="button">Theme: auto</button>
+  </div>
+  <h1>What's in the devpost folder</h1>
+  <p class="lede">Every plan, review page and video page made for the hackathon, with a line on what each one covers. The <code>.html</code> pages open in a browser. The <code>.md</code> files open as plain text in a browser, or nicely in VS Code's preview.</p>
+
+  <section class="glass where" aria-label="Where to look">
+    <dl>
+      <dt>What's been built and changed</dt><dd><a href="checklist.md">checklist.md</a>, the Revisions list at the bottom. Every fix since the build began has an entry, newest last.</dd>
+      <dt>Ideas saved for after the hackathon</dt><dd>The entries starting <b>Later</b> in <a href="checklist.md">checklist.md</a> (drafting on the server, learning from review suggestions, a glossary), and <a href="authoring-pipeline.md">authoring-pipeline.md</a> for drafting and review ideas from earlier.</dd>
+      <dt>What's left before submitting</dt><dd><a href="improvements-2026-10-24.html">Improvements before submitting</a> and the <a href="rules-check-2026-10-24.html">Devpost rules check</a>.</dd>
+      <dt>The video</dt><dd><a href="demo-video/concept-b/narration.html">Narration shot list</a> (the rough cut, with a box per shot for your words).</dd>
+      <dt>Why the app works the way it does</dt><dd><a href="prd.html">PRD</a> for behaviour, <a href="spec.html">spec</a> for the technical choices, <a href="scope.html">scope</a> for what was in and out.</dd>
+      <dt>Testing the app by hand</dt><dd><a href="review-checklist.html">Review checklist</a>.</dd>
+    </dl>
+  </section>
+
+  <h2>Before submitting</h2>
+  <p class="sub">The pages for the last two days.</p>
+  <div class="docs">
+    <article class="glass doc">
+      <div class="head"><a href="checklist.md">Build checklist</a><span class="tag">kept current</span><span class="path">checklist.md</span></div>
+      <p>The build slices with their tick boxes, the hands-on checkpoints, and the Revisions list: one entry per change since the build began, with what was checked. The "Later" entries are the ideas saved for after the hackathon.</p>
+    </article>
+    <article class="glass doc">
+      <div class="head"><a href="improvements-2026-10-24.html">Improvements before submitting</a><span class="tag">Oct 24</span><span class="path">improvements-2026-10-24.html</span></div>
+      <p>A full pass over the app two days before the deadline: bugs, checks only you can do, and improvements, each with a tick box and screenshots (in <code>improvements-2026-10-24/</code>). Starts with the five worth looking at first, such as the deploy order and the missing GitHub remote.</p>
+    </article>
+    <article class="glass doc">
+      <div class="head"><a href="rules-check-2026-10-24.html">Devpost rules check</a><span class="tag">Oct 24</span><span class="path">rules-check-2026-10-24.html</span></div>
+      <p>acu-primer read against the official rules, overview, resources and updates. Has the exact deadline (Mon Oct 26, 5 pm ET, which is Tue Oct 27 at 00:00 EAT), what the submission form asks, and what's still missing.</p>
+    </article>
+    <article class="glass doc">
+      <div class="head"><a href="review-checklist.html">Review checklist</a><span class="tag">tick boxes</span><span class="path">review-checklist.html</span></div>
+      <p>The hands-on test of the whole app, section by section: subjects, the look, playing, explorations, starting from a book, review, the log, offline, drafting, decisions and deploy. Your ticks are kept in that browser.</p>
+    </article>
+  </div>
+
+  <h2>Demo video</h2>
+  <p class="sub">The videos themselves live in <code>demo-video/media/</code>, which isn't in git, so these pages only play on this laptop.</p>
+  <div class="docs">
+    <article class="glass doc">
+      <div class="head"><a href="demo-video/concept-b/narration.html">Narration shot list</a><span class="tag amber">Sunday</span><span class="path">demo-video/concept-b/narration.html</span></div>
+      <p>The rough cut (2:54, no sound) with, for each shot, what's on screen, the points to cover, a word budget, and a box for your words. What you type stays in that browser.</p>
+    </article>
+    <article class="glass doc">
+      <div class="head"><a href="demo-video/concept-b/storyboard.md">Concept B storyboard</a><span class="path">demo-video/concept-b/storyboard.md</span></div>
+      <p>The chosen concept: a chapter becomes lessons, a book becomes a subject, using Erickson's <i>Algorithms</i>. The shot list, every clip and how it was made, the decisions since (such as the OpenIntro card before the sampling shot), and what's still to do.</p>
+      <p class="also">Also here: <a href="demo-video/concept-b/index.html">all the clips side by side</a>, <code>rough-cut.sh</code> (cuts the rough cut; edit its times and run it again), <code>record.cjs</code> (records the app clips) and <code>render.cjs</code> (renders the motion pieces).</p>
+    </article>
+    <article class="glass doc">
+      <div class="head"><a href="demo-video/index.html">Demo video options</a><span class="tag old">decided</span><span class="path">demo-video/index.html</span></div>
+      <p>The three concepts compared on Oct 21, with prototypes: <a href="demo-video/primer/index.html">The Primer</a>, <a href="demo-video/page-to-lesson/index.html">Page to lesson</a> (became concept B) and <a href="demo-video/not-a-red-x/index.html">Not a red X</a>. Each folder has its own storyboard.md.</p>
+    </article>
+    <article class="glass doc">
+      <div class="head"><a href="demo-video/research.md">Demo video research</a><span class="path">demo-video/research.md</span></div>
+      <p>What the video has to be (from the 6-ship skill), what keeps viewers watching, and how to record the app, make motion graphics with code, record your own screen and voice, and pick music.</p>
+    </article>
+  </div>
+
+  <h2>The plan</h2>
+  <p class="sub">Written in order before the build, and approved. Each has a <code>.md</code> source and an <code>.html</code> version for reading. Since Oct 21 a "course" in these is a "chapter".</p>
+  <div class="docs">
+    <article class="glass doc">
+      <div class="head"><a href="learner-profile.md">Learner profile</a><span class="path">learner-profile.md</span></div>
+      <p>Your starting idea, background and how you wanted to learn, written by the 1-start skill. Every later skill reads it. Gitignored.</p>
+    </article>
+    <article class="glass doc">
+      <div class="head"><a href="scope.html">Scope</a><span class="path">scope.html · scope.md</span></div>
+      <p>What acu-primer is, who it's for, and what the proof of concept includes and leaves out.</p>
+    </article>
+    <article class="glass doc">
+      <div class="head"><a href="prd.html">Product definition (PRD)</a><span class="path">prd.html · prd.md</span></div>
+      <p>The core journey for authors and students, every behaviour, the states and edge cases, and the proof-of-concept boundary. No code.</p>
+    </article>
+    <article class="glass doc">
+      <div class="head"><a href="spec.html">Technical spec</a><span class="path">spec.html · spec.md</span></div>
+      <p>The stack (Svelte, Cloudflare Workers, D1), the components, the data, the lesson format and the file structure.</p>
+    </article>
+  </div>
+
+  <h2>Research and ideas for later</h2>
+  <div class="docs">
+    <article class="glass doc">
+      <div class="head"><a href="authoring-pipeline.md">Authoring pipeline: ideas for later</a><span class="tag">Oct 9 on</span><span class="path">authoring-pipeline.md</span></div>
+      <p>Ideas for drafting and review beyond the proof of concept, written after you played the first lesson and found it thin: an outline first, checks done by code, simulated students, a teaching reviewer, sign-off with a report. Also the findings from drafting the OSTEP course (Oct 13).</p>
+    </article>
+    <article class="glass doc">
+      <div class="head"><a href="explorations-research.md">Explorations research</a><span class="tag">Oct 23</span><span class="path">explorations-research.md</span></div>
+      <p>Prior art for the explore modules (the steppers and sampling widgets): how other projects let a model compose interactive parts without running its code, and which parts to build first.</p>
+    </article>
+    <article class="glass doc">
+      <div class="head"><a href="ux/index.html">UX audit</a><span class="tag old">Oct 21</span><span class="path">ux/index.html · ux/research.md</span></div>
+      <p>Every screen in both looks at desktop and phone width, a ranked list of what got in the way, and five proposals. Most were built in slice 10. The mocks are in <code>ux/mocks/</code>: <a href="ux/mocks/directions.html">visual directions</a>, <a href="ux/mocks/components.html">components</a>, <a href="ux/mocks/home.html">home</a>, <a href="ux/mocks/author-home.html">author home</a>, <a href="ux/mocks/review-mode.html">review mode</a> and <a href="ux/mocks/logos.html">logos</a>.</p>
+    </article>
+  </div>
+
+  <h2>Older pages</h2>
+  <div class="docs">
+    <article class="glass doc">
+      <div class="head"><a href="slice1-test-checklist.html">Slice 1 test checklist</a><span class="tag old">Oct 9</span><span class="path">slice1-test-checklist.html</span></div>
+      <p>The review and deploy steps for the first slice. Replaced by the review checklist.</p>
+    </article>
+  </div>
+
+  <footer>Outside this folder: the repo's <code>README.md</code> (running it locally) and <code>~/Projects/WEEK.md</code> (the week's goals and log). Updated Oct 25, 2026.</footer>
+</main>
+<script>
+  // Theme switch: auto, light, dark. Remembered per browser if storage works.
+  const root = document.documentElement, btn = document.getElementById("theme");
+  const order = ["auto", "light", "dark"];
+  let choice = "auto";
+  try { choice = localStorage.getItem("devpost-index-theme") || "auto"; } catch (e) {}
+  const apply = () => { if (choice === "auto") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", choice); btn.textContent = "Theme: " + choice; };
+  apply();
+  btn.addEventListener("click", () => { choice = order[(order.indexOf(choice) + 1) % 3]; try { localStorage.setItem("devpost-index-theme", choice); } catch (e) {} apply(); });
+</script>
+</body>
+</html>

@@ -78,6 +78,9 @@
   // Finished on an earlier visit and nothing answered since: show the right answer, locked.
   const showSaved = $derived(reread && !(mod.id in checks));
   const end = $derived(showSaved ? "saved" : cs.end);
+  // A check passed earlier on this visit comes back with the right answer filled in too, since
+  // the check is re-created each time the student returns to the module.
+  const showAnswer = $derived(end === "saved" || end === "right");
   const mainLocked = $derived(end !== "none" || (cs.fallback !== null && !cs.retrying));
   // Green for a right answer, red for a wrong one while its hint (or the last-hint message) shows.
   const mark = $derived<"right" | "wrong" | null>(
@@ -175,7 +178,7 @@
     <button class="btn-quiet btn-sm" aria-label="Contents" onclick={() => contents?.showModal()}><List size={16} aria-hidden="true" /><span class="wide-only">Contents</span></button>
   </span>
   <span class="right-side">
-    <span class="num count"><span class="wide-only">Module </span>{index + 1}<span class="wide-only"> of </span><span class="narrow-only"> / </span>{total}</span>
+    <span class="num count"><span class="wide-only">Module&nbsp;</span>{index + 1}<span class="wide-only">&nbsp;of&nbsp;</span><span class="narrow-only">&nbsp;/&nbsp;</span>{total}</span>
     <ThemeSwitch />
   </span>
 </div>
@@ -224,11 +227,11 @@
         <section class="check">
           {#key cs.attempt}
             {#if mod.check.type === "select"}
-              <Select check={mod.check} locked={mainLocked} shown={showSaved} {mark} onAnswer={answerMain} />
+              <Select check={mod.check} locked={mainLocked} shown={showAnswer} {mark} onAnswer={answerMain} />
             {:else if mod.check.type === "number"}
-              <NumberInput check={mod.check} locked={mainLocked} shown={showSaved} {mark} onAnswer={answerMain} />
+              <NumberInput check={mod.check} locked={mainLocked} shown={showAnswer} {mark} onAnswer={answerMain} />
             {:else if mod.check.type === "sort"}
-              <Sort check={mod.check} locked={mainLocked} shown={showSaved} {mark} onAnswer={answerMain} />
+              <Sort check={mod.check} locked={mainLocked} shown={showAnswer} {mark} onAnswer={answerMain} />
             {/if}
           {/key}
 

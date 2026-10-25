@@ -91,11 +91,16 @@
   .chip {
     background: var(--card);
     border: 2px solid var(--border);
-    border-radius: 999px;
+    /* Not a full pill: long items wrap onto several lines, and a pill's round ends would
+       cut into the text. */
+    border-radius: 1rem;
     padding: 0.4rem 0.85rem;
     box-shadow: 0 2px 0 var(--border);
     color: var(--text);
     text-align: left;
+    max-width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   .chip:hover:not(:disabled) {
     border-color: var(--hover-border);
@@ -118,6 +123,7 @@
     border: 2px dashed var(--border);
     border-radius: var(--radius);
     padding: 0.5rem;
+    min-width: 0;
     min-height: 6rem;
     display: grid;
     align-content: start;

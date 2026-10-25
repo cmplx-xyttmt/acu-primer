@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Thumbnail</title>
+<!-- The YouTube thumbnail: the logo and name on white, as on the end card. A still, rendered at
+     1920x1080 and scaled to 1280x720. ?loop=1 adds the Book → Log row. -->
+<link rel="stylesheet" href="base.css">
+<style>
+#stage { background: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 44px; }
+#mark { width: 300px; height: 300px; }
+#mark svg { width: 100%; height: 100%; }
+#name { font-size: 150px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+#name em { font-style: normal; color: var(--accent); }
+#loop { display: none; gap: 18px; align-items: center; font-size: 38px; font-weight: 700; margin-top: 16px; }
+#loop .step { padding: 12px 26px; border-radius: 14px; background: var(--card); border: 1px solid var(--border); box-shadow: var(--shadow); }
+#loop .arrow { color: var(--fallback-edge); }
+.with-loop #mark { width: 220px; height: 220px; }
+.with-loop #name { font-size: 120px; }
+.with-loop #loop { display: flex; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="mark"></div>
+  <div id="name">acu<em>primer</em></div>
+  <div id="loop"></div>
+</div>
+<script src="motion.js"></script>
+<script>
+document.getElementById("mark").innerHTML = LOGO;
+if (new URLSearchParams(location.search).get("loop")) document.getElementById("stage").classList.add("with-loop");
+["Book", "Lessons", "Review", "Students", "Log"].forEach((w, i, all) => {
+  const loop = document.getElementById("loop");
+  const s = document.createElement("span"); s.className = "step"; s.textContent = w; loop.appendChild(s);
+  if (i < all.length - 1) { const a = document.createElement("span"); a.className = "arrow"; a.textContent = "→"; loop.appendChild(a); }
+});
+</script>
+</body>
+</html>

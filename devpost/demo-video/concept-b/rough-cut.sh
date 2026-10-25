@@ -34,7 +34,7 @@ clips/c12-hanoi-log.mp4          0     12.4  1     5.6  1
 end-card.mp4                     0     6     1     6    1.03
 '
 # Each line of LABELS is: time  text. A section label fades in at the bottom left at that time
-# (in the finished cut), stays about 2 seconds and fades out.
+# (in the finished cut), stays about 3 seconds and fades out.
 LABELS='
 26.2   Start from a book
 48.0   Draft lessons
@@ -47,10 +47,11 @@ FONT=/System/Library/Fonts/HelveticaNeue.ttc
 # The caption: light text on the app's dark background, at the top right, in the empty space
 # beside the page title (clear of the queue).
 caption() { echo ",drawtext=fontfile=$FONT:text='$1':x=w-text_w-160:y=$2:fontsize=36:fontcolor=0xece8e1:box=1:boxcolor=0x151517@0.88:boxborderw=18"; }
-# A section label: the caption's style, smaller, at the bottom left, where no screen has anything.
+# A section label: white on a solid green box (a dark box disappeared on the dark screens), at the
+# bottom left, where no screen has anything. Up for about 3 seconds.
 label() {
-  a="if(lt(t,$1),0,if(lt(t,$1+0.4),(t-$1)/0.4,if(lt(t,$1+2.2),1,if(lt(t,$1+2.6),($1+2.6-t)/0.4,0))))"
-  echo ",drawtext=fontfile=$FONT:text='$2':x=56:y=h-text_h-56:fontsize=28:fontcolor=0xece8e1:box=1:boxcolor=0x151517@0.88:boxborderw=14:alpha='$a':enable='between(t,$1,$1+2.6)'"
+  a="if(lt(t,$1),0,if(lt(t,$1+0.4),(t-$1)/0.4,if(lt(t,$1+3.0),1,if(lt(t,$1+3.4),($1+3.4-t)/0.4,0))))"
+  echo ",drawtext=fontfile=$FONT:text='$2':x=64:y=h-text_h-64:fontsize=46:fontcolor=white:box=1:boxcolor=0x2e8659@0.95:boxborderw=20:alpha='$a':enable='between(t,$1,$1+3.4)'"
 }
 
 inputs=""; filters=""; i=0; total=0; prev=""

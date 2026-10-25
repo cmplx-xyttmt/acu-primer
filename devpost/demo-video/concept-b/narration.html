@@ -37,16 +37,16 @@ button:disabled{opacity:.5;cursor:default}
 #prompter button{background:#1b2229;color:#e8edf2;border-color:rgba(255,255,255,.2)}
 #prompter button.go{background:linear-gradient(135deg,#2e8659 0%,#17492f 100%)}
 #prompter button.rec{background:#b3261e}
-#prompter .stage{flex:1;display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:24px;padding:20px 24px;overflow:hidden}
+#prompter .stage{flex:1;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:24px;padding:16px 20px;overflow:hidden}
 @media (max-width:800px){#prompter .stage{grid-template-columns:1fr}}
-#prompter video{border-radius:10px}
+#prompter video{border-radius:10px;width:100%}
 #pClock{font-family:var(--mono);font-size:14px;color:rgba(232,237,242,.7);margin-top:8px}
 #pStatus{font-size:14px;margin-top:6px;color:#f2b15e;min-height:1.4em}
 #pWords{overflow-y:auto;scroll-behavior:smooth;padding-right:8px}
 .pshot{margin:0 0 28px;opacity:.38;transition:opacity .2s}
 .pshot.now{opacity:1}
 .pshot h3{font-family:var(--mono);font-size:13px;font-weight:600;color:#f2b15e;margin:0 0 6px}
-.pshot p{font-size:clamp(24px,3vw,38px);line-height:1.45;margin:0}
+.pshot p{font-size:clamp(20px,2.1vw,30px);line-height:1.45;margin:0}
 .pshot .w.said{color:#83d1b0}
 .pshot .empty{font-style:italic;color:rgba(232,237,242,.45)}
 #pCount{position:absolute;right:24px;bottom:20px;font-family:var(--mono);font-size:56px;color:#f2b15e}
@@ -109,6 +109,10 @@ button:disabled{opacity:.5;cursor:default}
   <div class="mic">
     <label for="pMic">Microphone</label><select id="pMic"><option value="">The browser's default</option></select>
     <button id="pTest" type="button">Test microphone</button>
+    <label for="pPace">Words finish at</label>
+    <select id="pPace" title="How far into each shot the green highlight reaches your last word">
+      <option value="1">the end of each shot</option><option value="0.9">90% of each shot</option><option value="0.8">80% of each shot</option><option value="0.7">70% of each shot</option><option value="0.6">60% of each shot</option>
+    </select>
     <div id="meter" aria-hidden="true"><div id="meterFill"></div></div>
     <span id="meterNote" role="status"></span>
   </div>
@@ -186,7 +190,7 @@ function tick() {
   }
   if (i >= 0) {
     // Words grey in at an even pace through the shot, so you can see whether you're ahead or behind.
-    var s = shots[i], f = (t - s.start) / (s.end - s.start), ws = $('ps' + i).querySelectorAll('.w');
+    var s = shots[i], f = (t - s.start) / ((s.end - s.start) * Number($('pPace').value)), ws = $('ps' + i).querySelectorAll('.w');
     ws.forEach(function (w, k) { w.classList.toggle('said', k < Math.floor(f * ws.length)); });
     var next = shots[i + 1], left = next ? next.start - t : 0;
     $('pCount').textContent = next && left <= 3 ? Math.ceil(left) : '';
@@ -274,6 +278,10 @@ function listMics() {
     if ([].some.call(sel.options, function (o) { return o.value === was; })) sel.value = was;
   });
 }
+// The pace setting: for a faster speaker, the highlight reaches the last word before the shot ends.
+var PACE_KEY = 'acu-narration-pace';
+try { var keptPace = localStorage.getItem(PACE_KEY); if (keptPace) $('pPace').value = keptPace; } catch (e) {}
+$('pPace').onchange = function () { try { localStorage.setItem(PACE_KEY, $('pPace').value); } catch (e) {} };
 $('pMic').onchange = function () { try { localStorage.setItem(MIC_KEY, $('pMic').value); } catch (e) {} if (testStream) { stopTest(); startTest(); } };
 function watchLevel(stream) {
   stopLevel();

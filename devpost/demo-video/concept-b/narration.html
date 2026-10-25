@@ -50,7 +50,12 @@ button:disabled{opacity:.5;cursor:default}
 .pshot .w.said{color:#83d1b0}
 .pshot .empty{font-style:italic;color:rgba(232,237,242,.45)}
 #pCount{position:absolute;right:24px;bottom:20px;font-family:var(--mono);font-size:56px;color:#f2b15e}
-#takes a{color:#83d1b0;margin-right:12px}
+#takes{font-size:14px;color:rgba(232,237,242,.8)}
+#takes a,#takeList a{color:#83d1b0;margin-left:10px}
+#takeList{margin-top:14px;font-size:14px;color:rgba(232,237,242,.8)}
+#takeList h4{margin:0 0 6px;font-size:13px;font-family:var(--mono);color:#f2b15e;font-weight:600}
+#takeList ol{margin:0;padding-left:1.3rem;max-height:30vh;overflow-y:auto}
+#takeList li{margin-bottom:4px}
 #prompter .mic{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.1);font-size:14px}
 #meter{width:220px;height:12px;border-radius:6px;background:#1b2229;overflow:hidden;border:1px solid rgba(255,255,255,.2)}
 #meterFill{height:100%;width:0;background:#5fbf99;transition:width .05s linear}
@@ -61,7 +66,7 @@ button:disabled{opacity:.5;cursor:default}
 <body>
 <main>
 <h1>Narration shot list</h1>
-<p>The rough cut (2:55, no sound; the app clips re-recorded in dark mode on Oct 25, the draft simulated and captioned, the statistics shot cut, crossfades between clips and a small label at the start of each section) is below. For each shot: what's on screen, the points to cover, and a box for your words. The words are yours: the hackathon's rules say the narration must be written by you. At a relaxed pace, people speak about 2 to 2.5 words a second, so each shot shows a rough word budget. What you type stays in this browser only; copy it somewhere safe when you're done.</p>
+<p>The rough cut (2:50, no sound; the app clips re-recorded in dark mode on Oct 25, the draft simulated and captioned, the statistics shot cut, crossfades between clips and a small label at the start of each section) is below. For each shot: what's on screen, the points to cover, and a box for your words. The words are yours: the hackathon's rules say the narration must be written by you. At a relaxed pace, people speak about 2 to 2.5 words a second, so each shot shows a rough word budget. What you type stays in this browser only; copy it somewhere safe when you're done.</p>
 <video src="../media/concept-b/rough-cut.mp4" controls preload="metadata"></video>
 <div class="tools">
   <button class="go" id="openPrompter" type="button">Teleprompter and recording</button>
@@ -74,25 +79,25 @@ button:disabled{opacity:.5;cursor:default}
   <pre id="tText"></pre>
 </section>
 <p class="note">The teleprompter plays the cut (muted) and shows your words large, greying in each word about when it's due, with a countdown before each new shot. "Record" records your voice from the Mac's microphone while the cut plays and saves an audio file that knows where in the cut it starts; a take can start from any shot. Send the files to Claude to lay over the cut (<code>merge-voice.py</code> next to this page does it with ffmpeg). To change the cuts, edit the times in <code>rough-cut.sh</code> and run it again.</p>
-<section class="card"><div class="hd"><span class="n">01</span><span class="t">0:00–0:26</span><span class="d">26 s · about 60 spoken words</span></div>
-<p class="screen"><b>On screen.</b> The opener: two real pages of Erickson&#x27;s Algorithms (Tower of Hanoi) turn into a six-module lesson; module 3 opens into its paths (the right answer, each wrong answer with its hint); the review ticks run down and Draft becomes Reviewed by a person, and that last frame holds for about 8 seconds.</p>
+<section class="card"><div class="hd"><span class="n">01</span><span class="t">0:00–0:21</span><span class="d">21 s · about 48 spoken words</span></div>
+<p class="screen"><b>On screen.</b> The opener: two real pages of Erickson&#x27;s Algorithms (Tower of Hanoi) turn into a six-module lesson; module 3 opens into its paths (the right answer, each wrong answer with its hint); the review ticks run down and Draft becomes Reviewed by a person, and that last frame holds for about 4 seconds.</p>
 <p class="label">Points to cover</p><ul><li>What a lecturer or self-learner starts with (a book) and what they want (short lessons that respond to mistakes, that they can trust).</li><li>In a sentence: what acu-primer is.</li></ul>
-<textarea data-k="shot1" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">02</span><span class="t">0:26–0:48</span><span class="d">22 s · about 51 spoken words</span></div>
+<textarea data-k="shot1" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">02</span><span class="t">0:21–0:43</span><span class="d">22 s · about 51 spoken words</span></div>
 <p class="screen"><b>On screen.</b> Start from a book: the Erickson PDF is picked; its bookmarks become 13 chapters with their sections; the Recursion chapter&#x27;s sections are listed; a learner profile is picked; the subject is created and opened on the author home.</p>
 <p class="label">Points to cover</p><ul><li>Who you are, and why you built it (your own learning, students with poor connections, or both).</li><li>The book stays on the laptop; chapters and sections come from the book itself.</li></ul>
-<textarea data-k="shot2" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">03</span><span class="t">0:48–1:13</span><span class="d">25 s · about 57 spoken words</span></div>
-<p class="screen"><b>On screen.</b> Draft lessons: the Recursion chapter&#x27;s sections with checkboxes, Tower of Hanoi ticked, the estimate, Draft pressed (0:48–0:54). Then the app&#x27;s fake drafting, at normal speed, with its &quot;Fake drafting is on&quot; note on the page: thinking, then the character count growing, then Drafted for $0.00 (0:54–1:13). A caption reads &quot;Simulated drafting (no Claude call). The real draft of this section took 6 minutes and cost $1.08.&quot; It&#x27;s simulated because a real draft takes 5 to 10 minutes and about $1.</p>
+<textarea data-k="shot2" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">03</span><span class="t">0:43–1:08</span><span class="d">25 s · about 57 spoken words</span></div>
+<p class="screen"><b>On screen.</b> Draft lessons: the Recursion chapter&#x27;s sections with checkboxes, Tower of Hanoi ticked, the estimate, Draft pressed (0:43–0:49). Then the app&#x27;s fake drafting, at normal speed, with its &quot;Fake drafting is on&quot; note on the page: thinking, then the character count growing, then Drafted for $0.00 (0:49–1:08). A caption reads &quot;Simulated drafting (no Claude call). The real draft of this section took 6 minutes and cost $1.08.&quot; It&#x27;s simulated because a real draft takes 5 to 10 minutes and about $1.</p>
 <p class="label">Points to cover</p><ul><li>What goes to Claude (only the section&#x27;s pages and the learner brief) and what comes back.</li><li>The checks a draft has to pass before it&#x27;s saved, and the second attempt when it didn&#x27;t (the real draft of this section needed one; the simulated draft on screen doesn&#x27;t show it).</li></ul>
-<textarea data-k="shot3" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">04</span><span class="t">1:13–1:42</span><span class="d">29 s · about 67 spoken words</span></div>
+<textarea data-k="shot3" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">04</span><span class="t">1:08–1:37</span><span class="d">29 s · about 67 spoken words</span></div>
 <p class="screen"><b>On screen.</b> Review by playing, in the violet review frame: the sort check played with a known mistake, its hint; the paths ticking; approving early asks once; Sign off.</p>
 <p class="label">Points to cover</p><ul><li>Nothing reaches students until a person signs it off.</li><li>Reviewing by playing it as a student, every path a student can take.</li></ul>
-<textarea data-k="shot4" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">05</span><span class="t">1:42–2:25</span><span class="d">43 s · about 99 spoken words</span></div>
+<textarea data-k="shot4" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">05</span><span class="t">1:37–2:20</span><span class="d">43 s · about 99 spoken words</span></div>
 <p class="screen"><b>On screen.</b> A student (Amina) finds the subject, gives her name once, makes the same sorting mistake and gets the hint for that mistake, then predicts wrong in the stepper and gets what really happens and why.</p>
 <p class="label">Points to cover</p><ul><li>Help aimed at the specific mistake, not a red X.</li><li>The exploration: predict first, then see it; why predicting first matters.</li></ul>
-<textarea data-k="shot5" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">06</span><span class="t">2:25–2:43</span><span class="d">18 s · about 41 spoken words</span></div>
-<p class="screen"><b>On screen.</b> The author&#x27;s view of Amina&#x27;s path: each answer, the misconception it hit, the hint she got, her prediction. The whole log is on screen from about 2:31, and it holds there to the end of the shot.</p>
+<textarea data-k="shot5" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">06</span><span class="t">2:20–2:38</span><span class="d">18 s · about 41 spoken words</span></div>
+<p class="screen"><b>On screen.</b> The author&#x27;s view of Amina&#x27;s path: each answer, the misconception it hit, the hint she got, her prediction. The whole log is on screen from about 2:26, and it holds there to the end of the shot.</p>
 <p class="label">Points to cover</p><ul><li>What the author learns from the log.</li></ul>
-<textarea data-k="shot7" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">07</span><span class="t">2:43–2:55</span><span class="d">12 s · about 28 spoken words</span></div>
+<textarea data-k="shot7" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">07</span><span class="t">2:38–2:50</span><span class="d">12 s · about 28 spoken words</span></div>
 <p class="screen"><b>On screen.</b> End card: Book → Lessons → Review → Students → Log, and the repo link. It builds in over about 3 seconds, then holds with a very slow zoom to the end.</p>
 <p class="label">Points to cover</p><ul><li>What&#x27;s next, and where to find the code.</li></ul>
 <textarea data-k="shot8" placeholder="Your words for this shot"></textarea></section>
@@ -117,7 +122,7 @@ button:disabled{opacity:.5;cursor:default}
     <span id="meterNote" role="status"></span>
   </div>
   <div class="stage">
-    <div><video id="pVideo" src="../media/concept-b/rough-cut.mp4" muted playsinline preload="auto"></video><div id="pClock">0:00</div><div id="pStatus"></div></div>
+    <div><video id="pVideo" src="../media/concept-b/rough-cut.mp4" muted playsinline preload="auto"></video><div id="pClock">0:00</div><div id="pStatus"></div><div id="takeList" hidden><h4>Takes this session (newest first, all saved to Downloads)</h4><ol></ol></div></div>
     <div id="pWords"></div>
   </div>
   <div id="pCount"></div>
@@ -228,13 +233,13 @@ function begin(record) {
       // the cut starts playing (the countdown), so it can be laid over the cut exactly.
       var lead = ((playStartedAt - recStartedAt) / 1000).toFixed(3);
       var ext = (recorder.mimeType.indexOf('mp4') >= 0) ? 'm4a' : 'webm';
-      var name = 'voice-from-' + fromSec.toFixed(3) + 's-lead-' + lead + 's.' + ext;
-      var url = URL.createObjectURL(new Blob(chunks, { type: recorder.mimeType }));
-      var a = document.createElement('a'); a.href = url; a.download = name; a.textContent = 'Save take (shot ' + shots[Number($('pFrom').value)].n + ')';
-      $('takes').appendChild(a);
-      var au = new Audio(url); var play = document.createElement('a'); play.href = '#'; play.textContent = 'Listen';
-      play.onclick = function (e) { e.preventDefault(); au.currentTime = 0; au.play(); }; $('takes').appendChild(play);
-      a.click();
+      var when = new Date(), hhmm = String(when.getHours()).padStart(2, '0') + ':' + String(when.getMinutes()).padStart(2, '0') + ':' + String(when.getSeconds()).padStart(2, '0');
+      // The time goes in the name too, so takes of the same shot can be told apart in Downloads.
+      var name = 'voice-from-' + fromSec.toFixed(3) + 's-lead-' + lead + 's-at-' + hhmm.replace(/:/g, '') + '.' + ext;
+      var take = { shot: shots[Number($('pFrom').value)].n, at: hhmm, name: name, url: URL.createObjectURL(new Blob(chunks, { type: recorder.mimeType })) };
+      takes.unshift(take);
+      showTakes();
+      var a = document.createElement('a'); a.href = take.url; a.download = name; a.click();
     };
     recorder.start();
   }, function (err) {
@@ -242,6 +247,28 @@ function begin(record) {
   });
 }
 var failed = '';
+// The newest take sits in the top bar; every take this session is listed under the video.
+var takes = [];
+function takeLinks(t) {
+  var frag = document.createDocumentFragment();
+  var save = document.createElement('a'); save.href = t.url; save.download = t.name; save.textContent = 'Save';
+  var au = new Audio(t.url), play = document.createElement('a'); play.href = '#'; play.textContent = 'Listen';
+  play.onclick = function (e) { e.preventDefault(); au.currentTime = 0; au.play(); };
+  frag.appendChild(play); frag.appendChild(save);
+  return frag;
+}
+function showTakes() {
+  var latest = takes[0];
+  $('takes').textContent = 'Latest take: from shot ' + latest.shot + ', at ' + latest.at;
+  $('takes').appendChild(takeLinks(latest));
+  var ol = $('takeList').querySelector('ol'); ol.innerHTML = '';
+  takes.forEach(function (t, i) {
+    var li = document.createElement('li');
+    li.textContent = (i === 0 ? 'Latest: ' : '') + 'from shot ' + t.shot + ', ' + t.at;
+    li.appendChild(takeLinks(t)); ol.appendChild(li);
+  });
+  $('takeList').hidden = false;
+}
 function end() {
   clearInterval(ticking); v.pause(); $('pCount').textContent = '';
   if (mode === 'record' && recorder && recorder.state !== 'inactive') {

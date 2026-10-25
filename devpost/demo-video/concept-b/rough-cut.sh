@@ -18,10 +18,10 @@ cd "$(dirname "$0")/../media/concept-b"
 # minutes and about $1. The statistics shot (the subject card and c11) was cut on Oct 25: the
 # session draft of 5.1 it showed was deleted, so it showed a lesson that isn't on the live site.
 # The start and end times are set so that every shot starts on a whole second (narration.html's
-# times): 0:00, 0:26, 0:48 (inside the first c08 line), 1:13, 1:42, 2:25, 2:43; the end is 2:55 (the end
-# card was cut to 12 s on Oct 25, to stay under the rules' three minutes).
+# times): 0:00, 0:21, 0:43 (inside the first c08 line), 1:08, 1:37, 2:20, 2:38; the end is 2:50 (the end
+# card was cut to 12 s and the opener's hold to 1 s on Oct 25: under the rules' three minutes).
 SEGMENTS='
-section-to-lesson.mp4            0     20    1     6    1
+section-to-lesson.mp4            0     20    1     1    1
 clips/c08-fake-draft.mp4         2.1   38.5  1.3   0    1
 clips/c08-fake-draft.mp4         38.5  57.5  1     0    1    Simulated drafting (no Claude call). | The real draft of this section took 6 minutes and cost $1.08.
 clips/c09-hanoi-review.mp4       3.45  22    1.25  0    1
@@ -36,11 +36,11 @@ end-card.mp4                     0     6     1     6    1.03
 # Each line of LABELS is: time  text. A section label fades in at the bottom left at that time
 # (in the finished cut), stays about 3 seconds and fades out.
 LABELS='
-26.2   Start from a book
-48.0   Draft lessons
-73.2   Review
-102.2  A student
-145.2  The student log
+21.2   Start from a book
+43.0   Draft lessons
+68.2   Review
+97.2  A student
+140.2  The student log
 '
 XFADE=0.4
 FONT=/System/Library/Fonts/HelveticaNeue.ttc

@@ -5,7 +5,8 @@
 
 Each take's file name says where in the cut it starts (from) and how much audio comes before
 the cut starts playing (lead, the countdown). A take covers the cut from its start until the
-next take starts, so a redo from shot 4 replaces the first take from shot 4 on. Writes
+next take starts, so a redo from shot 4 replaces the first take from shot 4 on; of two takes
+from the same shot, the one named last wins. Writes
 ../media/concept-b/final.mp4 (the video untouched, the voice as AAC).
 """
 import re
@@ -25,7 +26,8 @@ for arg in sys.argv[1:]:
     takes.append((float(m.group(1)), float(m.group(2)), arg))
 if not takes:
     sys.exit(__doc__)
-takes.sort()
+# Two takes from the same shot: the one named last on the command line wins.
+takes = sorted({start: (start, lead, path) for start, lead, path in takes}.values())
 
 length = float(subprocess.check_output(
     ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(cut)], text=True))

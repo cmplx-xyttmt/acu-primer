@@ -1,0 +1,1533 @@
+{
+  "id": "recursion-tower-of-hanoi-c16db1",
+  "title": "Tower of Hanoi: Thinking Recursively",
+  "source": {
+    "book": "Algorithms, by Jeff Erickson",
+    "pages": "Tower of Hanoi, pp. 42-43"
+  },
+  "outcomes": [
+    "Identify which moves the Tower of Hanoi rules allow and which they forbid.",
+    "Explain why the largest disk can move only when all the smaller disks are on the spare peg.",
+    "Describe and trace the three-step recursive algorithm for moving a tower of $n$ disks.",
+    "Explain why the two $(n-1)$-disk subproblems can be handed off and trusted (the 'Recursion Fairy').",
+    "Explain why the algorithm needs a separate base case for $n = 0$, and what that case does."
+  ],
+  "modules": [
+    {
+      "id": "m1",
+      "title": "The puzzle and its rules",
+      "reading": "The Tower of Hanoi was published as a physical puzzle by the French mathematician Édouard Lucas in 1883. A legend soon grew around it: priests in a temple move 64 gold discs between three diamond needles, and when they finish, the world ends.\n\nComputer scientists replace the fixed number 64 with a variable $n$, the number of disks, and call the needles **pegs**. All $n$ disks start stacked on one peg, the largest at the bottom and each disk smaller than the one below it. The goal is to move the whole tower to another peg, using the third peg as a **spare** for parking disks along the way.\n\nTwo rules apply to every move: you move **one disk at a time**, and you may **never place a disk on top of a smaller disk**.",
+      "check": {
+        "id": "c1",
+        "type": "sort",
+        "prompt": "Sort each action by whether the Tower of Hanoi rules allow it.",
+        "categories": [
+          {
+            "id": "allowed",
+            "label": "Allowed"
+          },
+          {
+            "id": "illegal",
+            "label": "Not allowed"
+          }
+        ],
+        "items": [
+          {
+            "id": "i1",
+            "text": "Move the smallest disk onto an empty peg",
+            "category": "allowed"
+          },
+          {
+            "id": "i2",
+            "text": "Place a small disk on top of a bigger one",
+            "category": "allowed"
+          },
+          {
+            "id": "i3",
+            "text": "Place a bigger disk on top of a smaller one",
+            "category": "illegal"
+          },
+          {
+            "id": "i4",
+            "text": "Lift the top two disks and move them together",
+            "category": "illegal"
+          },
+          {
+            "id": "i5",
+            "text": "Park some disks on the spare peg for a while",
+            "category": "allowed"
+          },
+          {
+            "id": "i6",
+            "text": "Put the largest disk on an empty peg",
+            "category": "allowed"
+          }
+        ],
+        "explanation": "The rules forbid only two things: moving more than one disk at once, and putting a disk on a smaller one. Everything else is allowed, including using empty pegs, using the spare peg and stacking a small disk on a bigger one.",
+        "wrongAnswers": [
+          {
+            "match": {
+              "itemId": "i2",
+              "categoryId": "illegal"
+            },
+            "misconception": {
+              "text": "Thinks the rule forbids stacking disks at all, rather than only a bigger disk on a smaller one.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "The rule is about direction. Look at the starting tower: every disk already sits on a bigger one, and that is the normal, legal state. What's banned is the reverse, a bigger disk resting on a smaller one."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "In the starting tower, each disk sits on top of...",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "a bigger disk"
+                    },
+                    {
+                      "id": "b",
+                      "text": "a smaller disk"
+                    }
+                  ],
+                  "answer": "a"
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "itemId": "i4",
+              "categoryId": "allowed"
+            },
+            "misconception": {
+              "text": "Thinks moving several disks together is fine as long as their size order stays correct.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "The size rule isn't the only rule. Even if two disks stay in the right order, lifting them together breaks the other rule: only one disk moves at a time. That's what makes the puzzle hard, because a tower has to be taken apart and rebuilt disk by disk."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "How many disks may you move in a single move?",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "Exactly one"
+                    },
+                    {
+                      "id": "b",
+                      "text": "Up to two, if they stay in order"
+                    },
+                    {
+                      "id": "c",
+                      "text": "Any number, if they stay in order"
+                    }
+                  ],
+                  "answer": "a"
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "itemId": "i5",
+              "categoryId": "illegal"
+            },
+            "misconception": {
+              "text": "Thinks disks must travel straight from the starting peg to the destination peg.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "The third peg exists to be used: the puzzle asks you to move the tower using a spare peg as an occasional placeholder. Without parking disks there, you couldn't even move a tower of two disks."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "With two disks, can you move the tower to the destination without ever using the spare peg?",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "Yes"
+                    },
+                    {
+                      "id": "b",
+                      "text": "No"
+                    }
+                  ],
+                  "answer": "b"
+                }
+              }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": {
+            "enabled": true,
+            "text": "Test each action with just two questions: does it move more than one disk at once, and does it put a disk on top of a smaller disk? If the answer to both is no, the action is allowed."
+          },
+          "simplerQuestion": {
+            "enabled": true,
+            "check": {
+              "type": "select",
+              "prompt": "Is it allowed to put disk 3 (big) on top of disk 1 (small)?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "Yes"
+                },
+                {
+                  "id": "b",
+                  "text": "No"
+                }
+              ],
+              "answer": "b"
+            }
+          }
+        },
+        "alternatives": [
+          {
+            "id": "c1a",
+            "type": "select",
+            "prompt": "Peg A holds disks 3 and 2, with 2 on top. Peg B holds disk 1, the smallest. Peg C is empty. Which move breaks the rules?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Move disk 1 from B to C"
+              },
+              {
+                "id": "b",
+                "text": "Move disk 1 from B onto disk 2 on A"
+              },
+              {
+                "id": "c",
+                "text": "Move disk 2 from A onto disk 1 on B"
+              },
+              {
+                "id": "d",
+                "text": "Move disk 2 from A to the empty peg C"
+              }
+            ],
+            "answer": "c",
+            "explanation": "Disk 2 is bigger than disk 1, so placing it on B would put a disk on top of a smaller one. Every other move puts a disk either on an empty peg or on a bigger disk, which is always allowed.",
+            "wrongAnswers": [
+              {
+                "match": {
+                  "optionId": "b"
+                },
+                "misconception": {
+                  "text": "Thinks a disk can never be placed on top of another disk.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "Putting a small disk on a bigger one is exactly how the tower looks at the start. Disk 1 is smaller than disk 2, so resting it there is fine. The rule only blocks bigger-on-smaller."
+                  },
+                  "simplerQuestion": {
+                    "enabled": true,
+                    "check": {
+                      "type": "select",
+                      "prompt": "Disk 1 is the smallest disk. Can placing it on another disk ever break the size rule?",
+                      "options": [
+                        {
+                          "id": "a",
+                          "text": "Yes"
+                        },
+                        {
+                          "id": "b",
+                          "text": "No"
+                        }
+                      ],
+                      "answer": "b"
+                    }
+                  }
+                }
+              },
+              {
+                "match": {
+                  "optionId": "d"
+                },
+                "misconception": {
+                  "text": "Thinks only certain disks (such as the largest) may be placed on an empty peg.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "An empty peg has nothing on it, so there is no smaller disk below whatever lands there. Any disk can go on an empty peg."
+                  },
+                  "simplerQuestion": {
+                    "enabled": true,
+                    "check": {
+                      "type": "select",
+                      "prompt": "Can any disk be placed on an empty peg?",
+                      "options": [
+                        {
+                          "id": "a",
+                          "text": "Yes"
+                        },
+                        {
+                          "id": "b",
+                          "text": "No"
+                        }
+                      ],
+                      "answer": "a"
+                    }
+                  }
+                }
+              }
+            ],
+            "generalFallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "For each move, compare the moving disk with the top disk of the peg it lands on. The move is illegal only if the moving disk is bigger than that top disk."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "Disk 2 lands on a peg whose top disk is disk 1. Is that allowed?",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "Yes"
+                    },
+                    {
+                      "id": "b",
+                      "text": "No"
+                    }
+                  ],
+                  "answer": "b"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "m2",
+      "title": "Focus on the largest disk",
+      "reading": "Trying to plan every move at once is overwhelming. Lucas's secret was to **think recursively**: solve the puzzle by relying on solutions to smaller versions of the same puzzle. Start by focusing on just one disk, the largest.\n\nAt the beginning the largest disk can't move, because the other $n-1$ disks (all of them except the largest) are sitting on top of it. And when it does move, it needs a landing peg with no smaller disk beneath. Since every other disk is smaller, that peg must be empty.\n\nSo at the moment the largest disk moves, the source peg must hold only that disk, and the destination peg must be empty. Where does that leave the other $n-1$ disks?",
+      "check": {
+        "id": "c2",
+        "type": "select",
+        "prompt": "The algorithm is about to move the largest disk from the source peg to the destination peg. Where must the other $n-1$ disks be at that moment?",
+        "options": [
+          {
+            "id": "a",
+            "text": "All on the destination peg"
+          },
+          {
+            "id": "b",
+            "text": "Still on the source peg"
+          },
+          {
+            "id": "c",
+            "text": "All on the spare peg"
+          },
+          {
+            "id": "d",
+            "text": "Some on the spare peg and some on the destination peg"
+          }
+        ],
+        "answer": "c",
+        "explanation": "The largest disk can leave the source only when nothing is on top of it, and it can land only on an empty peg, since every other disk is smaller. With both the source and the destination clear of smaller disks, the spare peg is the only place left for them.",
+        "wrongAnswers": [
+          {
+            "match": {
+              "optionId": "a"
+            },
+            "misconception": {
+              "text": "Thinks the smaller disks can wait on the destination peg while the largest disk joins them.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Whatever is already on the destination ends up underneath the largest disk when it lands, and all of those disks are smaller. That breaks the rule. The largest disk has to finish at the bottom, so the destination must be empty when it arrives."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "If disk 1 is on the destination peg, can the largest disk be placed there?",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "Yes"
+                    },
+                    {
+                      "id": "b",
+                      "text": "No"
+                    }
+                  ],
+                  "answer": "b"
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "optionId": "b"
+            },
+            "misconception": {
+              "text": "Forgets that the smaller disks on the source peg sit on top of the largest disk and block it.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "The largest disk is at the very bottom of the source stack. As long as any smaller disk is still on the source, it is sitting on top of the largest disk and in the way, so the largest disk can't be lifted."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "At the start, where in its stack is the largest disk?",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "At the bottom"
+                    },
+                    {
+                      "id": "b",
+                      "text": "At the top"
+                    },
+                    {
+                      "id": "c",
+                      "text": "In the middle"
+                    }
+                  ],
+                  "answer": "a"
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "optionId": "d"
+            },
+            "misconception": {
+              "text": "Thinks a few smaller disks may stay on the destination as long as most are moved away.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Even one smaller disk on the destination is a problem, because the largest disk would land on top of it. Every one of the $n-1$ smaller disks has to be off both the source and the destination, and only one peg remains."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "How many smaller disks may be on the destination peg when the largest disk moves there?",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "None"
+                    },
+                    {
+                      "id": "b",
+                      "text": "One"
+                    },
+                    {
+                      "id": "c",
+                      "text": "Up to half of them"
+                    }
+                  ],
+                  "answer": "a"
+                }
+              }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": {
+            "enabled": true,
+            "text": "Ask two questions about the largest disk: what must be true for it to leave its peg, and what must be true where it lands? Each answer rules out one peg for the smaller disks."
+          },
+          "simplerQuestion": {
+            "enabled": true,
+            "check": {
+              "type": "select",
+              "prompt": "Which peg must be empty when the largest disk moves onto it?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "The source"
+                },
+                {
+                  "id": "b",
+                  "text": "The spare"
+                },
+                {
+                  "id": "c",
+                  "text": "The destination"
+                }
+              ],
+              "answer": "c"
+            }
+          }
+        },
+        "alternatives": [
+          {
+            "id": "c2a",
+            "type": "number",
+            "prompt": "You're moving a tower of 10 disks. Before the largest disk can move, how many disks must first be moved to the spare peg? Enter a whole number.",
+            "answer": 9,
+            "tolerance": 0,
+            "unit": "disks",
+            "explanation": "The largest disk is at the bottom with all the others stacked above it. To free it, every disk except the largest must go to the spare, which is $n-1 = 10-1 = 9$ disks.",
+            "wrongAnswers": [
+              {
+                "match": {
+                  "min": 10,
+                  "max": 10
+                },
+                "misconception": {
+                  "text": "Includes the largest disk in the group that goes to the spare peg.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "Step one is about clearing everything off the largest disk, not moving it. The largest disk stays put while all the disks above it go to the spare, which is every disk except one."
+                  },
+                  "simplerQuestion": {
+                    "enabled": true,
+                    "check": {
+                      "type": "number",
+                      "prompt": "A tower has 4 disks. How many of them sit on top of the largest disk?",
+                      "answer": 3,
+                      "tolerance": 0
+                    }
+                  }
+                }
+              },
+              {
+                "match": {
+                  "min": 1,
+                  "max": 1
+                },
+                "misconception": {
+                  "text": "Thinks only the top disk is in the way of the largest disk.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "Every disk on the source peg is above the largest disk, not just the top one. All of them must leave, and none of them can go to the destination, because the largest disk needs it empty."
+                  },
+                  "simplerQuestion": {
+                    "enabled": true,
+                    "check": {
+                      "type": "number",
+                      "prompt": "In a tower of 3 disks, how many disks are above the bottom one?",
+                      "answer": 2,
+                      "tolerance": 0
+                    }
+                  }
+                }
+              }
+            ],
+            "generalFallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Picture the tower: the largest disk is at the bottom and every other disk is above it. To free the largest disk, all the disks above it must go to the spare peg."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "number",
+                  "prompt": "A tower has 5 disks. How many disks are on top of the largest one?",
+                  "answer": 4,
+                  "tolerance": 0
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "m3",
+      "title": "The three-step algorithm",
+      "reading": "Putting that together gives the whole algorithm for moving $n$ disks from the source peg to the destination peg:\n\nFirst, move the $n-1$ smaller disks from the source to the spare peg. Second, move the largest disk directly from the source to the destination. Third, move the $n-1$ smaller disks from the spare peg to the destination, on top of the largest disk.\n\nSteps one and three are themselves Tower of Hanoi puzzles, just with $n-1$ disks instead of $n$, and each uses whichever peg is left over as its spare. The largest disk never gets in their way: it sits at the bottom, and any disk may go on top of it. Notice that the largest disk moves exactly once.",
+      "explore": {
+        "enabled": true,
+        "why": "Students step through the 3-disk algorithm frame by frame and see where the two smaller disks are at the moment the largest disk moves. It targets the common belief that the smaller disks should head straight for the destination, when in fact they must all be parked on the spare peg first.",
+        "prompt": "Step through the algorithm moving 3 disks from peg A to peg C, with peg B as the spare. Disks are numbered 1 (smallest) to 3 (largest) and listed bottom to top.",
+        "prediction": {
+          "prompt": "When disk 3, the largest, moves from A to C, where will disks 1 and 2 be?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Both on C, the destination"
+            },
+            {
+              "id": "b",
+              "text": "Both on B, the spare"
+            },
+            {
+              "id": "c",
+              "text": "One on B and one on C"
+            },
+            {
+              "id": "d",
+              "text": "Still on A, on top of disk 3"
+            }
+          ],
+          "answer": "b"
+        },
+        "thinkAbout": "Disk 3 can leave A only when nothing is on top of it, and it can land only on a peg with no smaller disk, which means an empty peg, since every other disk is smaller. That rules out A and C for disks 1 and 2, leaving only the spare peg B. Putting a smaller disk on C early feels like progress, but it blocks the largest disk.",
+        "notice": "Frames 1 to 3 are a complete 2-disk puzzle (A to B, using C as spare), and frames 5 to 7 are another (B to C, using A as spare). The largest disk moves only once, in frame 4, between them.",
+        "widget": {
+          "kind": "stepper",
+          "frames": [
+            {
+              "caption": "Start: disks 3, 2, 1 on A (bottom to top). Goal: move the tower to C.",
+              "cells": [
+                {
+                  "label": "A (source)",
+                  "value": "3 2 1",
+                  "mark": false
+                },
+                {
+                  "label": "B (spare)",
+                  "value": "empty",
+                  "mark": false
+                },
+                {
+                  "label": "C (destination)",
+                  "value": "empty",
+                  "mark": false
+                }
+              ]
+            },
+            {
+              "caption": "Step 1 begins: move the 2 smaller disks from A to B, using C as their spare. Disk 1 goes from A to C.",
+              "cells": [
+                {
+                  "label": "A (source)",
+                  "value": "3 2",
+                  "mark": true
+                },
+                {
+                  "label": "B (spare)",
+                  "value": "empty",
+                  "mark": false
+                },
+                {
+                  "label": "C (destination)",
+                  "value": "1",
+                  "mark": true
+                }
+              ]
+            },
+            {
+              "caption": "Disk 2 goes from A to B.",
+              "cells": [
+                {
+                  "label": "A (source)",
+                  "value": "3",
+                  "mark": true
+                },
+                {
+                  "label": "B (spare)",
+                  "value": "2",
+                  "mark": true
+                },
+                {
+                  "label": "C (destination)",
+                  "value": "1",
+                  "mark": false
+                }
+              ]
+            },
+            {
+              "caption": "Disk 1 goes from C onto disk 2 on B. Step 1 is done: both smaller disks are on the spare peg.",
+              "cells": [
+                {
+                  "label": "A (source)",
+                  "value": "3",
+                  "mark": false
+                },
+                {
+                  "label": "B (spare)",
+                  "value": "2 1",
+                  "mark": true
+                },
+                {
+                  "label": "C (destination)",
+                  "value": "empty",
+                  "mark": true
+                }
+              ]
+            },
+            {
+              "caption": "Step 2: disk 3 moves from A straight to the empty peg C. This is its only move.",
+              "cells": [
+                {
+                  "label": "A (source)",
+                  "value": "empty",
+                  "mark": true
+                },
+                {
+                  "label": "B (spare)",
+                  "value": "2 1",
+                  "mark": false
+                },
+                {
+                  "label": "C (destination)",
+                  "value": "3",
+                  "mark": true
+                }
+              ]
+            },
+            {
+              "caption": "Step 3 begins: move the 2 smaller disks from B to C, now using A as their spare. Disk 1 goes from B to A.",
+              "cells": [
+                {
+                  "label": "A (source)",
+                  "value": "1",
+                  "mark": true
+                },
+                {
+                  "label": "B (spare)",
+                  "value": "2",
+                  "mark": true
+                },
+                {
+                  "label": "C (destination)",
+                  "value": "3",
+                  "mark": false
+                }
+              ]
+            },
+            {
+              "caption": "Disk 2 goes from B onto disk 3 on C.",
+              "cells": [
+                {
+                  "label": "A (source)",
+                  "value": "1",
+                  "mark": false
+                },
+                {
+                  "label": "B (spare)",
+                  "value": "empty",
+                  "mark": true
+                },
+                {
+                  "label": "C (destination)",
+                  "value": "3 2",
+                  "mark": true
+                }
+              ]
+            },
+            {
+              "caption": "Disk 1 goes from A onto disk 2. The whole tower is on C, after 7 moves.",
+              "cells": [
+                {
+                  "label": "A (source)",
+                  "value": "empty",
+                  "mark": true
+                },
+                {
+                  "label": "B (spare)",
+                  "value": "empty",
+                  "mark": false
+                },
+                {
+                  "label": "C (destination)",
+                  "value": "3 2 1",
+                  "mark": true
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "check": {
+        "id": "c3",
+        "type": "number",
+        "prompt": "Trace the algorithm on a tower of $n = 2$ disks. How many single-disk moves does it make in total? Enter a whole number.",
+        "answer": 3,
+        "tolerance": 0,
+        "unit": "moves",
+        "explanation": "Step one moves the one smaller disk to the spare peg (1 move), step two moves the largest disk to the destination (1 move), and step three moves the smaller disk from the spare onto it (1 move). The small disk has to detour through the spare, so the total is 3.",
+        "wrongAnswers": [
+          {
+            "match": {
+              "min": 2,
+              "max": 2
+            },
+            "misconception": {
+              "text": "Thinks the smaller disk can go straight to the destination, so it moves only once.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "If the small disk went to the destination first, the large disk would have to land on top of it, which is illegal. So the small disk moves twice: once to the spare to get out of the way, and once more onto the large disk."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "number",
+                  "prompt": "In the 2-disk puzzle, how many times does the smaller disk move?",
+                  "answer": 2,
+                  "tolerance": 0
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "min": 4,
+              "max": 7
+            },
+            "misconception": {
+              "text": "Counts the recursive calls or the zero-disk base cases as moves.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Only physical disk moves count. Inside steps one and three, the smaller puzzles ask for towers of zero disks to be moved, and moving zero disks means doing nothing, which adds no moves. Count just: small disk off, big disk across, small disk back on."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "number",
+                  "prompt": "How many disk moves does it take to move a tower of 0 disks?",
+                  "answer": 0,
+                  "tolerance": 0
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "min": 1,
+              "max": 1
+            },
+            "misconception": {
+              "text": "Counts only the move of the largest disk and forgets that steps one and three also move disks.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Step two is one move, but steps one and three move disks too. For two disks, each of those steps moves the single smaller disk: once to the spare, then once onto the largest disk."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "number",
+                  "prompt": "For $n = 2$, step one moves a tower of how many disks?",
+                  "answer": 1,
+                  "tolerance": 0
+                }
+              }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": {
+            "enabled": true,
+            "text": "Write the moves out with pegs A (source), B (spare) and C (destination): small disk A to B, big disk A to C, small disk B to C. Then count the lines."
+          },
+          "simplerQuestion": {
+            "enabled": true,
+            "check": {
+              "type": "number",
+              "prompt": "In the 2-disk puzzle, how many times does the largest disk move?",
+              "answer": 1,
+              "tolerance": 0
+            }
+          }
+        },
+        "alternatives": [
+          {
+            "id": "c3a",
+            "type": "select",
+            "prompt": "The algorithm moves $n$ disks from peg A to peg C, using B as the spare. In step three, the $n-1$ smaller disks move from B to C. Which peg does that smaller puzzle use as its spare?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Peg C, the destination"
+              },
+              {
+                "id": "b",
+                "text": "Peg A, which is now empty"
+              },
+              {
+                "id": "c",
+                "text": "None: the smaller disks can move straight from B to C one by one"
+              }
+            ],
+            "answer": "b",
+            "explanation": "The smaller puzzle is a full Tower of Hanoi problem going from B to C, so its spare must be the one peg left over, A. After step two, A is empty, so it's free to serve as the parking spot.",
+            "wrongAnswers": [
+              {
+                "match": {
+                  "optionId": "a"
+                },
+                "misconception": {
+                  "text": "Confuses the destination of a subproblem with its spare peg.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "A puzzle's spare has to be a different peg from both its start and its goal. This smaller puzzle starts on B and ends on C, so C can't also be its parking spot. That leaves A."
+                  },
+                  "simplerQuestion": {
+                    "enabled": true,
+                    "check": {
+                      "type": "select",
+                      "prompt": "A puzzle moves disks from B to C. Which pegs are already taken as its start and goal?",
+                      "options": [
+                        {
+                          "id": "a",
+                          "text": "B and C"
+                        },
+                        {
+                          "id": "b",
+                          "text": "A and C"
+                        },
+                        {
+                          "id": "c",
+                          "text": "A and B"
+                        }
+                      ],
+                      "answer": "a"
+                    }
+                  }
+                }
+              },
+              {
+                "match": {
+                  "optionId": "c"
+                },
+                "misconception": {
+                  "text": "Thinks a stack of smaller disks can be moved without needing a spare peg.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "Moving even two disks needs a parking spot: the top disk has to step aside so the one beneath it can move first. The $n-1$ smaller disks form a full Tower of Hanoi puzzle, so they need a spare just as the original tower did."
+                  },
+                  "simplerQuestion": {
+                    "enabled": true,
+                    "check": {
+                      "type": "select",
+                      "prompt": "Can you move a 2-disk tower from B to C using only pegs B and C?",
+                      "options": [
+                        {
+                          "id": "a",
+                          "text": "Yes"
+                        },
+                        {
+                          "id": "b",
+                          "text": "No"
+                        }
+                      ],
+                      "answer": "b"
+                    }
+                  }
+                }
+              }
+            ],
+            "generalFallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Every smaller puzzle has a start peg, a goal peg and a spare. Name the start and goal for step three; the spare is whichever of the three pegs is left."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "There are three pegs, A, B and C. If a puzzle starts on B and ends on C, its spare is...",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "A"
+                    },
+                    {
+                      "id": "b",
+                      "text": "B"
+                    },
+                    {
+                      "id": "c",
+                      "text": "C"
+                    }
+                  ],
+                  "answer": "a"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "m4",
+      "title": "Stop! Trust the Recursion Fairy",
+      "reading": "It's tempting to ask next: but how exactly do we move those $n-1$ disks? The book's answer is: **stop**. We're done.\n\nWe have **reduced** the $n$-disk puzzle to two instances of the $(n-1)$-disk puzzle, plus one move of the largest disk. Each instance is the same kind of problem, only smaller, so the same three steps solve it. Erickson's image for this is the **Recursion Fairy**, or the junior monks of the temple: we hand the smaller puzzles off and trust that they get solved. If we didn't trust the junior monks, we wouldn't have hired them.\n\nOur only job is the one level we're working on. Tracing every move of every smaller puzzle in your head is exactly the work that recursive thinking lets you skip.",
+      "check": {
+        "id": "c4",
+        "type": "select",
+        "prompt": "What has the recursive idea turned the $n$-disk puzzle into?",
+        "options": [
+          {
+            "id": "a",
+            "text": "Two smaller puzzles with $n-1$ disks each, plus one move of the largest disk"
+          },
+          {
+            "id": "b",
+            "text": "One smaller puzzle with $n-1$ disks, plus one move of the largest disk"
+          },
+          {
+            "id": "c",
+            "text": "$n$ separate puzzles with one disk each"
+          },
+          {
+            "id": "d",
+            "text": "Two puzzles with about $n/2$ disks each"
+          }
+        ],
+        "answer": "a",
+        "explanation": "The $n-1$ smaller disks must get off the largest disk (one smaller puzzle) and later get back on top of it (a second smaller puzzle), with a single move of the largest disk in between. Both smaller puzzles have $n-1$ disks, because only the largest disk is left out.",
+        "wrongAnswers": [
+          {
+            "match": {
+              "optionId": "b"
+            },
+            "misconception": {
+              "text": "Forgets that the smaller disks must be moved a second time, from the spare peg to the destination.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "After step one the smaller disks are on the spare peg, not where they need to end up. Getting them from the spare onto the largest disk is a second, separate $(n-1)$-disk puzzle."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "Right after the largest disk reaches the destination, where are the smaller disks?",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "On the spare peg"
+                    },
+                    {
+                      "id": "b",
+                      "text": "Already on the destination"
+                    }
+                  ],
+                  "answer": "a"
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "optionId": "c"
+            },
+            "misconception": {
+              "text": "Thinks recursion means breaking the problem into single-disk pieces all at once.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "The reduction peels off only one disk, the largest, at each level. The rest stay together as a single $(n-1)$-disk tower, which is moved as one smaller puzzle, twice. Breaking it down further is the job of those smaller puzzles, not of this level."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "In step one, the smaller disks are moved as...",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "one puzzle with $n-1$ disks"
+                    },
+                    {
+                      "id": "b",
+                      "text": "$n-1$ separate one-disk puzzles"
+                    }
+                  ],
+                  "answer": "a"
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "optionId": "d"
+            },
+            "misconception": {
+              "text": "Assumes a recursive algorithm always splits the problem in half.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Nothing here splits the tower in half. The largest disk is singled out and all the others travel together, so each smaller puzzle has $n-1$ disks, just one fewer than the original."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "number",
+                  "prompt": "With $n = 8$, how many disks are in each smaller puzzle?",
+                  "answer": 7,
+                  "tolerance": 0
+                }
+              }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": {
+            "enabled": true,
+            "text": "Go through the three steps and label each one: is it a single move, or a whole tower being moved? Then count the towers and how many disks each has."
+          },
+          "simplerQuestion": {
+            "enabled": true,
+            "check": {
+              "type": "select",
+              "prompt": "How many of the three steps move a whole tower of $n-1$ disks?",
+              "options": [
+                {
+                  "id": "a",
+                  "text": "One"
+                },
+                {
+                  "id": "b",
+                  "text": "Two"
+                },
+                {
+                  "id": "c",
+                  "text": "Three"
+                }
+              ],
+              "answer": "b"
+            }
+          }
+        },
+        "alternatives": [
+          {
+            "id": "c4a",
+            "type": "select",
+            "prompt": "You've written the three steps. A friend says: 'You never explained how the $n-1$ smaller disks actually get moved, so your algorithm is incomplete.' What's the best reply?",
+            "options": [
+              {
+                "id": "a",
+                "text": "They're right: every move of the $n-1$ disks must be listed before the algorithm is complete."
+              },
+              {
+                "id": "b",
+                "text": "Moving $n-1$ disks is the same puzzle with fewer disks, so the same algorithm solves it; we hand it off and trust it."
+              },
+              {
+                "id": "c",
+                "text": "They're right, so the algorithm only works when $n$ is small enough to trace by hand."
+              }
+            ],
+            "answer": "b",
+            "explanation": "The smaller tasks are instances of the very problem the algorithm solves, only with fewer disks. As in Erickson's Recursion Fairy image, we hand them off and trust them to be solved, so our job at this level is just the three steps.",
+            "wrongAnswers": [
+              {
+                "match": {
+                  "optionId": "a"
+                },
+                "misconception": {
+                  "text": "Thinks a recursive algorithm must spell out every lower-level step explicitly.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "The recursion does produce those moves, just not in our heads. Each smaller puzzle runs the same three steps on one fewer disk, which runs them again, and so on. Writing out every move would only repeat what the algorithm already says."
+                  },
+                  "simplerQuestion": {
+                    "enabled": true,
+                    "check": {
+                      "type": "select",
+                      "prompt": "Step one moves $n-1$ disks. Which algorithm handles that task?",
+                      "options": [
+                        {
+                          "id": "a",
+                          "text": "This same three-step algorithm"
+                        },
+                        {
+                          "id": "b",
+                          "text": "A different algorithm we still need to invent"
+                        }
+                      ],
+                      "answer": "a"
+                    }
+                  }
+                }
+              },
+              {
+                "match": {
+                  "optionId": "c"
+                },
+                "misconception": {
+                  "text": "Believes a recursive algorithm only works if a person can trace it all the way through.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "The algorithm doesn't depend on anyone tracing it. With 64 disks nobody could follow every move, yet each level still just hands two smaller puzzles to the next. The size of $n$ doesn't change that logic."
+                  },
+                  "simplerQuestion": {
+                    "enabled": true,
+                    "check": {
+                      "type": "select",
+                      "prompt": "Does the three-step reduction change when $n = 64$ instead of $n = 3$?",
+                      "options": [
+                        {
+                          "id": "a",
+                          "text": "Yes"
+                        },
+                        {
+                          "id": "b",
+                          "text": "No"
+                        }
+                      ],
+                      "answer": "b"
+                    }
+                  }
+                }
+              }
+            ],
+            "generalFallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Ask what kind of problem 'move $n-1$ disks' is. If it's the same problem with fewer disks, the algorithm you're writing already covers it."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "Is moving a tower of $n-1$ disks itself a Tower of Hanoi puzzle?",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "Yes"
+                    },
+                    {
+                      "id": "b",
+                      "text": "No"
+                    }
+                  ],
+                  "answer": "a"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "m5",
+      "title": "The base case: zero disks",
+      "reading": "The reduction quietly assumes one thing: **there is a largest disk**. That's true for any positive number of disks, but when $n = 0$ there are no disks at all, so the three steps make no sense.\n\nThis case has to be handled by a different method. A case that an algorithm solves directly, without recursion, is called a **base case**. For the Tower of Hanoi it's easy: moving a tower of zero disks takes no time at all, because you do nothing.\n\nEach recursive step works on one fewer disk, so the smaller puzzles eventually reach $n = 0$, where the doing-nothing case takes over.",
+      "check": {
+        "id": "c5",
+        "type": "select",
+        "prompt": "What does the algorithm do when $n = 0$, and why does that case need separate handling?",
+        "options": [
+          {
+            "id": "a",
+            "text": "It moves one disk, because every tower has at least one disk"
+          },
+          {
+            "id": "b",
+            "text": "It does nothing, because there is no largest disk for the three steps to work with"
+          },
+          {
+            "id": "c",
+            "text": "It runs the three steps again on $n-1$ disks, like every other case"
+          },
+          {
+            "id": "d",
+            "text": "It reports an error, because zero disks isn't a real puzzle"
+          }
+        ],
+        "answer": "b",
+        "explanation": "The three steps are built around setting aside the largest disk, and with zero disks there isn't one, so the recursion can't apply. Moving an empty tower needs no moves, so the base case simply does nothing.",
+        "wrongAnswers": [
+          {
+            "match": {
+              "optionId": "a"
+            },
+            "misconception": {
+              "text": "Thinks a tower must always contain at least one disk.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "When $n = 0$ the tower is empty, so there is nothing to move. Making any move would be wrong; the correct list of moves for zero disks is empty."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "number",
+                  "prompt": "How many disks are on the source peg when $n = 0$?",
+                  "answer": 0,
+                  "tolerance": 0
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "optionId": "c"
+            },
+            "misconception": {
+              "text": "Thinks the recursive steps apply to every value of $n$, with no stopping point.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "With zero disks there's no largest disk for step two to move, so the steps don't make sense. And asking for $-1$ disks, then $-2$, would never end. The base case is what stops the chain of smaller puzzles."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "When $n = 0$, is there a largest disk?",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "Yes"
+                    },
+                    {
+                      "id": "b",
+                      "text": "No"
+                    }
+                  ],
+                  "answer": "b"
+                }
+              }
+            }
+          },
+          {
+            "match": {
+              "optionId": "d"
+            },
+            "misconception": {
+              "text": "Treats the zero-disk case as invalid input rather than a puzzle with a trivial solution.",
+              "source": {
+                "kind": "model"
+              }
+            },
+            "fallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Zero disks is a perfectly good puzzle with an easy answer: there's nothing to move, so it's already done. The algorithm actually relies on this case, because solving even one disk asks for two zero-disk towers to be moved."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "select",
+                  "prompt": "How long does it take the monks to move a tower of zero disks?",
+                  "options": [
+                    {
+                      "id": "a",
+                      "text": "No time: they do nothing"
+                    },
+                    {
+                      "id": "b",
+                      "text": "Forever: it can't be done"
+                    }
+                  ],
+                  "answer": "a"
+                }
+              }
+            }
+          }
+        ],
+        "generalFallback": {
+          "reExplanation": {
+            "enabled": true,
+            "text": "Ask which step of the algorithm needs a largest disk. Then ask: if there is no disk at all, what is the quickest correct way to move the tower?"
+          },
+          "simplerQuestion": {
+            "enabled": true,
+            "check": {
+              "type": "number",
+              "prompt": "How many moves does it take to move a tower of 0 disks?",
+              "answer": 0,
+              "tolerance": 0
+            }
+          }
+        },
+        "alternatives": [
+          {
+            "id": "c5a",
+            "type": "number",
+            "prompt": "Run the algorithm on $n = 1$ disk. Steps one and three each ask for a tower of 0 disks to be moved. How many single-disk moves are made in total? Enter a whole number.",
+            "answer": 1,
+            "tolerance": 0,
+            "unit": "moves",
+            "explanation": "The zero-disk tasks in steps one and three are the base case, which does nothing and so adds no moves. Step two moves the only disk, which is also the largest, straight across, giving 1 move in total.",
+            "wrongAnswers": [
+              {
+                "match": {
+                  "min": 3,
+                  "max": 3
+                },
+                "misconception": {
+                  "text": "Counts each zero-disk base case as a move.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "The base case means doing nothing: moving zero disks takes no moves at all. So steps one and three add nothing, and only step two, moving the single disk, counts."
+                  },
+                  "simplerQuestion": {
+                    "enabled": true,
+                    "check": {
+                      "type": "number",
+                      "prompt": "How many moves does it take to move a tower of 0 disks?",
+                      "answer": 0,
+                      "tolerance": 0
+                    }
+                  }
+                }
+              },
+              {
+                "match": {
+                  "min": 0,
+                  "max": 0
+                },
+                "misconception": {
+                  "text": "Thinks that once the base case is involved, nothing at all happens, including the largest disk's move.",
+                  "source": {
+                    "kind": "model"
+                  }
+                },
+                "fallback": {
+                  "reExplanation": {
+                    "enabled": true,
+                    "text": "Only the two zero-disk sub-tasks do nothing. With $n = 1$ there is a largest disk, the only one, and step two still moves it from the source to the destination."
+                  },
+                  "simplerQuestion": {
+                    "enabled": true,
+                    "check": {
+                      "type": "select",
+                      "prompt": "When $n = 1$, is there a largest disk?",
+                      "options": [
+                        {
+                          "id": "a",
+                          "text": "Yes"
+                        },
+                        {
+                          "id": "b",
+                          "text": "No"
+                        }
+                      ],
+                      "answer": "a"
+                    }
+                  }
+                }
+              }
+            ],
+            "generalFallback": {
+              "reExplanation": {
+                "enabled": true,
+                "text": "Go step by step for $n = 1$: move 0 disks (do nothing), move the one disk across, move 0 disks (do nothing). Count only the actual disk moves."
+              },
+              "simplerQuestion": {
+                "enabled": true,
+                "check": {
+                  "type": "number",
+                  "prompt": "For $n = 1$, how many disks does step two move?",
+                  "answer": 1,
+                  "tolerance": 0
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "m6",
+      "title": "Summary",
+      "reading": "To move $n$ disks from a source peg to a destination peg using a spare peg, never putting a disk on a smaller one: if $n = 0$, do nothing. Otherwise, move the $n-1$ smaller disks to the spare peg, move the largest disk to the destination, then move the $n-1$ smaller disks from the spare onto it.\n\nTwo ideas make this work. First, the smaller puzzles are the same problem with one fewer disk, so we hand them to the Recursion Fairy and trust them to be solved. Second, the reduction needs a largest disk, so the empty tower is handled separately, by doing nothing."
+    }
+  ]
+}

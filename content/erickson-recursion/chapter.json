@@ -1,0 +1,19 @@
+{
+  "subject": {
+    "slug": "algorithms-by-jeff-erickson",
+    "title": "Algorithms, by Jeff Erickson",
+    "overview": "Based on Algorithms by Jeff Erickson (CC BY 4.0), free at https://jeffe.cs.illinois.edu/teaching/algorithms/",
+    "brief": "First-year university students taking this as part of a course, often studying alone on a phone between classes. Comfortable with high-school maths; new to the subject's vocabulary. Short readings, plenty of checks, and help that explains a wrong answer without talking down."
+  },
+  "slug": "recursion",
+  "title": "Recursion",
+  "overview": "Covers Reductions; Simplify and Delegate; Tower of Hanoi; Mergesort; Quicksort; The Pattern; Recursion Trees; Linear-Time Selection; Fast Multiplication; Exponentiation.",
+  "showUnreviewed": false,
+  "lessons": [
+    {
+      "file": "recursion-tower-of-hanoi-c16db1.json",
+      "position": 1,
+      "status": "unreviewed"
+    }
+  ]
+}

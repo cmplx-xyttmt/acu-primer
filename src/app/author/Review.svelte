@@ -15,6 +15,7 @@
   import ReviewPlayer from "./ReviewPlayer.svelte";
   import { reviewPaths, untried, type PathId } from "../../shared/reviewPaths.ts";
   import Play from "@lucide/svelte/icons/play";
+  import Download from "@lucide/svelte/icons/download";
   import Layers from "@lucide/svelte/icons/layers";
 
   let { lessonId, onLocked }: { lessonId: string; onLocked: () => void } = $props();
@@ -90,6 +91,11 @@
     const first = s.steps.findIndex((x) => !x.approved || x.open > 0);
     stepIndex = first >= 0 ? first : s.steps.length;
   }, fail);
+
+  // The lesson as a file, for the Download link once it's signed off (I16).
+  const lessonFile = $derived(
+    lesson ? `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(lesson.content, null, 2) + "\n")}` : "",
+  );
 
   function goToStep(i: number) {
     stepIndex = i;
@@ -462,6 +468,11 @@
         <h2>Sign off</h2>
         {#if lesson.status === "reviewed"}
           <p>This lesson is signed off. Students see it in the chapter.</p>
+          <p class="muted">
+            <a class="btn-quiet btn-sm" href={lessonFile} download="{lesson.id}.json"><Download size={15} aria-hidden="true" />Download the lesson file</a>
+            The JSON the import reads, for keeping the lesson in git or loading it on another server
+            (<code>npm run export:chapter</code> writes the whole chapter folder).
+          </p>
         {:else if !rs.canSignOff}
           <p>Not ready to sign off yet: {rs.blockers.join(", ")}.</p>
           {#if rs.open > 0}

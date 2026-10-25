@@ -2,6 +2,7 @@
   import { route } from "./router.svelte.ts";
   import Player from "./player/Player.svelte";
   import Home from "./player/Home.svelte";
+  import NotFound from "./player/NotFound.svelte";
   import SubjectPage from "./player/SubjectPage.svelte";
   import AuthorGate from "./author/AuthorGate.svelte";
   import AuthorHome from "./author/AuthorHome.svelte";
@@ -21,6 +22,16 @@
   const logMatch = $derived(route.path.match(/^\/author\/chapters\/([a-z0-9-]+)\/log\/?$/));
   const logParams = $derived(logMatch ? new URLSearchParams(route.search) : null);
   const newBook = $derived(/^\/author\/books\/new\/?$/.test(route.path));
+
+  // Links from the Oct 16 deploy, before subjects: /c/<chapter>. Only these two chapters existed.
+  const OLD_CHAPTERS: Record<string, string> = { "openintro-sampling": "/s/openintro-statistics/openintro-sampling" };
+  $effect(() => {
+    const old = route.path.match(/^\/c\/([a-z0-9-]+)\/?$/);
+    if (old && OLD_CHAPTERS[old[1]]) {
+      history.replaceState({}, "", OLD_CHAPTERS[old[1]]);
+      dispatchEvent(new PopStateEvent("popstate")); // the router reads the new address
+    }
+  });
 </script>
 
 {#if newBook}
@@ -80,6 +91,8 @@
   {#key subjectMatch[1]}
     <SubjectPage slug={subjectMatch[1]} />
   {/key}
-{:else}
+{:else if route.path === "/" || route.path === "/index.html"}
   <Home />
+{:else}
+  <NotFound />
 {/if}

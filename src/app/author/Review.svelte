@@ -454,8 +454,8 @@
           <p>Not ready to sign off yet: {rs.blockers.join(", ")}.</p>
           {#if rs.open > 0}
             <p class="muted">
-              Open suggestions get applied by a revision: run <code>/revise-lesson</code> in Claude Code in the acu-primer
-              folder. The parts it changes come back here for you to approve again.
+              To clear an open suggestion, open its step and press Apply with Claude, or withdraw the suggestion.
+              The parts Claude changes come back here for you to approve again.
             </p>
           {/if}
           <ul class="todo">

@@ -24,4 +24,5 @@ export function navigate(to: string) {
   history.pushState({}, "", to);
   path = url.pathname;
   search = url.search;
+  scrollTo(0, 0); // a new screen starts at its top, as a page load would
 }

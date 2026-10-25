@@ -29,6 +29,11 @@ describe("planFromOutline", () => {
     ]);
   });
 
+  it("drops leading symbols from titles, like Erickson's ♥ on advanced sections", () => {
+    const plan = planFromOutline([o("1 Recursion", 1, [o("1.1 Reductions", 2), o("♥1.9 Linear-Time Selection", 5)]), o("2 Backtracking", 8)], 9);
+    expect(plan[0].sections.map((s) => s.title)).toEqual(["1.1 Reductions", "1.9 Linear-Time Selection"]);
+  });
+
   it("looks inside a single top-level bookmark and flattens parts", () => {
     const book = [o("The Book", 1, [o("Part I", 2, [o("Ch 1", 3), o("Ch 2", 10)]), o("Part II", 20, [o("Ch 3", 21)])])];
     expect(planFromOutline(book, 30).map((c) => [c.title, c.pages])).toEqual([

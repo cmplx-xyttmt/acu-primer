@@ -32,6 +32,7 @@
   function onLocked() {
     savePassphrase("");
     typed = "";
+    error = "Your passphrase stopped working. Type it again.";
     phase = "locked";
   }
 </script>
@@ -48,6 +49,11 @@
 {:else}
   <main class="page gate">
     <h1>Author side</h1>
+    <p class="muted">
+      This is where authors draft lessons from book pages with Claude, review them by playing, sign them off, and see
+      each student's answers. It needs the author's passphrase.
+    </p>
+    <p><a href="/">Play a lesson as a student instead</a></p>
     <form
       onsubmit={(e) => {
         e.preventDefault();
@@ -71,7 +77,7 @@
   form {
     display: grid;
     gap: 0.75rem;
-    margin-top: 1.5rem;
+    margin-top: 1.25rem;
   }
   label {
     font-weight: 600;

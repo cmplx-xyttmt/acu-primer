@@ -16,6 +16,12 @@
   let error = $state("");
   fetchSubjects().then((s) => (subjects = s), (e) => (error = e.message));
   const last = lastPlayed();
+  // A first visit (nothing played yet) gets one chapter to start with: the one with the
+  // sampling exploration and the hints for each wrong answer. Hidden if it isn't public.
+  const START_HERE = { subject: "openintro-statistics", chapter: "openintro-sampling" };
+  const startHere = $derived(
+    subjects?.find((s) => s.slug === START_HERE.subject)?.chapters.find((c) => c.slug === START_HERE.chapter) ?? null,
+  );
   let who = $state(lastName());
   let editing = $state(false);
   let draftName = $state("");
@@ -58,7 +64,16 @@
     </div>
   </section>
 
-  {#if last}
+  {#if !last && startHere}
+    <a class="continue card" href="/s/{START_HERE.subject}/{START_HERE.chapter}">
+      <span class="play"><Play size={18} aria-hidden="true" /></span>
+      <span>
+        <span class="label">New here? Start with a short lesson</span>
+        <strong>{startHere.title}</strong>
+      </span>
+      <ChevronRight size={20} aria-hidden="true" />
+    </a>
+  {:else if last}
     <a class="continue card" href="/s/{last.subjectSlug}/{last.chapterSlug}">
       <span class="play"><Play size={18} aria-hidden="true" /></span>
       <span>

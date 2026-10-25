@@ -22,6 +22,7 @@
   {#if error}
     <h1>Can't open this subject</h1>
     <p class="muted">{error}</p>
+    <p><a href="/">Back to all subjects</a></p>
   {:else if !subject}
     <p class="muted">Loading…</p>
   {:else}

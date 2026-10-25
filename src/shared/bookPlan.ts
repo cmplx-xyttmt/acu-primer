@@ -90,7 +90,8 @@ export function planFromOutline(outline: OutlineItem[], pageCount: number): Plan
   });
 }
 
-const clean = (s: string) => s.replace(/\s+/g, " ").trim().slice(0, 300) || "Untitled";
+// Leading symbols go too: Erickson marks advanced sections with "♥".
+const clean = (s: string) => s.replace(/\s+/g, " ").trim().replace(/^[^\p{L}\p{N}"'“‘([]+/u, "").slice(0, 300) || "Untitled";
 
 /** A plain overview for a chapter made from a book, until the author writes a better one. */
 export const sectionsOverview = (sections: Section[]) =>

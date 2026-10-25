@@ -146,6 +146,7 @@
   <main class="page">
     <h1>Can't open this chapter</h1>
     <p class="muted">{loadError}</p>
+    <p><a href="/">Back to all subjects</a></p>
   </main>
 {:else if !data}
   <main class="page"><p class="muted">Loading…</p></main>

@@ -39,10 +39,12 @@
 
   // svelte-ignore state_referenced_locally (App.svelte re-creates this per chapter)
   let keptName = $state(""); // the PDF found in this browser, if any
+  let missing = $state(false); // no chapter with this id, for example after a delete
   const loadSubjects = () =>
     authorApi.subjects().then(async (subjects) => {
       subject = subjects.find((s) => s.chapters.some((c) => c.id === chapterId)) ?? null;
       chapter = subject?.chapters.find((c) => c.id === chapterId) ?? null;
+      missing = !chapter;
       if (subject?.book && !file) {
         book = subject.book.title;
         const kept = await keptBook(subject.id);
@@ -191,6 +193,10 @@
 
 <main class="page wide">
   <h1>Draft lessons</h1>
+  {#if missing}
+    <p>No chapter at this address. It may have been deleted.</p>
+    <p><a href="/author">Back to your subjects</a></p>
+  {:else}
   <p class="muted">{subject?.title ? `${subject.title} · ` : ""}{chapter ? chapter.title : "…"}</p>
   {#if subject}
     <p class="muted brief-note">
@@ -373,6 +379,7 @@
         {/if}
       {/if}
     </section>
+  {/if}
   {/if}
 </main>
 

@@ -18,7 +18,8 @@ cd "$(dirname "$0")/../media/concept-b"
 # minutes and about $1. The statistics shot (the subject card and c11) was cut on Oct 25: the
 # session draft of 5.1 it showed was deleted, so it showed a lesson that isn't on the live site.
 # The start and end times are set so that every shot starts on a whole second (narration.html's
-# times): 0:00, 0:26, 0:48 (inside the first c08 line), 1:13, 1:42, 2:25, 2:43; the end is 3:11.
+# times): 0:00, 0:26, 0:48 (inside the first c08 line), 1:13, 1:42, 2:25, 2:43; the end is 2:55 (the end
+# card was cut to 12 s on Oct 25, to stay under the rules' three minutes).
 SEGMENTS='
 section-to-lesson.mp4            0     20    1     6    1
 clips/c08-fake-draft.mp4         2.1   38.5  1.3   0    1
@@ -30,7 +31,7 @@ clips/c10-hanoi-student.mp4      0     12    1.2   0    1
 clips/c10-hanoi-student.mp4      14    30    1.2   0    1
 clips/c10-hanoi-student.mp4      55.9  79.5  1.2   0    1
 clips/c12-hanoi-log.mp4          0     12.4  1     5.6  1
-end-card.mp4                     0     6     1     22   1.03
+end-card.mp4                     0     6     1     6    1.03
 '
 # Each line of LABELS is: time  text. A section label fades in at the bottom left at that time
 # (in the finished cut), stays about 2 seconds and fades out.

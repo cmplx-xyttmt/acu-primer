@@ -51,12 +51,17 @@ button:disabled{opacity:.5;cursor:default}
 .pshot .empty{font-style:italic;color:rgba(232,237,242,.45)}
 #pCount{position:absolute;right:24px;bottom:20px;font-family:var(--mono);font-size:56px;color:#f2b15e}
 #takes a{color:#83d1b0;margin-right:12px}
+#prompter .mic{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.1);font-size:14px}
+#meter{width:220px;height:12px;border-radius:6px;background:#1b2229;overflow:hidden;border:1px solid rgba(255,255,255,.2)}
+#meterFill{height:100%;width:0;background:#5fbf99;transition:width .05s linear}
+#meterFill.hot{background:#e4882e}
+#meterNote{color:rgba(232,237,242,.75);min-width:14em}
 </style>
 </head>
 <body>
 <main>
 <h1>Narration shot list</h1>
-<p>The rough cut (3:11, no sound; the app clips re-recorded in dark mode on Oct 25, the draft simulated and captioned, the statistics shot cut, crossfades between clips and a small label at the start of each section) is below. For each shot: what's on screen, the points to cover, and a box for your words. The words are yours: the hackathon's rules say the narration must be written by you. At a relaxed pace, people speak about 2 to 2.5 words a second, so each shot shows a rough word budget. What you type stays in this browser only; copy it somewhere safe when you're done.</p>
+<p>The rough cut (2:55, no sound; the app clips re-recorded in dark mode on Oct 25, the draft simulated and captioned, the statistics shot cut, crossfades between clips and a small label at the start of each section) is below. For each shot: what's on screen, the points to cover, and a box for your words. The words are yours: the hackathon's rules say the narration must be written by you. At a relaxed pace, people speak about 2 to 2.5 words a second, so each shot shows a rough word budget. What you type stays in this browser only; copy it somewhere safe when you're done.</p>
 <video src="../media/concept-b/rough-cut.mp4" controls preload="metadata"></video>
 <div class="tools">
   <button class="go" id="openPrompter" type="button">Teleprompter and recording</button>
@@ -87,7 +92,7 @@ button:disabled{opacity:.5;cursor:default}
 <textarea data-k="shot5" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">06</span><span class="t">2:25–2:43</span><span class="d">18 s · about 41 spoken words</span></div>
 <p class="screen"><b>On screen.</b> The author&#x27;s view of Amina&#x27;s path: each answer, the misconception it hit, the hint she got, her prediction. The whole log is on screen from about 2:31, and it holds there to the end of the shot.</p>
 <p class="label">Points to cover</p><ul><li>What the author learns from the log.</li></ul>
-<textarea data-k="shot7" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">07</span><span class="t">2:43–3:11</span><span class="d">28 s · about 64 spoken words</span></div>
+<textarea data-k="shot7" placeholder="Your words for this shot"></textarea></section><section class="card"><div class="hd"><span class="n">07</span><span class="t">2:43–2:55</span><span class="d">12 s · about 28 spoken words</span></div>
 <p class="screen"><b>On screen.</b> End card: Book → Lessons → Review → Students → Log, and the repo link. It builds in over about 3 seconds, then holds with a very slow zoom to the end.</p>
 <p class="label">Points to cover</p><ul><li>What&#x27;s next, and where to find the code.</li></ul>
 <textarea data-k="shot8" placeholder="Your words for this shot"></textarea></section>
@@ -100,6 +105,12 @@ button:disabled{opacity:.5;cursor:default}
     <button id="pStop" type="button" disabled>Stop</button>
     <span id="takes"></span>
     <button id="pClose" type="button" style="margin-left:auto">Close</button>
+  </div>
+  <div class="mic">
+    <label for="pMic">Microphone</label><select id="pMic"><option value="">The browser's default</option></select>
+    <button id="pTest" type="button">Test microphone</button>
+    <div id="meter" aria-hidden="true"><div id="meterFill"></div></div>
+    <span id="meterNote" role="status"></span>
   </div>
   <div class="stage">
     <div><video id="pVideo" src="../media/concept-b/rough-cut.mp4" muted playsinline preload="auto"></video><div id="pClock">0:00</div><div id="pStatus"></div></div>
@@ -200,13 +211,15 @@ function begin(record) {
     }, 1000);
   };
   if (!record) return go();
-  navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: true } }).then(function (stream) {
+  stopTest();
+  navigator.mediaDevices.getUserMedia({ audio: micConstraints() }).then(function (stream) {
+    watchLevel(stream);
     chunks = [];
     recorder = new MediaRecorder(stream);
     recorder.ondataavailable = function (e) { if (e.data.size) chunks.push(e.data); };
     recorder.onstart = function () { recStartedAt = performance.now(); go(); };
     recorder.onstop = function () {
-      stream.getTracks().forEach(function (t) { t.stop(); });
+      stream.getTracks().forEach(function (t) { t.stop(); }); stopLevel();
       // The file name says where in the cut this take starts, and how much audio comes before
       // the cut starts playing (the countdown), so it can be laid over the cut exactly.
       var lead = ((playStartedAt - recStartedAt) / 1000).toFixed(3);
@@ -240,7 +253,56 @@ $('pRehearse').onclick = function () { begin(false); };
 $('pRecord').onclick = function () { begin(true); };
 $('pStop').onclick = end;
 $('openPrompter').onclick = function () { renderWords(); v.currentTime = shots[Number($('pFrom').value)].start; tick(); $('prompter').classList.add('on'); };
-$('pClose').onclick = function () { end(); $('prompter').classList.remove('on'); };
+$('pClose').onclick = function () { end(); stopTest(); $('prompter').classList.remove('on'); };
+
+// The microphone: pick which one records, and a level meter to check it's picking you up. The
+// meter also runs while recording. Device names only show once the browser has been allowed.
+var MIC_KEY = 'acu-narration-mic', level = null;
+function micConstraints() {
+  var id = $('pMic').value, c = { echoCancellation: false, noiseSuppression: true, autoGainControl: true };
+  if (id) c.deviceId = { exact: id };
+  return c;
+}
+function listMics() {
+  return navigator.mediaDevices.enumerateDevices().then(function (ds) {
+    var keep = ''; try { keep = localStorage.getItem(MIC_KEY) || ''; } catch (e) {}
+    var sel = $('pMic'), was = sel.value || keep;
+    sel.innerHTML = '<option value="">The browser\'s default</option>';
+    ds.filter(function (d) { return d.kind === 'audioinput' && d.deviceId !== 'default'; }).forEach(function (d, i) {
+      var o = document.createElement('option'); o.value = d.deviceId; o.textContent = d.label || ('Microphone ' + (i + 1)); sel.appendChild(o);
+    });
+    if ([].some.call(sel.options, function (o) { return o.value === was; })) sel.value = was;
+  });
+}
+$('pMic').onchange = function () { try { localStorage.setItem(MIC_KEY, $('pMic').value); } catch (e) {} if (testStream) { stopTest(); startTest(); } };
+function watchLevel(stream) {
+  stopLevel();
+  var ctx = new AudioContext(), an = ctx.createAnalyser(); an.fftSize = 1024;
+  ctx.createMediaStreamSource(stream).connect(an);
+  var buf = new Float32Array(an.fftSize), peakAt = 0, peak = 0;
+  level = { ctx: ctx, raf: 0 };
+  (function draw() {
+    an.getFloatTimeDomainData(buf);
+    var max = 0; for (var i = 0; i < buf.length; i++) max = Math.max(max, Math.abs(buf[i]));
+    var now = performance.now(); if (max > peak || now - peakAt > 1500) { peak = max; peakAt = now; }
+    $('meterFill').style.width = Math.min(100, max * 140) + '%';
+    $('meterFill').classList.toggle('hot', max > 0.9);
+    $('meterNote').textContent = peak > 0.95 ? 'Too loud: lower the input volume' : peak > 0.2 ? 'Good level' : peak > 0.04 ? 'A bit quiet: speak up or move closer' : 'Hardly anything: is this the right microphone?';
+    level.raf = requestAnimationFrame(draw);
+  })();
+}
+function stopLevel() { if (level) { cancelAnimationFrame(level.raf); level.ctx.close(); level = null; } $('meterFill').style.width = '0'; }
+var testStream = null;
+function startTest() {
+  navigator.mediaDevices.getUserMedia({ audio: micConstraints() }).then(function (stream) {
+    testStream = stream; watchLevel(stream); $('pTest').textContent = 'Stop test';
+    var t = stream.getAudioTracks()[0]; $('meterNote').textContent = 'Listening on ' + (t && t.label ? t.label : 'the default microphone');
+    listMics();
+  }, function (err) { $('meterNote').textContent = 'The microphone was blocked (' + err.name + ').'; });
+}
+function stopTest() { if (testStream) { testStream.getTracks().forEach(function (t) { t.stop(); }); testStream = null; } stopLevel(); $('pTest').textContent = 'Test microphone'; $('meterNote').textContent = ''; }
+$('pTest').onclick = function () { testStream ? stopTest() : startTest(); };
+listMics();
 </script>
 </body>
 </html>

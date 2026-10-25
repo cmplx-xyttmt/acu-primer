@@ -2,7 +2,7 @@
 // logged in the spend table, and calls stop once the month's spend reaches MONTHLY_BUDGET_USD.
 
 import Anthropic, { toFile } from "@anthropic-ai/sdk";
-import { apiKey, draftLesson, readContents, reviseStep, type Usage } from "../claude.ts";
+import { apiErrorMessage, apiKey, draftLesson, readContents, reviseStep, type Usage } from "../claude.ts";
 import { NewBook } from "../../shared/bookPlan.ts";
 import {
   authorLesson,
@@ -164,8 +164,9 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(
 
 // POST /api/author/drafts — { sourceId, section }. Streams progress as one JSON object per
 // line ({ chars }), then { done: lessonId, usage } or { error }. The lesson is saved, unreviewed,
-// only when it passes every check. A tab closed mid-draft loses that draft (spec failure mode).
-export async function postDraft({ env, request, url }: Ctx): Promise<Response> {
+// only when it passes every check. The work is handed to waitUntil, but the runtime only keeps it
+// about 30 seconds after the tab goes away, so a tab closed mid-draft can still lose the draft.
+export async function postDraft({ env, request, url, waitUntil }: Ctx): Promise<Response> {
   const body = (await request.json().catch(() => null)) as { sourceId?: unknown; section?: unknown } | null;
   const sourceId = typeof body?.sourceId === "string" ? body.sourceId : "";
   const section = typeof body?.section === "string" ? body.section.trim() : "";
@@ -179,7 +180,7 @@ export async function postDraft({ env, request, url }: Ctx): Promise<Response> {
   if (fake !== "off") {
     const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
     const writer = writable.getWriter();
-    const send = (obj: object) => writer.write(new TextEncoder().encode(JSON.stringify(obj) + "\n"));
+    const send = (obj: object) => writer.write(new TextEncoder().encode(JSON.stringify(obj) + "\n")).catch(() => {});
     fakeDraft(fake, { lessonId, section, book: source.title, pages: source.pages }, send, (l) => insertDraft(env.DB, chapter.id, source.id, l))
       .catch(async (err) => (console.error(err), send({ error: "The fake draft failed on the server." })))
       .finally(() => writer.close());
@@ -192,9 +193,10 @@ export async function postDraft({ env, request, url }: Ctx): Promise<Response> {
   const useCatalogue = /sampl|estimat|standard error|proportion/i.test(`${chapter.title} ${section}`);
   const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
   const writer = writable.getWriter();
-  const send = (obj: object) => writer.write(new TextEncoder().encode(JSON.stringify(obj) + "\n"));
+  // A closed tab makes writes fail; the draft carries on and is still logged and saved.
+  const send = (obj: object) => writer.write(new TextEncoder().encode(JSON.stringify(obj) + "\n")).catch(() => {});
 
-  (async () => {
+  const work = (async () => {
     let last = 0;
     let chars = 0;
     // A line every 10 seconds: Opus thinks for minutes before writing anything, and this keeps
@@ -216,6 +218,8 @@ export async function postDraft({ env, request, url }: Ctx): Promise<Response> {
       );
       await log(env, "draft", result.ok ? lessonId : null, result.usage);
       if (result.ok) {
+        // Saved under the id the browser is sent, whatever id Claude wrote.
+        result.value.id = lessonId;
         await insertDraft(env.DB, chapter.id, source.id, result.value);
         await send({ done: lessonId, usage: result.usage, seconds: Math.round(result.ms / 1000), attempts: result.attempts });
       } else {
@@ -223,12 +227,13 @@ export async function postDraft({ env, request, url }: Ctx): Promise<Response> {
       }
     } catch (err) {
       console.error(err);
-      await send({ error: err instanceof Anthropic.APIError ? `Claude API: ${err.message}` : "The draft failed on the server." });
+      await send({ error: apiErrorMessage(err) ?? "The draft failed on the server." });
     } finally {
       clearInterval(heartbeat);
-      await writer.close();
+      await writer.close().catch(() => {});
     }
   })();
+  waitUntil(work);
 
   return new Response(readable, { headers: { "content-type": "application/x-ndjson", "cache-control": "no-store" } });
 }

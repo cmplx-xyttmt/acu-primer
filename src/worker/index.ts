@@ -2,6 +2,7 @@
 // runs, per the "assets" block in wrangler.jsonc.
 
 import { authorGate } from "./auth.ts";
+import { apiErrorMessage } from "./claude.ts";
 import { json } from "./http.ts";
 import { getChapter } from "./routes/chapters.ts";
 import { getSubject, getSubjects } from "./routes/subjects.ts";
@@ -23,6 +24,7 @@ export interface Ctx {
   request: Request;
   env: Env;
   url: URL;
+  waitUntil: (work: Promise<unknown>) => void; // keeps background work going after the response
 }
 
 type Handler = (ctx: Ctx, ...params: string[]) => Promise<Response>;
@@ -60,7 +62,7 @@ const routes: [method: string, pattern: RegExp, handler: Handler][] = [
 ];
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     for (const [method, pattern, handler] of routes) {
       const match = url.pathname.match(pattern);
@@ -70,9 +72,11 @@ export default {
           const gate = await authorGate(url, request.headers.get("x-author-passphrase"), env.AUTHOR_PASSPHRASE);
           if (!gate.ok) return json({ error: gate.error }, gate.status);
         }
-        return await handler({ request, env, url }, ...match.slice(1));
+        return await handler({ request, env, url, waitUntil: (work) => ctx.waitUntil(work) }, ...match.slice(1));
       } catch (err) {
         console.error(err);
+        const readable = apiErrorMessage(err); // e.g. the Files API upload failing
+        if (readable) return json({ error: readable }, 502);
         return json({ error: "Something went wrong on the server." }, 500);
       }
     }

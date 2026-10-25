@@ -120,6 +120,17 @@ function addUsage(total: Usage, model: string, u: Anthropic.Usage) {
     1_000_000;
 }
 
+// A sentence an author can act on, for errors from the Claude API (a busy API, a rate limit, a
+// refused key). Null for anything else, which stays a server error.
+export function apiErrorMessage(err: unknown): string | null {
+  if (err instanceof Anthropic.APIConnectionError) return "Couldn't reach Claude. Check the connection and try again.";
+  if (!(err instanceof Anthropic.APIError)) return null;
+  if (err.status === 429) return "Claude has had too many requests for now. Try again in a minute.";
+  if (err.status === 529 || (err.status ?? 0) >= 500) return "Claude is busy right now. Try again in a few minutes.";
+  if (err.status === 401 || err.status === 403) return "The Claude API key was refused. Check CLAUDE_API_KEY on the server.";
+  return `Claude API: ${err.message}`;
+}
+
 /**
  * One structured call with a single retry: stream the reply, parse it as JSON, check it with
  * `validate` (schema plus code checks). On problems, Claude sees its reply and the problems
@@ -155,10 +166,18 @@ async function structuredCall<T>(
       chars += delta.length;
       opts.onProgress?.(chars, attempt);
     });
-    const message = await stream.finalMessage();
+    const fail = (error: string): CallResult<T> => ({ ok: false, error, usage, attempts: attempt, ms: Date.now() - started });
+    let message: Anthropic.Message;
+    try {
+      message = await stream.finalMessage();
+    } catch (err) {
+      // An API error on the retry still returns the first attempt's usage, so it gets logged.
+      const readable = apiErrorMessage(err);
+      if (readable === null) throw err;
+      return fail(readable);
+    }
     addUsage(usage, model, message.usage);
 
-    const fail = (error: string): CallResult<T> => ({ ok: false, error, usage, attempts: attempt, ms: Date.now() - started });
     if (message.stop_reason === "refusal") return fail("Claude declined this request.");
     if (message.stop_reason === "max_tokens") return fail("The reply ran past the length limit.");
 
